@@ -1,0 +1,33 @@
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  
+  // Pylance/Pyright Settings for Better Navigation
+  "python.languageServer": "Pylance",
+  "python.analysis.indexing": true,
+  "python.analysis.packageIndexDepths": [
+    {
+      "name": "",
+      "depth": 2
+    }
+  ],
+  
+  // Enable Go to Definition
+  "python.analysis.stubPath": "${workspaceFolder}/.venv/lib/python*/site-packages",
+  "python.analysis.extraPaths": [],
+  
+  // File Associations
+  "files.associations": {
+    "*.py": "python"
+  },
+  
+  // Editor Settings
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleReferences": "goto",
+  "editor.gotoLocation.multipleImplementations": "goto"
+}
