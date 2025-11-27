@@ -5,32 +5,34 @@ Complete guide for **IST402: AI Agents, Retrieval-Augmented Generation (RAG), an
 ## 📁 Project Structure
 
 ```
-ist-402-assignments/
+ist-402/
 ├── README.md                    # This file - Course overview
 ├── requirements.txt             # Python dependencies
 ├── setup.sh                     # Virtual environment setup script
-├── assignments/                 # Assignment files and notebooks
-│   ├── W3/                      # Week 3: Prompt Engineering & QA
-│   ├── W6-AI Agents-n8n...      # Week 6: AI Agents with n8n
-│   ├── W7GroupAssignment...     # Week 7: Group Assignment
-│   ├── W8/                      # Week 8: Multimodal AI Applications
-│   ├── W9/                      # Week 9: Building Agentic RAG
-│   ├── W10/                     # Week 10: Advanced Agentic RAG
-│   └── W11_L1.ps, W11_L2.pdf   # Week 11: Advanced Topics
-└── portfolio/                   # Docusaurus portfolio website
-    ├── docs/                    # Portfolio documentation
-    ├── src/                     # Portfolio source code
-    └── package.json             # Portfolio dependencies
+└── learning-path/               # Learning materials and assignments
+    ├── W03/                     # Week 3: Prompt Engineering & QA
+    │   ├── 01-exercises/        # Exercises
+    │   │   ├── 01-prompt-engineering/
+    │   │   ├── 02-simple-rag/
+    │   │   └── 03-rag-with-model-evaluation/
+    │   ├── 02-assignments/      # Assignments
+    │   ├── 03-learnings/        # Learning notes
+    │   └── README.md
+    ├── W06/                     # Week 6: AI Agents with n8n
+    ├── W07/                     # Week 7: Group Assignment
+    ├── W08/                     # Week 8: Multimodal AI Applications
+    ├── W09/                     # Week 9: Building Agentic RAG
+    ├── W10/                     # Week 10: Advanced Agentic RAG
+    └── W11/                     # Week 11: Advanced Topics
 ```
 
 ## 📑 Table of Contents
 
-- [Quick Start](#-quick-start-30-minutes)
+- [Quick Start](#-quick-start)
 - [Recommended Learning Path](#-recommended-learning-path)
 - [Week-by-Week Guide](#-week-by-week-guide-chronological-order)
 - [Project Structure](#-project-structure)
-- [Assignments](#-assignments)
-- [Portfolio](#-portfolio)
+- [Learning Materials](#-learning-materials)
 - [Technologies I've Used](#-technologies-ive-used)
 - [Tips for Success](#-tips-for-success)
 - [Common Issues](#-common-issues)
@@ -59,7 +61,7 @@ The devcontainer includes:
 - ✅ Jupyter Lab for notebooks
 - ✅ All dependencies pre-installed
 
-See [`.devcontainer/README.md`](./.devcontainer/README.md) for details.
+> **Note:** DevContainer configuration is optional. You can also set up a local environment as described below.
 
 ### Local Python Environment Setup
 
@@ -105,12 +107,21 @@ pip install -r requirements.txt
 ## 📖 Week-by-Week Guide (Chronological Order)
 
 ### **Week 3: Prompt Engineering & QA**
-**Location:** [`assignments/W3/`](./assignments/W3/)  
-**Portfolio:** [`portfolio/docs/week3-prompt-engineering/`](./portfolio/docs/week3-prompt-engineering/)
+**Location:** [`learning-path/W03/`](./learning-path/W03/)
 
-**Files:**
-- `W3__Prompt_Engineering w_QA Applications-2.ipynb`
-- `W3__QA_Chatbot_Activity_w_Prompt_Engineering (1).ipynb`
+**Structure:**
+- **Exercises:** [`01-exercises/`](./learning-path/W03/01-exercises/)
+  - `01-prompt-engineering/` - Prompt engineering basics
+  - `02-simple-rag/` - Simple RAG with QA chatbot
+  - `03-rag-with-model-evaluation/` - RAG system with evaluation
+- **Assignments:** [`02-assignments/`](./learning-path/W03/02-assignments/)
+- **Learnings:** [`03-learnings/`](./learning-path/W03/03-learnings/)
+
+**Key Files:**
+- `W3__Prompt_Engineering_Basics.ipynb`
+- `W3__QA_Chatbot_Activity_w_Prompt_Engineering-1.ipynb`
+- `W3_RAG_System_Exercise.ipynb`
+- `W3_RAG_Assignment_Final.ipynb`
 
 **What I Have Learned:**
 - Designed system prompts for LLMs
@@ -132,8 +143,7 @@ pip install -r requirements.txt
 ---
 
 ### **Week 6: AI Agents with n8n** (Optional)
-**Location:** [`assignments/`](./assignments/)  
-**Portfolio:** [`portfolio/docs/week6-ai-agents-n8n/`](./portfolio/docs/week6-ai-agents-n8n/)
+**Location:** [`learning-path/W06/`](./learning-path/W06/)
 
 **Files:** `W6-AI Agents-n8n to-do-task.pptx`
 
@@ -145,8 +155,7 @@ pip install -r requirements.txt
 ---
 
 ### **Week 7: Group Assignment**
-**Location:** [`assignments/`](./assignments/)  
-**Portfolio:** [`portfolio/docs/week7-group-assignment/`](./portfolio/docs/week7-group-assignment/)
+**Location:** [`learning-path/W07/`](./learning-path/W07/)
 
 **Files:** `W7GroupAssignmentAgentsDevwithOpenAI.pdf`
 
@@ -158,10 +167,13 @@ pip install -r requirements.txt
 ---
 
 ### **Week 8: Multimodal AI Applications**
-**Location:** [`assignments/W8/`](./assignments/W8/)  
-**Portfolio:** [`portfolio/docs/week8-multimodal/`](./portfolio/docs/week8-multimodal/)
+**Location:** [`learning-path/W08/`](./learning-path/W08/)
 
-**Files:** `W8_image_caption.ipynb`, `W8_pdf_Q&A.ipynb`, `W8_Speech_to_Image.ipynb`
+**Files:** 
+- `W8_image_caption.ipynb` - Image captioning with BLIP
+- `W8_pdf_Q&A.ipynb` - PDF Q&A system
+- `W8_Speech_to_Image.ipynb` - Speech-to-image pipeline
+- `W8_Instructions.pdf` - Assignment instructions
 
 **What I Have Learned:**
 
@@ -185,10 +197,11 @@ pip install -r requirements.txt
 ---
 
 ### **Week 9: Building Agentic RAG with LlamaIndex**
-**Location:** [`assignments/W9/`](./assignments/W9/)  
-**Portfolio:** [`portfolio/docs/week9-llamaindex/`](./portfolio/docs/week9-llamaindex/)
+**Location:** [`learning-path/W09/`](./learning-path/W09/)
 
-**Files:** `W9_Building_Agentic_RAG_LlamaIndex_3_4.ipynb`
+**Files:** 
+- `W9_Building_Agentic_RAG_LlamaIndex_3_4.ipynb`
+- `W9_L2.pdf` - Lecture materials
 
 **Prerequisites:** OpenAI API key (paid account)
 
@@ -204,10 +217,11 @@ pip install -r requirements.txt
 ---
 
 ### **Week 10: Advanced Agentic RAG**
-**Location:** [`assignments/W10/`](./assignments/W10/)  
-**Portfolio:** [`portfolio/docs/week10-advanced-rag/`](./portfolio/docs/week10-advanced-rag/)
+**Location:** [`learning-path/W10/`](./learning-path/W10/)
 
-**Files:** `W10_Building_Agentic_RAG_LlamaIndex_3_4.ipynb`
+**Files:** 
+- `W10_Building_Agentic_RAG_LlamaIndex_3_4.ipynb`
+- `W10_L1.pdf` - Lecture materials
 
 **What I Have Learned:**
 - Built multi-document agent (scaled from 3 papers to 11 papers)
@@ -220,10 +234,11 @@ pip install -r requirements.txt
 ---
 
 ### **Week 11: Advanced Topics**
-**Location:** [`assignments/`](./assignments/)  
-**Portfolio:** [`portfolio/docs/week11-advanced-topics/`](./portfolio/docs/week11-advanced-topics/)
+**Location:** [`learning-path/W11/`](./learning-path/W11/)
 
-**Files:** `W11_L1.ps`, `W11_L2.pdf`
+**Files:** 
+- `W11_L1.ps` - Lecture 1 materials
+- `W11_L2.pdf` - Lecture 2 materials
 
 **What I Have Learned:**
 - Advanced concepts and topics
@@ -231,50 +246,23 @@ pip install -r requirements.txt
 
 ---
 
-## 📂 Assignments
+## 📂 Learning Materials
 
-All assignment files are located in [`assignments/`](./assignments/):
+All learning materials and assignments are located in [`learning-path/`](./learning-path/):
 
-- **Week 3:** [`W3/`](./assignments/W3/) - Prompt Engineering & QA notebooks
-- **Week 6:** [`W6-AI Agents-n8n to-do-task.pptx`](./assignments/W6-AI%20Agents-n8n%20to-do-task.pptx) - n8n workflow presentation
-- **Week 7:** [`W7GroupAssignmentAgentsDevwithOpenAI.pdf`](./assignments/W7GroupAssignmentAgentsDevwithOpenAI.pdf) - Group assignment PDF
-- **Week 8:** [`W8/`](./assignments/W8/) - Multimodal AI notebooks (3 projects)
-- **Week 9:** [`W9/`](./assignments/W9/) - LlamaIndex notebooks
-- **Week 10:** [`W10/`](./assignments/W10/) - Advanced RAG notebooks
-- **Week 11:** [`W11_L1.ps`](./assignments/W11_L1.ps), [`W11_L2.pdf`](./assignments/W11_L2.pdf) - Advanced topics
-
----
-
-## 🎨 Portfolio
-
-Your portfolio website is located in [`portfolio/`](./portfolio/).
-
-### View Your Portfolio
-
-```bash
-cd portfolio
-npm install
-npm start
-```
-
-Visit `http://localhost:3000` to see your portfolio.
-
-### Portfolio Structure
-
-- **Documentation:** [`portfolio/docs/`](./portfolio/docs/) - All portfolio pages
-- **Week 3:** [`portfolio/docs/week3-prompt-engineering/`](./portfolio/docs/week3-prompt-engineering/)
-- **Week 8:** [`portfolio/docs/week8-multimodal/`](./portfolio/docs/week8-multimodal/)
-- **Week 9:** [`portfolio/docs/week9-llamaindex/`](./portfolio/docs/week9-llamaindex/)
-- And more...
-
-### Portfolio Features
-
-- **Bloom's Taxonomy Framework** - Demonstrates learning at 6 levels
-- **Week-by-Week Documentation** - Complete documentation for each assignment
-- **Cross-References** - Links between assignments and portfolio
-- **Edit Links** - Edit documentation directly from the portfolio
-
-**Note:** Focus on completing assignments first, then document your learnings in the portfolio!
+- **Week 3:** [`W03/`](./learning-path/W03/) - Prompt Engineering & QA
+  - Exercises: Prompt engineering, Simple RAG, RAG with evaluation
+  - Assignments: RAG assignment notebook
+  - Learnings: Learning notes and reflections
+- **Week 6:** [`W06/`](./learning-path/W06/) - AI Agents with n8n (PowerPoint presentation)
+- **Week 7:** [`W07/`](./learning-path/W07/) - Group Assignment (PDF specification)
+- **Week 8:** [`W08/`](./learning-path/W08/) - Multimodal AI Applications
+  - Image captioning notebook
+  - PDF Q&A notebook
+  - Speech-to-image notebook
+- **Week 9:** [`W09/`](./learning-path/W09/) - Building Agentic RAG with LlamaIndex
+- **Week 10:** [`W10/`](./learning-path/W10/) - Advanced Agentic RAG
+- **Week 11:** [`W11/`](./learning-path/W11/) - Advanced Topics (Lecture materials)
 
 ---
 
