@@ -10,11 +10,21 @@ ist-402/
 ├── requirements.txt             # Python dependencies
 ├── setup.sh                     # Virtual environment setup script
 └── learning-path/               # Learning materials and assignments
-    ├── W03/                     # Week 3: Prompt Engineering & QA
+    ├── W01/                     # Week 1: Prompt Engineering
     │   ├── 01-exercises/        # Exercises
-    │   │   ├── 01-prompt-engineering/
-    │   │   ├── 02-simple-rag/
-    │   │   └── 03-rag-with-model-evaluation/
+    │   │   └── 01-prompt-engineering/
+    │   ├── 02-assignments/      # Assignments
+    │   ├── 03-learnings/        # Learning notes
+    │   └── README.md
+    ├── W02/                     # Week 2: Simple RAG
+    │   ├── 01-exercises/        # Exercises
+    │   │   └── 01-simple-rag/
+    │   ├── 02-assignments/      # Assignments
+    │   ├── 03-learnings/        # Learning notes
+    │   └── README.md
+    ├── W03/                     # Week 3: RAG with Model Evaluation
+    │   ├── 01-exercises/        # Exercises
+    │   │   └── 01-rag-with-model-evaluation/
     │   ├── 02-assignments/      # Assignments
     │   ├── 03-learnings/        # Learning notes
     │   └── README.md
@@ -93,42 +103,89 @@ pip install -r requirements.txt
 
 ## 📅 Recommended Learning Path
 
-**Note:** While weeks are numbered 3, 6, 7, 8, 9, 10, 11, here's the optimal order to tackle them:
+**Note:** Here's the optimal order to tackle the weeks:
 
-1. **Week 3** - Prompt Engineering & QA (8-12h) ← **START HERE**
-2. **Week 8** - Multimodal AI (10-15h)
-3. **Week 9** - LlamaIndex Basics (12-16h)
-4. **Week 10** - Advanced RAG (12-16h)
-5. **Week 7** - Group Project (15-20h)
-6. **Week 6** - n8n Agents (4-6h, optional)
+1. **Week 1** - Prompt Engineering (3-4h) ← **START HERE**
+2. **Week 2** - Simple RAG (4-6h)
+3. **Week 3** - RAG with Model Evaluation (4-6h)
+4. **Week 8** - Multimodal AI (10-15h)
+5. **Week 9** - LlamaIndex Basics (12-16h)
+6. **Week 10** - Advanced RAG (12-16h)
+7. **Week 7** - Group Project (15-20h)
+8. **Week 6** - n8n Agents (4-6h, optional)
 
 ---
 
 ## 📖 Week-by-Week Guide (Chronological Order)
 
-### **Week 3: Prompt Engineering & QA**
+### **Week 1: Prompt Engineering**
+**Location:** [`learning-path/W01/`](./learning-path/W01/)
+
+**Structure:**
+- **Exercises:** [`01-exercises/01-prompt-engineering/`](./learning-path/W01/01-exercises/01-prompt-engineering/)
+- **Assignments:** [`02-assignments/`](./learning-path/W01/02-assignments/)
+- **Learnings:** [`03-learnings/`](./learning-path/W01/03-learnings/)
+
+**Key Files:**
+- `W3__Prompt_Engineering.ipynb` - Prompt engineering notebook
+- `prompt_engineering.py` - Standalone Python script
+
+**What I Have Learned:**
+- Designed system prompts for LLMs
+- Model interaction using Hugging Face Transformers
+- Pipeline vs Direct Model Loading
+- Device optimization (CPU/GPU)
+- Basic prompt engineering techniques
+
+**Key Concepts:** System prompts, Model loading, Device configuration, Prompt design
+
+---
+
+### **Week 2: Simple RAG**
+**Location:** [`learning-path/W02/`](./learning-path/W02/)
+
+**Structure:**
+- **Exercises:** [`01-exercises/01-simple-rag/`](./learning-path/W02/01-exercises/01-simple-rag/)
+- **Assignments:** [`02-assignments/`](./learning-path/W02/02-assignments/)
+- **Learnings:** [`03-learnings/`](./learning-path/W02/03-learnings/)
+
+**Key Files:**
+- `W3__Simple_Rag.ipynb` - Simple RAG notebook
+- `simple_rag.py` - Standalone Python script
+- `faq_data.csv` - Sample FAQ data
+
+**What I Have Learned:**
+- Built Q&A databases using LangChain
+- Implemented FAISS vector database
+- Created simple RAG (Retrieval-Augmented Generation) systems
+- Integrated HuggingFace embeddings
+- Built QA chatbot with confidence scoring
+
+**Key Concepts:** LangChain, FAISS, Vector embeddings, RAG pipeline, Document retrieval
+
+---
+
+### **Week 3: RAG with Model Evaluation**
 **Location:** [`learning-path/W03/`](./learning-path/W03/)
 
 **Structure:**
-- **Exercises:** [`01-exercises/`](./learning-path/W03/01-exercises/)
-  - `01-prompt-engineering/` - Prompt engineering basics
-  - `02-simple-rag/` - Simple RAG with QA chatbot
-  - `03-rag-with-model-evaluation/` - RAG system with evaluation
+- **Exercises:** [`01-exercises/01-rag-with-model-evaluation/`](./learning-path/W03/01-exercises/01-rag-with-model-evaluation/)
 - **Assignments:** [`02-assignments/`](./learning-path/W03/02-assignments/)
 - **Learnings:** [`03-learnings/`](./learning-path/W03/03-learnings/)
 
 **Key Files:**
-- `W3__Prompt_Engineering_Basics.ipynb`
-- `W3__QA_Chatbot_Activity_w_Prompt_Engineering-1.ipynb`
-- `W3_RAG_System_Exercise.ipynb`
-- `W3_RAG_Assignment_Final.ipynb`
+- `W3_RAG_System_Exercise.ipynb` - RAG system exercise notebook
+- `rag_system_exercise.py` - Standalone Python script
+- `W3_RAG_Assignment_Final.ipynb` - Final assignment notebook
+- `rag-assignment-specification.md` - Assignment specification
 
 **What I Have Learned:**
-- Designed system prompts for LLMs
-- Built Q&A databases using Mistral-7B
-- Implemented FAISS vector database
-- Created RAG (Retrieval-Augmented Generation) systems
-- Compared multiple QA models
+- Built complete RAG systems with Mistral-7B
+- Generated business-specific Q&A databases
+- Implemented advanced FAISS indexing
+- Tested with answerable and unanswerable questions
+- Compared and ranked multiple QA models
+- Evaluated model performance (accuracy, confidence, speed)
 
 **Steps:**
 1. Choose a business context (e.g., "Tech Startup - AI Consultant")
@@ -138,7 +195,7 @@ pip install -r requirements.txt
 5. Test with answerable/unanswerable questions
 6. Compare 4+ QA models and rank them
 
-**Key Concepts:** System prompts, Vector embeddings, FAISS, RAG pipeline
+**Key Concepts:** Advanced RAG, Model evaluation, Performance metrics, Confidence scoring, Multi-model comparison
 
 ---
 
@@ -250,10 +307,19 @@ pip install -r requirements.txt
 
 All learning materials and assignments are located in [`learning-path/`](./learning-path/):
 
-- **Week 3:** [`W03/`](./learning-path/W03/) - Prompt Engineering & QA
-  - Exercises: Prompt engineering, Simple RAG, RAG with evaluation
-  - Assignments: RAG assignment notebook
-  - Learnings: Learning notes and reflections
+- **Week 1:** [`W01/`](./learning-path/W01/) - Prompt Engineering
+  - Exercise: Prompt engineering basics with Mistral-7B
+  - Files: Notebook, standalone Python script
+  - Learnings: System prompts, model interaction, device optimization
+- **Week 2:** [`W02/`](./learning-path/W02/) - Simple RAG
+  - Exercise: Simple RAG system with LangChain and FAISS
+  - Files: Notebook, standalone Python script, FAQ data
+  - Learnings: Vector embeddings, document retrieval, QA chatbot
+- **Week 3:** [`W03/`](./learning-path/W03/) - RAG with Model Evaluation
+  - Exercise: Complete RAG system with model comparison
+  - Assignment: RAG assignment with evaluation
+  - Files: Exercise notebook, assignment notebook, specification
+  - Learnings: Advanced RAG, model evaluation, performance metrics
 - **Week 6:** [`W06/`](./learning-path/W06/) - AI Agents with n8n (PowerPoint presentation)
 - **Week 7:** [`W07/`](./learning-path/W07/) - Group Assignment (PDF specification)
 - **Week 8:** [`W08/`](./learning-path/W08/) - Multimodal AI Applications
@@ -281,7 +347,7 @@ All learning materials and assignments are located in [`learning-path/`](./learn
 
 ## 💡 Tips for Success
 
-1. **Start with Week 3** - It's the foundation for everything
+1. **Start with Week 1** - It's the foundation for everything
 2. **Run every cell** - Don't just read, execute and experiment
 3. **Understand the why** - Don't copy-paste, learn the concepts
 4. **Document your work** - Save prompts, note what works
@@ -313,7 +379,9 @@ All learning materials and assignments are located in [`learning-path/`](./learn
 
 ## ✅ Progress Checklist
 
-- [ ] Week 3: Built RAG system with FAISS
+- [ ] Week 1: Completed prompt engineering exercises
+- [ ] Week 2: Built simple RAG system with FAISS
+- [ ] Week 3: Completed RAG assignment with model evaluation
 - [ ] Week 6: Completed n8n workflow (optional)
 - [ ] Week 7: Completed group project
 - [ ] Week 8: Deployed 3 multimodal apps
@@ -322,4 +390,4 @@ All learning materials and assignments are located in [`learning-path/`](./learn
 
 ---
 
-**Ready to start? Begin with Week 3! 🚀**
+**Ready to start? Begin with Week 1! 🚀**

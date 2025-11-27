@@ -6,6 +6,10 @@
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.inlayHints.functionReturnTypes": true,
   "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/.venv/lib/python*/site-packages"
+  ],
+  "python.analysis.stubPath": "${workspaceFolder}/.venv/lib/python*/site-packages",
   
   // Pylance/Pyright Settings for Better Navigation
   "python.languageServer": "Pylance",
@@ -17,10 +21,6 @@
     }
   ],
   
-  // Enable Go to Definition
-  "python.analysis.stubPath": "${workspaceFolder}/.venv/lib/python*/site-packages",
-  "python.analysis.extraPaths": [],
-  
   // File Associations
   "files.associations": {
     "*.py": "python"
@@ -29,5 +29,14 @@
   // Editor Settings
   "editor.gotoLocation.multipleDefinitions": "goto",
   "editor.gotoLocation.multipleReferences": "goto",
-  "editor.gotoLocation.multipleImplementations": "goto"
+  "editor.gotoLocation.multipleImplementations": "goto",
+  
+  // Jupyter Notebook Settings
+  "jupyter.defaultKernel": "python3",
+  "jupyter.kernels.filter": [
+    {
+      "type": "pythonEnvironment",
+      "path": "${workspaceFolder}/.venv"
+    }
+  ]
 }
