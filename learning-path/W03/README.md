@@ -1,39 +1,53 @@
-# Week 3: RAG & Prompt Engineering
+# Week 3: RAG with Model Evaluation
 
 ## 🚀 Quick Start
 
-1. **Start Learning**: Go to `exercises/01-prompt-engineering/`
-2. **Follow Path**: Complete exercises in order (01 → 02 → 03)
-3. **Review Concepts**: Use `learnings/` for quick reference
-4. **Your Assignment**: Check `assignments/` when ready
+1. **Prerequisites**: Complete **Week 1** (Prompt Engineering) and **Week 2** (Simple RAG) first
+2. **Start Exercise**: Go to `01-exercises/01-rag-with-model-evaluation/`
+3. **Review Concepts**: Use `03-learnings/` for quick reference
+4. **Complete Assignment**: Check `02-assignments/` for the main RAG assignment
 
 ## 📁 Structure
 
-### 📚 `exercises/` - Learning Materials
-Step-by-step tutorials to learn concepts. Follow numbered folders in order.
+### 📚 `01-exercises/` - Learning Materials
+Step-by-step tutorial to build a complete RAG system with model evaluation.
 
-### 🧠 `learnings/` - Concepts & Quick Reference
-Quick reference for concepts, Bloom's taxonomy, and comparisons.
+### 🧠 `03-learnings/` - Concepts & Quick Reference
+Quick reference for LangChain, FAISS, RAG, and Embeddings concepts.
 
-### 📝 `assignments/` - Assignment Requirements
-Assignment requirements, evaluation criteria, and starting template (students copy template to begin work).
+### 📝 `02-assignments/` - Assignment Requirements
+Main RAG assignment with specification, evaluation criteria, and working notebook.
 
 ## 📚 Learning Path
 
 ```
-exercises/01-prompt-engineering
+Week 1: Prompt Engineering
     ↓
-exercises/02-simple-rag
+Week 2: Simple RAG
     ↓
-exercises/03-rag-with-model-evaluation
-    ↓
-assignments/ (when ready)
-    
-learnings/ (reference anytime)
+Week 3: RAG with Model Evaluation (You are here)
+    ├── 01-exercises/01-rag-with-model-evaluation/
+    ├── 02-assignments/ (main assignment)
+    └── 03-learnings/ (reference)
 ```
 
-## 🎯 Clear Separation
+## 🎯 What You'll Learn
 
-- **Learn** → `exercises/` (step-by-step tutorials)
-- **Review** → `learnings/` (concepts & quick reference)
-- **Submit** → `assignments/` (requirements & templates)
+- **Complete RAG System**: Build a full RAG system with Mistral-7B
+- **Model Evaluation**: Compare and rank multiple QA models
+- **Advanced FAISS**: Implement advanced indexing and retrieval
+- **Business Context**: Create business-specific Q&A databases
+- **Performance Metrics**: Evaluate accuracy, confidence, and speed
+- **Answerable vs Unanswerable**: Test system with different question types
+
+## 📖 Key Files
+
+- `01-exercises/01-rag-with-model-evaluation/W3_RAG_System_Exercise.ipynb` - Exercise notebook
+- `01-exercises/01-rag-with-model-evaluation/rag_system_exercise.py` - Standalone Python script
+- `02-assignments/W3_RAG_Assignment_Final.ipynb` - Assignment notebook
+- `02-assignments/rag-assignment-specification.md` - Complete assignment specification
+
+## 🔗 Navigation
+
+- **Previous**: [`../W02/`](../W02/) - Week 2: Simple RAG
+- **Previous**: [`../W01/`](../W01/) - Week 1: Prompt Engineering

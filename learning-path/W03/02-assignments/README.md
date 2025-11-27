@@ -1,38 +1,70 @@
-# Week 3 Assignments
+# Week 3 Assignments - RAG System with Model Evaluation
 
 ## 📝 Purpose
-Assignment requirements, specification, and working notebook for the RAG (Retrieval-Augmented Generation) assignment.
+Main assignment for Week 3: Build a complete RAG system with model evaluation and comparison.
 
-## 📁 Structure
+## 📁 Files
 
-- **`rag-assignment-specification.md`** - Complete assignment specification with all 6 steps, technical requirements, deliverables, and evaluation criteria
-- **`W3_RAG_Assignment_Final.ipynb`** - Working notebook with educational content (ready for implementation)
-- **`requirements/`** - Reference materials and additional resources
-  - Contains reference notebooks and supporting documentation
+- **`rag-assignment-specification.md`** - Complete assignment specification with:
+  - All 6 steps (System Prompt → Database Generation → FAISS → Testing → Model Ranking)
+  - Technical requirements and dependencies
+  - Deliverables checklist
+  - Evaluation criteria
+- **`W3_RAG_Assignment_Final.ipynb`** - Working notebook with:
+  - Educational content (LangChain, FAISS, RAG, Embeddings overview)
+  - Assignment structure ready for implementation
+  - All 6 steps to complete
 
-## 🎯 How to Use
+## 🎯 Assignment Steps
 
-1. **Read Specification**: Review `rag-assignment-specification.md` for complete assignment requirements
-2. **Open Notebook**: Work directly in `W3_RAG_Assignment_Final.ipynb`
-3. **Follow Steps**: Complete all 6 steps as outlined in the specification:
-   - Step 1: Create an Assistant System Prompt
-   - Step 2: Generate Business Database Content
-   - Step 3: Implement FAISS Vector Database
-   - Step 4: Create Test Questions
-   - Step 5: Implement and Test Questions
-   - Step 6: Model Experimentation and Ranking
-4. **Submit**: Submit your completed notebook link
+Complete all 6 steps in order:
+
+1. **Step 1**: Create an Assistant System Prompt
+   - Choose a business context (e.g., "Tech Startup - AI Consultant")
+   - Design system prompt defining AI role
+
+2. **Step 2**: Generate Business Database Content
+   - Use Mistral-7B to create 10-15 Q&A pairs
+   - Cover different aspects of your chosen business
+
+3. **Step 3**: Implement FAISS Vector Database
+   - Convert Q&A database into embeddings
+   - Build FAISS index for similarity search
+
+4. **Step 4**: Create Test Questions
+   - Generate answerable questions (from database)
+   - Generate unanswerable questions (outside database)
+
+5. **Step 5**: Implement and Test Questions
+   - Test RAG system with both question types
+   - Document results and performance
+
+6. **Step 6**: Model Experimentation and Ranking
+   - Test with 4+ QA models from Hugging Face
+   - Rank models by performance
+   - Compare accuracy, confidence, speed
+
+## 📖 How to Use
+
+1. **Prerequisites**: Complete Week 1 and Week 2 exercises first
+2. **Read Specification**: Review `rag-assignment-specification.md` thoroughly
+3. **Open Notebook**: Work in `W3_RAG_Assignment_Final.ipynb`
+4. **Follow Steps**: Complete all 6 steps in order
+5. **Submit**: Submit your completed notebook
 
 ## 📚 Prerequisites
 
-- Complete all exercises in `../exercises/` before starting your assignment
-- Have a HuggingFace token ready (get from https://huggingface.co/settings/tokens)
-- Google Colab or local environment with GPU support (recommended)
+- ✅ **Week 1**: Prompt Engineering completed
+- ✅ **Week 2**: Simple RAG exercise completed
+- ✅ **Week 3 Exercise**: RAG with Model Evaluation exercise completed
+- ✅ HuggingFace token ready (get from https://huggingface.co/settings/tokens)
+- ✅ Google Colab or local environment (GPU recommended)
 
-## 📋 Current Notebook Status
+## 🎯 Evaluation Criteria
 
-The `W3_RAG_Assignment_Final.ipynb` notebook currently contains:
-- ✅ Title, Overview, Learning Objectives, and Prerequisites
-- ✅ Educational Content: LangChain, FAISS, RAG, and Embeddings overview
-- ⏳ **Implementation cells need to be added** (Steps 1-6 from specification)
+- **Creativity** in business context and agentic role design
+- **Technical Implementation** of RAG pipeline with FAISS
+- **Quality Analysis** of different Q&A models
+- **Clear Documentation** with meaningful comments
+- **Critical Thinking** in model comparison and limitations analysis
 

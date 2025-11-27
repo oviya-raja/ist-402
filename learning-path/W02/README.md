@@ -1,39 +1,51 @@
-# Week 3: RAG & Prompt Engineering
+# Week 2: Simple RAG
 
 ## 🚀 Quick Start
 
-1. **Start Learning**: Go to `exercises/01-prompt-engineering/`
-2. **Follow Path**: Complete exercises in order (01 → 02 → 03)
-3. **Review Concepts**: Use `learnings/` for quick reference
-4. **Your Assignment**: Check `assignments/` when ready
+1. **Prerequisite**: Complete **Week 1** (Prompt Engineering) first
+2. **Start Learning**: Go to `01-exercises/01-simple-rag/`
+3. **Review Concepts**: Use `03-learnings/` for quick reference
+4. **Next Step**: Move to **Week 3** for RAG with Model Evaluation
 
 ## 📁 Structure
 
-### 📚 `exercises/` - Learning Materials
-Step-by-step tutorials to learn concepts. Follow numbered folders in order.
+### 📚 `01-exercises/` - Learning Materials
+Step-by-step tutorial to build a Simple RAG chatbot.
 
-### 🧠 `learnings/` - Concepts & Quick Reference
-Quick reference for concepts, Bloom's taxonomy, and comparisons.
+### 🧠 `03-learnings/` - Concepts & Quick Reference
+Quick reference for LangChain, FAISS, RAG, and Embeddings concepts.
 
-### 📝 `assignments/` - Assignment Requirements
-Assignment requirements, evaluation criteria, and starting template (students copy template to begin work).
+### 📝 `02-assignments/` - Assignment Requirements
+Assignment information (main RAG assignment is in Week 3).
 
 ## 📚 Learning Path
 
 ```
-exercises/01-prompt-engineering
+Week 1: Prompt Engineering
     ↓
-exercises/02-simple-rag
+Week 2: Simple RAG (You are here)
+    ├── 01-exercises/01-simple-rag/
+    ├── 03-learnings/ (reference)
+    └── 02-assignments/ (info)
     ↓
-exercises/03-rag-with-model-evaluation
-    ↓
-assignments/ (when ready)
-    
-learnings/ (reference anytime)
+Week 3: RAG with Model Evaluation
 ```
 
-## 🎯 Clear Separation
+## 🎯 What You'll Learn
 
-- **Learn** → `exercises/` (step-by-step tutorials)
-- **Review** → `learnings/` (concepts & quick reference)
-- **Submit** → `assignments/` (requirements & templates)
+- **LangChain**: Document management and FAISS integration
+- **FAISS**: Vector similarity search for fast retrieval
+- **Embeddings**: Converting text to numerical vectors
+- **RAG Pipeline**: Building a complete retrieval-augmented generation system
+- **Simple Chatbot**: Creating a FAQ-based question-answering system
+
+## 📖 Key Files
+
+- `01-exercises/01-simple-rag/W3__Simple_Rag.ipynb` - Main exercise notebook
+- `01-exercises/01-simple-rag/simple_rag.py` - Standalone Python script
+- `01-exercises/01-simple-rag/faq_data.csv` - Sample FAQ data
+
+## 🔗 Navigation
+
+- **Previous**: [`../W01/`](../W01/) - Week 1: Prompt Engineering
+- **Next**: [`../W03/`](../W03/) - Week 3: RAG with Model Evaluation
