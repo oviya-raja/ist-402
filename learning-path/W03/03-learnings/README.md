@@ -16,17 +16,26 @@ Quick reference for concepts, Bloom's taxonomy, and learning frameworks for Week
 
 ### **LangChain, FAISS, RAG & Embeddings Explanations:**
 
-The detailed explanations are in multiple locations:
+**📄 Easy Access - Markdown File (Week 2):**
+- **File:** [`../../W02/03-learnings/langchain-faiss-rag-embeddings.md`](../../W02/03-learnings/langchain-faiss-rag-embeddings.md) ⭐ **RECOMMENDED**
+- **Why Week 2?** These concepts are introduced in Week 2 (Simple RAG), so the detailed explanations are maintained there
+- **Contains:** Complete, detailed explanations of:
+  - **LangChain**: Framework overview, features, use cases, 2025 updates
+  - **FAISS**: Vector database explanation, performance, integration
+  - **RAG**: How it works, why it's revolutionary, 2025 capabilities
+  - **Embeddings**: What they are, how they work, types, examples
+  - **How They Work Together**: Complete pipeline explanation with examples
+  - **Industry Relevance**: Real-world applications and use cases
+  - **Getting Started Tips**: Installation order, best practices, common pitfalls
 
-1. **Primary Source - Week 2 Exercise:**
+**📓 Original Sources - Notebooks:**
+1. **Week 2 Exercise:**
    - **File:** [`../../W02/01-exercises/01-simple-rag/W3__Simple_Rag.ipynb`](../../W02/01-exercises/01-simple-rag/W3__Simple_Rag.ipynb)
    - **Location:** Cell 2 (Markdown cell)
-   - **Contains:** Complete explanations of LangChain, FAISS, RAG, Embeddings
 
-2. **Alternative Source - Week 3 Assignment:**
+2. **Week 3 Assignment:**
    - **File:** [`../02-assignments/W3_RAG_Assignment_Final.ipynb`](../02-assignments/W3_RAG_Assignment_Final.ipynb)
    - **Location:** Early markdown cells
-   - **Contains:** Similar detailed explanations
 
 ### **Model Evaluation & Comparison:**
 

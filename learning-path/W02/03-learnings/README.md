@@ -15,17 +15,20 @@ Quick reference for concepts, Bloom's taxonomy, and learning frameworks for Week
 
 ### **LangChain, FAISS, RAG & Embeddings Explanations:**
 
-The detailed explanations are in the **Week 2 exercise notebook**:
-
-- **File:** [`../01-exercises/01-simple-rag/W3__Simple_Rag.ipynb`](../01-exercises/01-simple-rag/W3__Simple_Rag.ipynb)
-- **Location:** Cell 2 (Markdown cell)
-- **Contains:** Complete explanations of:
+**📄 Easy Access - Markdown File:**
+- **File:** [`langchain-faiss-rag-embeddings.md`](./langchain-faiss-rag-embeddings.md) ⭐ **RECOMMENDED**
+- **Contains:** Complete, detailed explanations of:
   - **LangChain**: Framework overview, features, use cases, 2025 updates
   - **FAISS**: Vector database explanation, performance, integration
   - **RAG**: How it works, why it's revolutionary, 2025 capabilities
   - **Embeddings**: What they are, how they work, types, examples
   - **How They Work Together**: Complete pipeline explanation with examples
   - **Industry Relevance**: Real-world applications and use cases
+  - **Getting Started Tips**: Installation order, best practices, common pitfalls
+
+**📓 Original Source - Notebook:**
+- **File:** [`../01-exercises/01-simple-rag/W3__Simple_Rag.ipynb`](../01-exercises/01-simple-rag/W3__Simple_Rag.ipynb)
+- **Location:** Cell 2 (Markdown cell)
 
 ### **What You'll Find:**
 
