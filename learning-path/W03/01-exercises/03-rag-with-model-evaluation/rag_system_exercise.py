@@ -171,7 +171,7 @@ SIMILARITY_THRESHOLD = 0.7  # Threshold for determining if question is answerabl
 # DEVICE DETECTION & CONFIGURATION (Reused from prompt_engineering_basics.py)
 # ============================================================================
 
-def check_gpu_availability() -> Tuple[bool, str, str]:
+def check_gpu_availability() -> Tuple[bool, Optional[str], Optional[str]]:
     """Check if GPU is available."""
     try:
         if torch.cuda.is_available():
@@ -181,7 +181,7 @@ def check_gpu_availability() -> Tuple[bool, str, str]:
     return False, None, None
 
 
-def create_gpu_config(gpu_name: str, cuda_version: str) -> Dict[str, Any]:
+def create_gpu_config(gpu_name: Optional[str], cuda_version: Optional[str]) -> Dict[str, Any]:
     """Create GPU configuration dictionary."""
     return {
         "device": "cuda",
@@ -221,7 +221,7 @@ def get_device_configuration() -> Dict[str, Any]:
     
     is_gpu, gpu_name, cuda_version = check_gpu_availability()
     
-    if is_gpu:
+    if is_gpu and gpu_name and cuda_version:
         print(f"   ✅ GPU Available: {gpu_name}")
         print(f"   ✅ CUDA Version: {cuda_version}")
         return create_gpu_config(gpu_name, cuda_version)
@@ -276,7 +276,8 @@ def load_mistral_model(model_id: str, hf_token: str, device_config: Dict[str, An
             token=hf_token,
             dtype=device_config["torch_dtype"],
             low_cpu_mem_usage=True,
-        ).to("cpu")
+        )
+        model = model.to("cpu")  # type: ignore
     else:
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
@@ -517,7 +518,7 @@ def build_faiss_index(embeddings: np.ndarray) -> faiss.Index:
     """Build FAISS index from embeddings."""
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)  # L2 distance for similarity
-    index.add(embeddings)
+    index.add(embeddings)  # type: ignore
     return index
 
 
@@ -539,7 +540,7 @@ def search_similar_questions(
     query_embedding = query_embedding.astype('float32')
     
     # Search in FAISS index
-    distances, indices = faiss_index.search(query_embedding, top_k)
+    distances, indices = faiss_index.search(query_embedding, top_k)  # type: ignore
     
     results = []
     for idx, dist in zip(indices[0], distances[0]):
@@ -820,10 +821,21 @@ def evaluate_qa_model(
                 result = qa_pipeline(question=question, context=context)
                 inference_time = time.time() - start_time
                 
+                # Handle different return types from pipeline
+                if isinstance(result, dict):
+                    answer = result.get("answer", "")
+                    score = result.get("score", 0.0)
+                elif isinstance(result, list) and len(result) > 0:
+                    answer = result[0].get("answer", "") if isinstance(result[0], dict) else str(result[0])
+                    score = result[0].get("score", 0.0) if isinstance(result[0], dict) else 0.0
+                else:
+                    answer = str(result) if result else ""
+                    score = 0.0
+                
                 return {
                     "model_id": model_id,
-                    "answer": result.get("answer", ""),
-                    "score": result.get("score", 0.0),  # Confidence score (QA models provide this!)
+                    "answer": answer,
+                    "score": score,  # Confidence score (QA models provide this!)
                     "load_time": load_time,
                     "inference_time": inference_time,
                     "success": True,
@@ -1054,13 +1066,14 @@ def main() -> None:
         
         # Step 6: Rank QA models (test on answerable questions)
         test_questions = [qa["question"] for qa in answerable_qa[:5]]  # Use 5 questions for testing
-        model_rankings = rank_qa_models(
+        _model_rankings = rank_qa_models(
             qa_database, 
             embedding_model, 
             faiss_index, 
             hf_token,
             test_questions=test_questions
         )
+        # Rankings are printed inside rank_qa_models function
         
         # Final summary
         print("=" * 60)

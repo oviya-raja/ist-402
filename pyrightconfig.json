@@ -1,0 +1,21 @@
+{
+  "include": [
+    "learning-path"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "**/node_modules"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Darwin",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportUnusedImport": false,
+  "reportUnusedVariable": false,
+  "reportUnusedFunction": false,
+  "reportDuplicateImport": false,
+  "reportWildcardImportFromLibrary": false
+}
+

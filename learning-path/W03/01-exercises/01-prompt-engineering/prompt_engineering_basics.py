@@ -20,7 +20,7 @@ import sys
 import os
 import time
 import json
-from typing import Dict, Tuple, List, Any
+from typing import Dict, Tuple, List, Any, Optional
 
 # Try to import dotenv for .env file support
 try:
@@ -69,7 +69,7 @@ DEFAULT_MODEL = "mistral"
 # DEVICE DETECTION & CONFIGURATION
 # ============================================================================
 
-def check_gpu_availability() -> Tuple[bool, str, str]:
+def check_gpu_availability() -> Tuple[bool, Optional[str], Optional[str]]:
     """
     Check if GPU is available.
     
@@ -84,7 +84,7 @@ def check_gpu_availability() -> Tuple[bool, str, str]:
     return False, None, None
 
 
-def create_gpu_config(gpu_name: str, cuda_version: str) -> Dict[str, Any]:
+def create_gpu_config(gpu_name: Optional[str], cuda_version: Optional[str]) -> Dict[str, Any]:
     """Create GPU configuration dictionary."""
     return {
         "device": "cuda",
@@ -140,7 +140,7 @@ def get_device_configuration() -> Dict[str, Any]:
     
     is_gpu, gpu_name, cuda_version = check_gpu_availability()
     
-    if is_gpu:
+    if is_gpu and gpu_name and cuda_version:
         print(f"\n   ✅ Great! GPU Available: {gpu_name}")
         print(f"   ✅ CUDA Version: {cuda_version}")
         print("   🚀 Your system will run much faster with GPU!")
@@ -195,7 +195,7 @@ def load_tokenizer(model_id: str, hf_token: str) -> AutoTokenizer:
     return AutoTokenizer.from_pretrained(model_id, token=hf_token)
 
 
-def load_model_cpu(model_id: str, hf_token: str, torch_dtype: Any) -> AutoModelForCausalLM:
+def load_model_cpu(model_id: str, hf_token: str, torch_dtype: Any) -> AutoModelForCausalLM:  # type: ignore
     """Load model for CPU execution."""
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -203,12 +203,13 @@ def load_model_cpu(model_id: str, hf_token: str, torch_dtype: Any) -> AutoModelF
         dtype=torch_dtype,
         low_cpu_mem_usage=True,
     )
-    return model.to("cpu")
+    model_cpu = model.to("cpu")  # type: ignore
+    return model_cpu  # type: ignore
 
 
-def load_model_gpu(model_id: str, hf_token: str, torch_dtype: Any, device_map: str) -> AutoModelForCausalLM:
+def load_model_gpu(model_id: str, hf_token: str, torch_dtype: Any, device_map: str) -> AutoModelForCausalLM:  # type: ignore
     """Load model for GPU execution."""
-    return AutoModelForCausalLM.from_pretrained(
+    return AutoModelForCausalLM.from_pretrained(  # type: ignore
         model_id,
         token=hf_token,
         dtype=torch_dtype,

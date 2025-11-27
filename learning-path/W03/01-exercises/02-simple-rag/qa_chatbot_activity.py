@@ -19,9 +19,8 @@ The system:
 
 import sys
 import os
-import warnings
 import csv
-from typing import List, Tuple, Any, Dict
+from typing import List, Tuple, Any, Dict, Optional
 
 
 # Import required libraries
@@ -55,7 +54,7 @@ SIMILARITY_SEARCH_K = 2  # Number of top documents to retrieve
 # STEP 1: SETUP KNOWLEDGE BASE
 # ============================================================================
 
-def load_faq_from_csv(csv_file: str = "faq_data.csv") -> List[Tuple[str, str]]:
+def load_faq_from_csv(csv_file: str = "faq_data.csv") -> Optional[List[Tuple[str, str]]]:
     """
     Load FAQ data from a CSV file.
     
