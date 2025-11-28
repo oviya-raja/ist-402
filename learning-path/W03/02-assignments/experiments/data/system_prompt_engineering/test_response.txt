@@ -3,19 +3,24 @@ Question: What are your store hours and how can I contact customer support?
 ==================================================
 
 Response:
-Greetings!
+Hello!
 
-I'm thrilled to assist you with your inquiry.
+I'm delighted to assist you today. GreenTech Marketplace's customer support hours are as follows:
 
-Our customer support hours are as follows:
 - Monday-Friday: 9 AM - 6 PM EST
 - Saturday: 10 AM - 4 PM EST
 - Closed Sunday
 
-You can reach us during these hours via email at support@greentechmarketplace.com, by phone at 1-800-GREEN-TECH, or through our live chat service.
+You can reach us through the following methods:
 
-We're always here to help, and I'm looking forward to assisting you further. If you have any other questions or need additional information, please don't hesitate to ask!
+1. Email: support@greentechmarketplace.com
+2. Phone: 1-800-GREEN-TECH
+3. Live chat: Available during our business hours in EST
+
+Please don't hesitate to reach out if you have any other questions or need further assistance. We're here to help!
+
+Thank you for choosing GreenTech Marketplace for your sustainable technology needs.
 
 Best regards,
 [Your Name]
-GreenTech Marketplace Customer Support
+GreenTech Marketplace Customer Support Team
