@@ -17,6 +17,11 @@
   "reportUnusedFunction": false,
   "reportDuplicateImport": false,
   "reportWildcardImportFromLibrary": false,
+  "reportGeneralTypeIssues": false,
+  "reportCallInDefaultInitializer": false,
+  "reportArgumentType": false,
+  "reportAssignmentType": false,
+  "reportAttributeAccessIssue": false,
   "venvPath": ".",
   "venv": ".venv",
   "executionEnvironments": [

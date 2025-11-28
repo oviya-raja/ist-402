@@ -42,6 +42,21 @@
 # Purpose: Accelerate model loading and inference
 # Used for: Optimizing model performance, memory management
 
+# ragas>=0.1.0
+# Week: W3
+# Purpose: RAG evaluation framework for assessing RAG system quality
+# Used for: Evaluating retrieval quality, answer correctness, and RAG pipeline performance
+
+# datasets>=2.14.0
+# Week: W3
+# Purpose: Hugging Face datasets library for loading and processing datasets
+# Used for: Loading evaluation datasets, organizing Q&A pairs, data preprocessing
+
+# evaluate>=0.4.0
+# Week: W3
+# Purpose: Hugging Face evaluate library for computing ML metrics
+# Used for: BERTScore, SQuAD F1, and other evaluation metrics for model assessment
+
 # ============================================================================
 # WEEK 8: MULTIMODAL AI APPLICATIONS
 # ============================================================================
@@ -212,4 +227,7 @@ matplotlib>=3.7.0
 seaborn>=0.12.0
 python-dotenv>=1.0.0
 sentencepiece>=0.1.99
+ragas>=0.1.0
+datasets>=2.14.0
+evaluate>=0.4.0
 

@@ -1,0 +1,16 @@
+RAG PIPELINE CONFIGURATION
+==========================
+
+Retrieval Settings:
+- Top-K: 3
+- Similarity Threshold: 0.3
+
+Generation Settings:
+- Max New Tokens: 300
+- Temperature: 0.7
+
+Components:
+- Embedding Model: sentence-transformers/all-MiniLM-L6-v2
+- Vector Store: FAISS IndexFlatL2
+- LLM: Mistral-7B-Instruct-v0.3
+- Q&A Database: 20 pairs

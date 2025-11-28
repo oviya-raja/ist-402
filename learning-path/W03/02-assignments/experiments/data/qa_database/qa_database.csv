@@ -1,0 +1,7 @@
+question,answer,answerable,category
+2. Question?,How long is the warranty on your solar panels?,True,products
+3. Question?,"How long does it take for express shipping, and is there an additional fee?",True,products
+,"Yes, you can return unopened items within 30 days of receipt, as long as they are in their original packaging.",True,returns
+,Refunds are processed within 5-7 business days after we receive your returned item.,True,returns
+,The product must be unopened and in its original packaging to be eligible for a return under our 30-day return policy.,True,returns
+Question: What's your favorite movie of all time?,"I'm sorry, I'm unable to provide personal recommendations. However, I can help you find the latest deals on movies and TV shows available on our platform.",False,personal_advice
