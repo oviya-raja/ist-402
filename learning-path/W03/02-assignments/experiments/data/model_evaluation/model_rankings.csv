@@ -1,0 +1,7 @@
+rank,model_name,model_id,size,final_score,ragas_combined,ragas_faithfulness,ragas_answer_relevancy,ragas_context_precision,ragas_context_recall,ragas_answer_correctness,accuracy_combined,avg_response_time_ms,success_rate
+1,T5-QA-Generative,consciousAI/question-answering-generative-t5-v1-base-s-q-c,base,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2046.2169885635376,0.0
+2,RoBERTa-SQuAD2,deepset/roberta-base-squad2,base,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,119.53020095825195,0.0
+3,BERT-Large-SQuAD,google-bert/bert-large-cased-whole-word-masking-finetuned-squad,large,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,428.7588596343994,0.0
+4,DynamicRAG-8B,gasolsun/DynamicRAG-8B,8B,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+5,DistilBERT-SQuAD,distilbert-base-uncased-distilled-squad,small,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,68.93467903137207,0.0
+6,BERT-Tiny-SQuAD,mrm8488/bert-tiny-finetuned-squadv2,tiny,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.64215087890625,0.0
