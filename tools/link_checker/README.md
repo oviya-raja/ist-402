@@ -40,19 +40,19 @@ export OPENAI_API_KEY="your-api-key"  # Set API key for AI features
 ### Command Line
 
 ```bash
-# Basic usage (no OpenAI needed)
-python -m tools.link_checker.cli https://example.com
+# Basic usage
+python -m tools.link_checker.cli https://oviya-raja.github.io/ist-402/
 
 # Custom depth
-python -m tools.link_checker.cli https://example.com --depth 3
+python -m tools.link_checker.cli https://oviya-raja.github.io/ist-402/ --depth 3
 
-# Without AI analysis (no OpenAI needed)
-python -m tools.link_checker.cli https://example.com --depth 1 --no-ai
+# Without AI analysis
+python -m tools.link_checker.cli https://oviya-raja.github.io/ist-402/ --depth 1 --no-ai
 
 # Headless mode
-python -m tools.link_checker.cli --headless --no-ai
+python -m tools.link_checker.cli https://oviya-raja.github.io/ist-402/ --headless --no-ai
 
-# Default URL (GitHub Pages)
+# Default URL (uses https://oviya-raja.github.io/ist-402/)
 python -m tools.link_checker.cli
 ```
 
@@ -61,11 +61,11 @@ python -m tools.link_checker.cli
 ```python
 from tools.link_checker import LinkChecker
 
-# Create checker instance (no OpenAI needed)
+# Create checker instance
 checker = LinkChecker(
-    base_url="https://example.com",
+    base_url="https://oviya-raja.github.io/ist-402/",
     max_depth=2,
-    use_ai=False  # Disable AI - no OpenAI needed
+    use_ai=False
 )
 
 # Run check
@@ -113,23 +113,23 @@ tools/link_checker/
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      CLI (cli.py)                           │
-│                  Command-line Interface                      │
+│                  Command-line Interface                     │
 └──────────────────────┬──────────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  Runner (checker/runner.py)                 │
-│              Entry Point & Configuration                     │
+│              Entry Point & Configuration                    │
 └──────────────────────┬──────────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Engine (checker/engine.py)                      │
-│                  LinkChecker Class                           │
+│              Engine (checker/engine.py)                     │
+│                  LinkChecker Class                          │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │  • _check_links_on_page() - Recursive checking      │   │
-│  │  • _check_single_link() - Individual link check     │   │
-│  │  • _initialize_client() - MCP setup                │   │
+│  │  • _check_links_on_page() - Recursive checking       │   │
+│  │  • _check_single_link() - Individual link check      │   │
+│  │  • _initialize_client() - MCP setup                  │   │
 │  │  • _navigate_to_base() - Navigation                  │   │
 │  └──────────────────────────────────────────────────────┘   │
 └───────┬───────────────┬───────────────┬─────────────────────┘
@@ -137,7 +137,7 @@ tools/link_checker/
         ▼               ▼               ▼
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
 │  MCP Domain  │ │  Web Domain  │ │  AI Domain   │
-│              │ │              │ │  (Optional) │
+│              │ │              │ │  (Optional)  │
 │ • client.py  │ │ • url_parser │ │ • analyzer   │
 │ • error_     │ │ • html_      │ │ • prompts    │
 │   handler    │ │   parser     │ │              │
