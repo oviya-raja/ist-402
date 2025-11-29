@@ -222,16 +222,49 @@ knowledge-base/
 
 ### 4.1 Workflow Diagrams
 
-[Insert workflow diagrams here - create using Draw.io, Lucidchart, or Mermaid]
+All workflow diagrams are available in Mermaid format and ASCII format in `deliverables/2-workflow-documentation/workflow-diagrams/`.
 
-**Diagrams Needed:**
-1. Main workflow diagram (input → processing → output)
-2. Use case routing diagram
-3. Decision flow diagram
-4. Error handling flow diagram
-5. Data flow diagram
+**Diagrams Available:**
 
-[Reference `workflow-overview.md` for diagram content]
+1. **Main Workflow Diagram** (`main-workflow.mmd`)
+   - Shows complete flow: Input → Validation → Retrieval → Processing → Output
+   - Includes all processing modules (Job Analysis, Profile Matching, Fitment Calculator, Skill Gap Analyzer)
+   - ASCII version included for direct use in text-based documentation
+
+2. **Use Case Routing Diagram** (`use-case-routing.mmd`)
+   - Shows how agent identifies and routes to 5 use cases
+   - Includes clarification flow for ambiguous queries
+   - ASCII version included
+
+3. **Decision Flow Diagram** (`decision-flow.mmd`)
+   - Shows all decision points and branching logic
+   - Includes validation, routing, and fitment decisions
+   - ASCII version included
+
+4. **Error Handling Flow Diagram** (`error-handling-flow.mmd`)
+   - Shows error detection and handling strategies
+   - Includes all error types and recovery paths
+   - ASCII version included
+
+5. **Data Flow Diagram** (`data-flow.mmd`)
+   - Shows how data flows through the system
+   - Input → Processing → Output transformation
+   - ASCII version included
+
+6. **Integration Architecture Diagram** (`integration-architecture.mmd`)
+   - Shows integration points (User, Agent, Knowledge Base)
+   - Shows data flow between components
+   - ASCII version included
+
+**Diagram Rendering:**
+- Mermaid diagrams can be rendered using: https://mermaid.live
+- ASCII diagrams are ready for direct use (no rendering needed)
+- All diagrams are documented in `workflow-diagrams/README.md`
+
+**Note:** For PDF export, diagrams can be:
+- Included as ASCII diagrams (text-based, no rendering needed)
+- Rendered from Mermaid format to PNG/SVG using mermaid.live or VS Code extensions
+- Recreated in Draw.io/Lucidchart if preferred
 
 ### 4.2 Step-by-Step Process
 
