@@ -28,3 +28,5 @@ The `.cursorrules` file automatically loads learnings from this directory when s
 
 *This directory accumulates knowledge over time, making each assignment better than the last.*
 
+
+

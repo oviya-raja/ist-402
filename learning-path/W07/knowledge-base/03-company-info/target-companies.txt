@@ -236,3 +236,5 @@ SAP:
 - SAP-specific technologies (ABAP, HANA)
 - Business process understanding helpful
 
+
+
