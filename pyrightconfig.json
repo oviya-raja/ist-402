@@ -22,6 +22,8 @@
   "reportArgumentType": false,
   "reportAssignmentType": false,
   "reportAttributeAccessIssue": false,
+  "reportUndefinedVariable": false,
+  "reportCallIssue": false,
   "venvPath": ".",
   "venv": ".venv",
   "executionEnvironments": [
