@@ -1,0 +1,27 @@
+{
+  "use_case_id": "UC5",
+  "use_case_name": "Use Case 5: Generate Personalized Job Search Strategy",
+  "query": "I'm a final year student graduating in 6 months. I want to work at:\n- Priority 1: Google, Apple\n- Priority 2: Amazon, Microsoft, Tesla\n\nMy skills: Python, Java, React, SQL\nExperience: 1 internship, 2 projects\n\nCan you create a 6-month strategy to land a job at these companies?",
+  "response": "Hi! I'm here to help make your job search less stressful. Let\u2019s create a 6-month strategy to help you land a job at Google, Apple, Amazon, Microsoft, or Tesla. You've got the skills, now let's make a plan!\n\n### Step 1: Assess Your Profile Against Target Companies\n\n**Current Skills and Experience:**\n- **Languages:** Python, Java\n- **Frontend Framework:** React\n- **Database Management:** SQL\n- **Experience:** 1 internship, 2 projects\n\n### Step 2: Analyze Skill Fitment\n\n**Priority 1 Companies (Google, Apple):**\n- Typically require strong computer science fundamentals, proficiency in programming languages like Python and Java, and experience with frameworks/tools applicable to backend or frontend development.\n- Preferred skills: Cloud computing (e.g., Google Cloud, Azure), AI/ML, advanced problem-solving (data structures & algorithms).\n\n**Priority 2 Companies (Amazon, Microsoft, Tesla):**\n- Look for similar programming skills, with an emphasis on system design, scalability, and expertise in cloud services (AWS for Amazon, Azure for Microsoft).\n- Tesla may focus more on software applications pertinent to engineering systems and manufacturing technologies.\n\n### Step 3: Identify and Prioritize Learning Gaps\n\n1. **Critical Gaps (must-learn skills):**\n   - Data Structures and Algorithms: Reinforce problem-solving abilities.\n   - Basic knowledge of cloud platforms (GCP/AWS/Azure).\n   - Familiarize with AI/ML concepts (recommended for Google and Tesla).\n\n2. **Important Gaps (beneficial skills):**\n   - Advanced JavaScript libraries (other than React) or frameworks like Angular/Vue.js.\n   - System design principles.\n\n### Step 4: Create a Learning and Preparation Timeline\n\n**Month 1-2: Foundation Reinforcement**\n- Focus on strengthening fundamentals in Data Structures and Algorithms.\n- Use platforms like LeetCode, HackerRank, or CodeSignal for practice sessions.\n- Start with beginner-level problems and gradually increase complexity.\n\n**Month 3-4: Expand Technical Skills**\n- Learn cloud basics: Choose one platform (AWS, GCP, or Azure) and complete foundational certification courses online.\n- Engage in an AI/ML introductory course (consider platforms like Coursera or edX).\n\n**Month 5: Specialized Skill Development**\n- System design basics.\n- Advanced JavaScript: Explore and practice with additional frameworks beyond React.\n- Engage in real-world coding problems or an open-source project relevant to your target companies.\n\n**Month 6: Application and Interview Preparation**\n- Prepare your resume and tailor it for each company (highlight specific projects, skills aligned to company needs).\n- Practice interviews focusing on technical questions, system design, and behavioral competency.\n- Begin the application process, focusing first on Priority 1 companies, but keep opportunities for Priority 2 companies active as well.\n\n### Step 5: Mental Health and Well-being\n- Allocate time for relaxation and fun activities to manage stress effectively\u2014it's important to maintain a balanced life during this preparation.\n\n### Encouragement\nRemember to approach this strategy as a growth journey. Every skill you learn and apply brings you closer to your goal. You've got this!\n\nIf you need detailed job descriptions or more info on skill gaps specific to a company, just let me know. Let's keep the momentum going!",
+  "response_length": 3334,
+  "knowledge_base_used": false,
+  "expected_keywords": [
+    "strategy",
+    "plan",
+    "priority",
+    "steps",
+    "timeline"
+  ],
+  "found_keywords": [
+    "strategy",
+    "plan",
+    "priority",
+    "timeline"
+  ],
+  "keywords_found_count": 4,
+  "keywords_total": 5,
+  "thread_id": "thread_4ZtEOSGXmxXNtyGcuSm5cNp3",
+  "run_id": "run_499Cg7xAl1rnMij0TvNcf4YU",
+  "timestamp": "2025-11-29T16:52:51.511647",
+  "status": "passed"
+}

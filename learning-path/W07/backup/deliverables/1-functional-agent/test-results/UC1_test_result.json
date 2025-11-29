@@ -1,0 +1,27 @@
+{
+  "use_case_id": "UC1",
+  "use_case_name": "Use Case 1: Search and Filter Jobs by Multiple Criteria",
+  "query": "I'm a final year CS student with:\n- Skills: Python, JavaScript, React, Node.js, SQL, Docker\n- Experience: 2 internships (6 months total), 3 personal projects\n- Location preference: Remote or San Francisco\n- Target companies: Priority 1: Google, Apple; Priority 2: Amazon, Tesla\n\nCan you help me find relevant software engineering roles that match my profile?",
+  "response": "Based on your profile and the priority list of companies you provided, here are the most relevant software engineering roles that fit your skills, experience, and location preferences:\n\n### Priority 1 Companies:\n\n1. **Google:**\n   - **Role:** Software Engineer I\n   - **Fitment:** 82% \u2705 Good Match\n   - **Why it matches:**\n     - \u2705 Your skills in Python, JavaScript, React, Node.js align with Google's tech stack.\n     - \u26a0\ufe0f May need stronger algorithms practice for interviews\u30105:1\u2020source\u3011.\n     - **Job Search:** [Google Careers](https://careers.google.com/jobs/)\n\n2. **Apple:**\n   - **Role:** Software Engineer\n   - **Fitment:** 75% \u2705 Good Match\n   - **Why it matches:**\n     - \u2705 JavaScript and React are critical for frontend work.\n     - \u26a0\ufe0f May need knowledge in iOS/macOS for certain roles\u30105:6\u2020source\u3011.\n     - **Job Search:** [Apple Jobs](https://jobs.apple.com/)\n\n### Priority 2 Companies:\n\n1. **Amazon:**\n   - **Role:** Software Development Engineer I (SDE I)\n   - **Fitment:** 80% \u2705 Strong Match\n   - **Why it matches:**\n     - \u2705 Your full-stack skills are highly relevant.\n     - \u26a0\ufe0f Basic AWS knowledge might be beneficial\u30105:6\u2020source\u3011.\n     - **Job Search:** [Amazon Jobs](https://www.amazon.jobs/)\n\n2. **Tesla:**\n   - **Role:** Full-Stack Software Engineer\n   - **Fitment:** 72% \u2705 Moderate Match\n   - **Why it matches:**\n     - \u2705 Your skills in Python and JavaScript are valuable.\n     - \u26a0\ufe0f Interested in automotive roles, but not required\u30105:6\u2020source\u3011.\n     - **Job Search:** [Tesla Careers](https://www.tesla.com/careers)\n\n### Recommendations:\n\n- **Interview Preparation:** Focus on algorithms, data structures, and system design, which are common interview focus areas\u30105:13\u2020source\u3011.\n- **Skill Development:** Consider enhancing your skills in system design and AWS, as they are frequently mentioned across these roles\u30105:13\u2020source\u3011.\n- **Next Steps:** Apply to these roles and start preparing for interviews by practicing coding questions on platforms like LeetCode or HackerRank. This focused approach will save you time and help you make progress confidently in your job search\u30105:13\u2020source\u3011.\n\nYou've got a strong foundation! With targeted preparations, you'll be ready to impress at any of these top tech companies. Would you like help in creating a specific learning plan to address any skill gaps?",
+  "response_length": 2309,
+  "knowledge_base_used": true,
+  "expected_keywords": [
+    "Google",
+    "Apple",
+    "software engineering",
+    "Python",
+    "criteria"
+  ],
+  "found_keywords": [
+    "Google",
+    "Apple",
+    "software engineering",
+    "Python"
+  ],
+  "keywords_found_count": 4,
+  "keywords_total": 5,
+  "thread_id": "thread_nfr7lXV6qKus2urxsvRbZVda",
+  "run_id": "run_9awk8Md9V3bAmrDHgfGd9olM",
+  "timestamp": "2025-11-29T16:51:09.972908",
+  "status": "passed"
+}
