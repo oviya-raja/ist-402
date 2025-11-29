@@ -9,6 +9,8 @@ Usage:
     python run_objectives.py 0 1         # Run Objectives 0 and 1
     python run_objectives.py 0 1 2 3 4 5 6  # Run all objectives in sequence
     python run_objectives.py 4            # Run only Objective 4 (requires 0-3 first)
+    python run_objectives.py --no-pause   # Run all without pausing (non-interactive)
+    python run_objectives.py 0 1 2 -y    # Run with auto-continue (no pauses)
 """
 
 import sys
@@ -59,21 +61,27 @@ def run_objective(obj_num: int, globals_dict: dict) -> dict:
 def main():
     """Main entry point."""
     # Parse command line arguments
+    no_pause = False
+    objectives = []
+    
     if len(sys.argv) > 1:
-        # Run specific objectives
-        objectives = []
+        # Parse arguments
         for arg in sys.argv[1:]:
-            try:
-                obj_num = int(arg)
-                if obj_num < 0:
-                    raise ValueError("Objective number must be >= 0")
-                objectives.append(obj_num)
-            except ValueError:
-                print(f"❌ Invalid objective number: {arg}")
-                print("Usage: python run_objectives.py [0] [1] [2] [3] [4] [5] [6] ...")
-                sys.exit(1)
-    else:
-        # Run all objectives in sequence
+            if arg in ['--no-pause', '--non-interactive', '-y']:
+                no_pause = True
+            else:
+                try:
+                    obj_num = int(arg)
+                    if obj_num < 0:
+                        raise ValueError("Objective number must be >= 0")
+                    objectives.append(obj_num)
+                except ValueError:
+                    print(f"❌ Invalid objective number: {arg}")
+                    print("Usage: python run_objectives.py [0] [1] [2] [3] [4] [5] [6] [--no-pause]")
+                    sys.exit(1)
+    
+    # If no objectives specified, run all by default
+    if not objectives:
         objectives = [0, 1, 2, 3, 4, 5, 6]
     
     # Sort objectives to ensure correct order
@@ -99,8 +107,8 @@ def main():
         
         # Check if we should continue (only pause if running interactively)
         if idx < len(objectives) - 1:
-            # Check if stdin is a TTY (interactive terminal)
-            if sys.stdin.isatty():
+            # Check if stdin is a TTY (interactive terminal) and no_pause flag is not set
+            if sys.stdin.isatty() and not no_pause:
                 print(f"\n⏸️  Pausing before next objective...")
                 print("   (Press Enter to continue, or Ctrl+C to stop)")
                 try:

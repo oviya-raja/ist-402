@@ -1,0 +1,126 @@
+graph LR
+    subgraph "Input Layer"
+        UI[User Input]
+        CP[Company Priorities]
+        SP[Student Profile]
+        JP[Job Posting]
+    end
+    
+    subgraph "Processing Layer"
+        VAL[Validation]
+        KB[Knowledge Base]
+        JAM[Job Analysis Module]
+        PMM[Profile Matching Module]
+        FC[Fitment Calculator]
+        SGA[Skill Gap Analyzer]
+    end
+    
+    subgraph "Output Layer"
+        FP[Fitment Percentage]
+        MA[Match Analysis]
+        SG[Skill Gaps]
+        REC[Recommendations]
+        NS[Next Steps]
+    end
+    
+    UI --> VAL
+    CP --> VAL
+    SP --> VAL
+    JP --> VAL
+    
+    VAL --> KB
+    KB --> JAM
+    JAM --> PMM
+    PMM --> FC
+    FC --> SGA
+    
+    SGA --> FP
+    SGA --> MA
+    SGA --> SG
+    SGA --> REC
+    SGA --> NS
+    
+    style UI fill:#e1f5ff
+    style CP fill:#e1f5ff
+    style SP fill:#e1f5ff
+    style JP fill:#e1f5ff
+    style FP fill:#d4edda
+    style MA fill:#d4edda
+    style SG fill:#d4edda
+    style REC fill:#d4edda
+    style NS fill:#d4edda
+
+---
+
+## ASCII DIAGRAM VERSION
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    INPUT LAYER                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ User Input   │  │ Company      │  │ Student     │       │
+│  │              │  │ Priorities   │  │ Profile     │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
+│         │                 │                 │               │
+│         └──────────────────┴─────────────────┘               │
+│                          │                                    │
+│  ┌───────────────────────┴───────────────────────┐          │
+│  │            Job Posting (optional)              │          │
+│  └───────────────────────┬───────────────────────┘          │
+└──────────────────────────┼──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  PROCESSING LAYER                           │
+│                                                              │
+│  ┌──────────────┐                                           │
+│  │ Validation   │                                           │
+│  └──────┬───────┘                                           │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌──────────────┐                                           │
+│  │ Knowledge    │                                           │
+│  │ Base         │                                           │
+│  └──────┬───────┘                                           │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌──────────────┐                                           │
+│  │ Job Analysis │                                           │
+│  │ Module       │                                           │
+│  └──────┬───────┘                                           │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌──────────────┐                                           │
+│  │ Profile      │                                           │
+│  │ Matching     │                                           │
+│  │ Module       │                                           │
+│  └──────┬───────┘                                           │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌──────────────┐                                           │
+│  │ Fitment      │                                           │
+│  │ Calculator   │                                           │
+│  └──────┬───────┘                                           │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌──────────────┐                                           │
+│  │ Skill Gap    │                                           │
+│  │ Analyzer     │                                           │
+│  └──────┬───────┘                                           │
+└─────────┼──────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    OUTPUT LAYER                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ Fitment      │  │ Match        │  │ Skill        │       │
+│  │ Percentage   │  │ Analysis     │  │ Gaps         │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐                          │
+│  │ Recommend-   │  │ Next        │                          │
+│  │ ations       │  │ Steps       │                          │
+│  └──────────────┘  └──────────────┘                          │
+└──────────────────────────────────────────────────────────────┘
+```
+

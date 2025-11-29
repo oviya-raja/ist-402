@@ -248,5 +248,5 @@ Write your reflection addressing these questions:
 """)
         
         print("=" * 60)
-        print("✅ OBJECTIVE 6 COMPLETE")
+        print("✅ Objective 6 completed successfully!")
         print("=" * 60)

@@ -392,7 +392,7 @@ OUTPUT: Return a valid JSON array with EXACTLY {num_pairs} objects, each with "q
             print(f"\nAll {len(display_list)} pairs:\n")
         
         for i, pair in enumerate(display_list, 1):
-            answerable_str = "✅ Answerable" if pair.get("answerable") else "❌ Unanswerable"
+            answerable_str = "✅ Answerable" if pair.get("answerable") else "⚠️  Unanswerable"
             category = pair.get("category", "unknown")
             print(f"\n[{i}] {answerable_str} | Category: {category}")
             print(f"    Q: {pair.get('question', 'N/A')}")

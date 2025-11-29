@@ -1,0 +1,122 @@
+graph TB
+    subgraph "User Interface"
+        USER[Student User]
+    end
+    
+    subgraph "OpenAI Platform"
+        AGENT[Job Fitment Analysis Agent]
+        MODEL[GPT-4o Model]
+        TOOL[File Search Tool]
+    end
+    
+    subgraph "Knowledge Base Storage"
+        KB1[Student Profiles]
+        KB2[Job Analysis]
+        KB3[Company Info]
+        KB4[Fitment Analysis]
+        KB5[Skill Gaps]
+        KB6[Use Case Examples]
+    end
+    
+    USER -->|Text Input| AGENT
+    AGENT -->|Process| MODEL
+    MODEL -->|Retrieve| TOOL
+    TOOL -->|Search| KB1
+    TOOL -->|Search| KB2
+    TOOL -->|Search| KB3
+    TOOL -->|Search| KB4
+    TOOL -->|Search| KB5
+    TOOL -->|Search| KB6
+    
+    KB1 -->|Relevant Chunks| TOOL
+    KB2 -->|Relevant Chunks| TOOL
+    KB3 -->|Relevant Chunks| TOOL
+    KB4 -->|Relevant Chunks| TOOL
+    KB5 -->|Relevant Chunks| TOOL
+    KB6 -->|Relevant Chunks| TOOL
+    
+    TOOL -->|Information| MODEL
+    MODEL -->|Response| AGENT
+    AGENT -->|Text Output| USER
+    
+    style USER fill:#e1f5ff
+    style AGENT fill:#fff3cd
+    style MODEL fill:#f8d7da
+    style TOOL fill:#d1ecf1
+
+---
+
+## ASCII DIAGRAM VERSION
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    USER INTERFACE                           │
+│                                                              │
+│                    ┌──────────────┐                         │
+│                    │ Student User │                         │
+│                    └──────┬───────┘                         │
+│                           │                                  │
+│                           │ Text Input                       │
+└───────────────────────────┼──────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  OPENAI PLATFORM                            │
+│                                                              │
+│         ┌──────────────────────────────┐                    │
+│         │ Job Fitment Analysis Agent   │                    │
+│         └──────────────┬───────────────┘                    │
+│                        │                                     │
+│                        │ Process                             │
+│                        ▼                                     │
+│         ┌──────────────────────────────┐                    │
+│         │      GPT-4o Model            │                    │
+│         └──────────────┬───────────────┘                    │
+│                        │                                     │
+│                        │ Retrieve                           │
+│                        ▼                                     │
+│         ┌──────────────────────────────┐                    │
+│         │    File Search Tool          │                    │
+│         └──────────────┬───────────────┘                    │
+│                        │                                     │
+│                        │ Search                              │
+└────────────────────────┼─────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              KNOWLEDGE BASE STORAGE                          │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ Student      │  │ Job          │  │ Company      │      │
+│  │ Profiles     │  │ Analysis     │  │ Info         │      │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
+│         │                 │                 │              │
+│         │ Relevant Chunks │                 │              │
+│         │                 │                 │              │
+│  ┌──────┴───────┐  ┌──────┴───────┐  ┌──────┴───────┐      │
+│  │ Fitment      │  │ Skill        │  │ Use Case      │      │
+│  │ Analysis     │  │ Gaps         │  │ Examples      │      │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
+│         │                 │                 │              │
+│         └─────────────────┴─────────────────┘              │
+│                           │                                 │
+│                           │ Relevant Chunks                 │
+└───────────────────────────┼─────────────────────────────────┘
+                            │
+                            │ Information
+                            ▼
+                    [Back to File Search Tool]
+                            │
+                            │ Information
+                            ▼
+                    [Back to GPT-4o Model]
+                            │
+                            │ Response
+                            ▼
+                    [Back to Agent]
+                            │
+                            │ Text Output
+                            ▼
+                    [Back to Student User]
+```
+

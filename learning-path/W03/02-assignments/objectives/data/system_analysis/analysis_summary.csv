@@ -1,0 +1,8 @@
+Metric,Value
+Best Model,RoBERTa-SQuAD2
+Best Score,0.637
+Avg Accuracy,25.5%
+Avg Quality,48.6%
+Avg Response Time,0.569s
+Total Q&A Pairs,21
+FAISS Vectors,21

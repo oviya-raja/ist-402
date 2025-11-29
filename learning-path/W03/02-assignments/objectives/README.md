@@ -12,7 +12,9 @@ This directory contains extracted objective code from `W3_RAG_Assignment.ipynb` 
 - `objective_5.py` - Model Evaluation & Ranking
 - `objective_6.py` - System Analysis & Reflection
 - `objective_X.md` - Documentation for each objective
+- `objective_support.py` - **Shared utility class (DRY principle)** - Prerequisite validation and directory setup
 - `run_objectives.py` - **Runner script to execute objectives sequentially**
+- `CODE_REVIEW.md` - Comprehensive code quality review
 
 ## Usage
 
@@ -64,9 +66,21 @@ The runner maintains these variables across objectives:
 - `qa_database` - Q&A database list (from Objective 2)
 - `embedding_model` - SentenceTransformer model (from Objective 3)
 - `faiss_index` - FAISS index (from Objective 3)
+- `embed_query()` - Query embedding function (from Objective 3)
 - `rag_query()` - RAG pipeline function (from Objective 4)
 - `rankings_df`, `detailed_df` - Evaluation results (from Objective 5)
+- `ObjectiveSupport` - Shared utility class for DRY patterns
 - And all other globals created by each objective
+
+## Code Quality
+
+All objectives follow best practices:
+- **DRY**: Uses `ObjectiveSupport` class to eliminate duplication
+- **SOLID**: Single Responsibility Principle - each class has one purpose
+- **KISS**: Simple, focused code without over-engineering
+- **YAGNI**: No unnecessary abstractions or unused code
+
+See `CODE_REVIEW.md` for comprehensive code quality analysis.
 
 ## Example Output
 
@@ -100,4 +114,9 @@ The runner maintains these variables across objectives:
 **Error: Import errors**
 - Make sure you're in the `objectives` directory
 - Install required packages (Objective 0 handles this)
+
+**Error: `ObjectiveSupport` not found**
+- This is optional - objectives have graceful fallback
+- If you want to use it, ensure `objective_support.py` is in the same directory
+- Objectives will work without it (uses manual fallback code)
 

@@ -1,0 +1,90 @@
+graph TD
+    A[User Input Received] --> B{Parse Input}
+    B --> C{Identify Use Case}
+    
+    C -->|Company Priorities + Profile| UC1[Use Case 1: Find Jobs]
+    C -->|Job Posting + Profile| UC2[Use Case 2: Check Qualification]
+    C -->|Target Role + Profile| UC3[Use Case 3: Skill Gaps]
+    C -->|Multiple Jobs + Profile| UC4[Use Case 4: Compare Jobs]
+    C -->|Complete Profile + Timeline| UC5[Use Case 5: Generate Strategy]
+    C -->|Unclear| CLARIFY[Ask Clarifying Questions]
+    CLARIFY --> C
+    
+    UC1 --> PROCESS1[Process Use Case 1]
+    UC2 --> PROCESS2[Process Use Case 2]
+    UC3 --> PROCESS3[Process Use Case 3]
+    UC4 --> PROCESS4[Process Use Case 4]
+    UC5 --> PROCESS5[Process Use Case 5]
+    
+    PROCESS1 --> OUTPUT[Generate Response]
+    PROCESS2 --> OUTPUT
+    PROCESS3 --> OUTPUT
+    PROCESS4 --> OUTPUT
+    PROCESS5 --> OUTPUT
+    
+    OUTPUT --> USER[User Receives Result]
+    
+    style A fill:#e1f5ff
+    style USER fill:#d4edda
+    style C fill:#fff3cd
+    style CLARIFY fill:#ffeaa7
+
+---
+
+## ASCII DIAGRAM VERSION
+
+```
+┌──────────────────────┐
+│  USER INPUT RECEIVED │
+└──────────┬───────────┘
+           │
+           ▼
+    ┌──────────────┐
+    │  PARSE INPUT │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────┐
+    │ IDENTIFY USE CASE │
+    └──────┬────────────┘
+           │
+    ┌──────┴──────┬──────────┬──────────┬──────────┬──────────┐
+    │             │          │          │          │          │
+    ▼             ▼          ▼          ▼          ▼          ▼
+┌─────────┐  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
+│ UC 1:  │  │ UC 2:  │ │ UC 3:  │ │ UC 4:  │ │ UC 5:  │ │UNCLEAR │
+│ Find   │  │ Check  │ │ Skill  │ │Compare │ │Generate│ │        │
+│ Jobs   │  │ Qual   │ │ Gaps   │ │ Jobs   │ │Strategy│ │        │
+└───┬────┘  └───┬────┘ └───┬────┘ └───┬────┘ └───┬────┘ └───┬────┘
+    │           │          │          │          │          │
+    │           │          │          │          │          │
+    │           │          │          │          │          ▼
+    │           │          │          │          │    ┌──────────────┐
+    │           │          │          │          │    │ ASK          │
+    │           │          │          │          │    │ CLARIFYING   │
+    │           │          │          │          │    │ QUESTIONS    │
+    │           │          │          │          │    └──────┬───────┘
+    │           │          │          │          │          │
+    │           │          │          │          │          └──┐
+    │           │          │          │          │             │
+    └───────────┴──────────┴──────────┴──────────┴─────────────┘
+                │
+                ▼
+        ┌───────────────┐
+        │ PROCESS USE   │
+        │ CASE          │
+        └───────┬───────┘
+                │
+                ▼
+        ┌───────────────┐
+        │ GENERATE      │
+        │ RESPONSE      │
+        └───────┬───────┘
+                │
+                ▼
+        ┌───────────────┐
+        │ USER RECEIVES │
+        │ RESULT        │
+        └───────────────┘
+```
+

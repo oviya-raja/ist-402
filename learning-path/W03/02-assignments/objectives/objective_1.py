@@ -260,8 +260,10 @@ class SystemPromptEngineer:
         
         Args:
             env: EnvironmentConfig instance from Objective 0
+            support: Optional ObjectiveSupport instance for DRY patterns
         """
         self.env = env
+        self.support = support
         self.system_prompt = None
     
     def create_system_prompt(

@@ -1,0 +1,49 @@
+model,question,answer,expected,is_answerable,raw_confidence,response_time_ms,accuracy,quality,confidence,speed,robustness
+T5-QA-Generative,What is your return policy?,absolutely,30-day return policy with full refund,True,0.7,1891.4899826049805,-0.404,0.002,0.7,0.054,1.0
+T5-QA-Generative,How long does shipping take?,5-7 business days,Standard shipping takes 5-7 business days,True,0.7,629.1782855987549,0.54,0.608,0.7,0.685,1.0
+T5-QA-Generative,What are your customer service hours?,9 AM to 6 PM EST,Monday to Friday 9am to 5pm,True,0.7,1859.691858291626,0.551,0.707,0.7,0.07,1.0
+T5-QA-Generative,Do you offer warranty on products?,warranty may vary for other product categories,1 year warranty on all electronics,True,0.7,1243.75581741333,0.059,0.546,0.7,0.378,1.0
+T5-QA-Generative,How can I track my order?,by contacting our support team within 2 hours of placing your order,Use tracking number on our website,True,0.7,964.7729396820068,0.024,0.217,0.7,0.518,1.0
+T5-QA-Generative,What is the CEO's phone number?,get in touch with our support team,,False,0.7,1210.216999053955,0.0,0.0,0.2,0.395,0.6
+T5-QA-Generative,Will you have a Black Friday sale?,"unable to provide information about our current inventory, product descriptions, or shipping options",,False,0.7,1344.62308883667,0.0,0.0,0.2,0.328,0.6
+T5-QA-Generative,How do prices compare to Amazon?,shipping options available for GreenTech Marketplace orders,,False,0.7,687.5219345092773,0.0,0.0,0.2,0.656,0.6
+RoBERTa-SQuAD2,What is your return policy?,You can return any unopened item within 30 days of delivery for a full refund,30-day return policy with full refund,True,0.23881793022155762,616.6470050811768,0.414,0.657,0.239,0.692,1.0
+RoBERTa-SQuAD2,How long does shipping take?,5-7 business days,Standard shipping takes 5-7 business days,True,0.7828687374130823,59.42392349243164,0.54,0.608,0.783,0.97,1.0
+RoBERTa-SQuAD2,What are your customer service hours?,9 AM to 6 PM EST,Monday to Friday 9am to 5pm,True,0.2791532017290592,64.70704078674316,0.551,0.707,0.279,0.968,1.0
+RoBERTa-SQuAD2,Do you offer warranty on products?,Our solar panels come with a 3-year warranty,1 year warranty on all electronics,True,0.187269389629364,58.975934982299805,0.406,0.548,0.187,0.971,1.0
+RoBERTa-SQuAD2,How can I track my order?,All our orders are shipped with tracking numbers,Use tracking number on our website,True,0.018735764548182487,59.243202209472656,0.213,0.635,0.019,0.97,1.0
+RoBERTa-SQuAD2,What is the CEO's phone number?,Monday through Friday,,False,2.6335135771660134e-05,62.39676475524902,0.0,0.0,0.9,0.969,0.6
+RoBERTa-SQuAD2,Will you have a Black Friday sale?,I'm unable to provide information about our sales projections for next month,,False,0.02206188067793846,55.783987045288086,0.0,0.0,0.9,0.972,0.6
+RoBERTa-SQuAD2,How do prices compare to Amazon?,free standard shipping for orders over $75,,False,0.0003113684360869229,62.808990478515625,0.0,0.0,0.9,0.969,0.6
+BERT-Large-SQuAD,What is your return policy?,"You can return any unopened item within 30 days of delivery for a full refund, as long as it's in its original packaging",30-day return policy with full refund,True,0.4022494852542877,2582.7672481536865,0.292,0.612,0.402,0.0,1.0
+BERT-Large-SQuAD,How long does shipping take?,5-7 business days,Standard shipping takes 5-7 business days,True,0.48697627056390047,163.39683532714844,0.54,0.608,0.487,0.918,1.0
+BERT-Large-SQuAD,What are your customer service hours?,Monday through Friday from 9 AM to 6 PM EST,Monday to Friday 9am to 5pm,True,0.21722090244293213,165.74907302856445,0.772,0.871,0.217,0.917,1.0
+BERT-Large-SQuAD,Do you offer warranty on products?,Our solar panels come with a 3-year warranty,1 year warranty on all electronics,True,0.14856693148612976,182.2800636291504,0.406,0.548,0.149,0.909,1.0
+BERT-Large-SQuAD,How can I track my order?,tracking numbers,Use tracking number on our website,True,0.2528546154499054,148.18882942199707,0.131,0.736,0.253,0.926,1.0
+BERT-Large-SQuAD,What is the CEO's phone number?,get in touch with our support team,,False,0.010243367403745651,159.23404693603516,0.0,0.0,0.9,0.92,0.6
+BERT-Large-SQuAD,Will you have a Black Friday sale?,next month,,False,0.028153428807854652,151.56102180480957,0.0,0.0,0.9,0.924,0.6
+BERT-Large-SQuAD,How do prices compare to Amazon?,We offer standard shipping (5-7 business days) for free on orders over $75,,False,0.0684906542301178,147.65596389770508,0.0,0.0,0.9,0.926,0.6
+DynamicRAG-8B,What is your return policy?,". Can you tell me about your return policy? Absolutely! You can return any unopened item within 30 days of delivery for a full refund, as long as it's in its original packaging. Just reach out to our support team to initiate the",30-day return policy with full refund,True,0.006769631989300251,2199.4471549987793,0.234,0.654,0.007,0.0,1.0
+DynamicRAG-8B,How long does shipping take?,"it take for a standard delivery to arrive? Standard delivery at GreenTech Marketplace typically takes 5-7 business days, and it's free for orders over $75",Standard shipping takes 5-7 business days,True,0.008167740888893604,1422.5311279296875,0.403,0.749,0.008,0.289,1.0
+DynamicRAG-8B,What are your customer service hours?,"haven't received my tracking number yet, what should I do? If you haven't received your tracking number 24 hours after placing your order, please get in",Monday to Friday 9am to 5pm,True,0.002035095589235425,1420.3879833221436,-0.318,0.141,0.002,0.29,1.0
+DynamicRAG-8B,Do you offer warranty on products?,"for other product categories, so feel free to",1 year warranty on all electronics,True,0.008002563379704952,1395.5011367797852,-0.1,0.05,0.008,0.302,1.0
+DynamicRAG-8B,How can I track my order?,"number. I just placed an order, but I need to make a change",Use tracking number on our website,True,0.004626496694982052,1288.8448238372803,0.026,0.351,0.005,0.356,1.0
+DynamicRAG-8B,What is the CEO's phone number?,"hours after placing your order, please get in touch with our support team. They'll be able to provide you with your tracking number. What is",,False,0.0030898896511644125,1392.519235610962,0.0,0.0,0.9,0.304,0.6
+DynamicRAG-8B,Will you have a Black Friday sale?,Express shipping (2-3 business days) is available for an additional $15. All orders are shipped with tracking numbers,,False,0.0038294128607958555,1339.8659229278564,0.0,0.0,0.9,0.33,0.6
+DynamicRAG-8B,How do prices compare to Amazon?,"Is there a minimum order value for free shipping? Yes, we offer free standard shipping for orders over $75. How",,False,0.006970974616706371,1292.4988269805908,0.0,0.0,0.9,0.354,0.6
+DistilBERT-SQuAD,What is your return policy?,if I'm not satisfied with it,30-day return policy with full refund,True,0.06497791409492493,327.2898197174072,-0.168,0.144,0.065,0.836,1.0
+DistilBERT-SQuAD,How long does shipping take?,5-7 business days,Standard shipping takes 5-7 business days,True,0.5354689657688141,31.234025955200195,0.54,0.608,0.535,0.984,1.0
+DistilBERT-SQuAD,What are your customer service hours?,Monday through Friday from 9 AM to 6 PM EST,Monday to Friday 9am to 5pm,True,0.1377449408173561,30.039072036743164,0.772,0.871,0.138,0.985,1.0
+DistilBERT-SQuAD,Do you offer warranty on products?,I'd like to return a product I received,1 year warranty on all electronics,True,0.02456856332719326,31.76116943359375,0.015,0.187,0.025,0.984,1.0
+DistilBERT-SQuAD,How can I track my order?,contacting our support team,Use tracking number on our website,True,0.1420006901025772,30.310869216918945,0.054,0.189,0.142,0.985,1.0
+DistilBERT-SQuAD,What is the CEO's phone number?,please get in touch with our support team,,False,0.13086357712745667,31.2960147857666,0.0,0.0,0.9,0.984,0.6
+DistilBERT-SQuAD,Will you have a Black Friday sale?,I'm unable to provide information about our sales projections for next month,,False,0.10250664502382278,27.171850204467773,0.0,0.0,0.9,0.986,0.6
+DistilBERT-SQuAD,How do prices compare to Amazon?,5-7 business days,,False,0.2017936408519745,27.781963348388672,0.0,0.0,0.9,0.986,0.6
+MiniLM-SQuAD,What is your return policy?,Absolutely!,30-day return policy with full refund,True,0.08656546473503113,228.21593284606934,-0.217,0.0,0.087,0.886,1.0
+MiniLM-SQuAD,How long does shipping take?,5-7 business days,Standard shipping takes 5-7 business days,True,0.2551906923763454,34.98077392578125,0.54,0.608,0.255,0.983,1.0
+MiniLM-SQuAD,What are your customer service hours?,Monday through Friday,Monday to Friday 9am to 5pm,True,0.3593887388706207,33.113718032836914,0.534,0.822,0.359,0.983,1.0
+MiniLM-SQuAD,Do you offer warranty on products?,"Our solar panels come with a 3-year warranty to ensure you're covered for any manufacturing defects. However, the warranty may vary for other product categories",1 year warranty on all electronics,True,0.2313319593667984,34.74998474121094,0.286,0.442,0.231,0.983,1.0
+MiniLM-SQuAD,How can I track my order?,modify my order,Use tracking number on our website,True,0.033216312527656555,32.305002212524414,0.019,0.162,0.033,0.984,1.0
+MiniLM-SQuAD,What is the CEO's phone number?,get in touch with our support team,,False,5.243493433226831e-06,31.792879104614258,0.0,0.0,0.9,0.984,0.6
+MiniLM-SQuAD,Will you have a Black Friday sale?,next month,,False,3.186214962624945e-05,32.855987548828125,0.0,0.0,0.9,0.984,0.6
+MiniLM-SQuAD,How do prices compare to Amazon?,over $75,,False,0.0013693543151021004,28.610944747924805,0.0,0.0,0.9,0.986,0.6

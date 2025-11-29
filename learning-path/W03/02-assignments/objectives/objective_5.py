@@ -312,7 +312,8 @@ def show_cache_status():
     for name, path in [('contexts.csv', CONTEXTS_FILE), 
                        ('embeddings.csv', EMBEDDINGS_FILE),
                        ('raw_responses.csv', RAW_RESPONSES_FILE)]:
-        print(f"   {'✅' if os.path.exists(path) else '❌'} {name}")
+        status = '✅ Cached' if os.path.exists(path) else '📋 Not cached (will be created)'
+        print(f"   {status} | {name}")
 
 
 def load_or_fetch_contexts(force_refresh: bool = False) -> pd.DataFrame:
