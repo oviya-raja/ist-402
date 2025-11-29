@@ -96,6 +96,7 @@ logs/
 *.key
 .env.local
 .env.*.local
+.env.bak
 secrets.json
 credentials.json
 .claude
