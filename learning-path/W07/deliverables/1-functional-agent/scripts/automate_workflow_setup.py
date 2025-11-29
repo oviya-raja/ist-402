@@ -156,12 +156,19 @@ def verify_workflow_configuration(client, assistant_id):
     
     assistant = client.beta.assistants.retrieve(assistant_id)
     
+    # Check vector store - tool_resources is a Pydantic object
+    has_vector_store = False
+    if assistant.tool_resources and hasattr(assistant.tool_resources, 'file_search'):
+        file_search = assistant.tool_resources.file_search
+        if hasattr(file_search, 'vector_store_ids') and file_search.vector_store_ids:
+            has_vector_store = True
+    
     checks = {
         "Name": assistant.name == "Job Fitment Analysis Agent",
         "Model": assistant.model == "gpt-4o",
         "System Prompt": len(assistant.instructions) > 0,
         "File Search Tool": any(tool.type == "file_search" for tool in assistant.tools),
-        "Vector Store": assistant.tool_resources and assistant.tool_resources.get("file_search")
+        "Vector Store": has_vector_store
     }
     
     print("\n📋 Configuration Check:")
