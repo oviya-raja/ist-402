@@ -1,39 +1,54 @@
-# Week 3: RAG & Prompt Engineering
+# Week 1: Prompt Engineering
 
 ## 🚀 Quick Start
 
-1. **Start Learning**: Go to `exercises/01-prompt-engineering/`
-2. **Follow Path**: Complete exercises in order (01 → 02 → 03)
-3. **Review Concepts**: Use `learnings/` for quick reference
-4. **Your Assignment**: Check `assignments/` when ready
+1. **Start Learning**: Go to `01-exercises/01-prompt-engineering/`
+2. **Follow Path**: Complete the prompt engineering exercise
+3. **Review Concepts**: Use `03-learnings/` for quick reference
+4. **Your Assignment**: Check `02-assignments/` when ready
 
 ## 📁 Structure
 
-### 📚 `exercises/` - Learning Materials
-Step-by-step tutorials to learn concepts. Follow numbered folders in order.
+### 📚 `01-exercises/` - Learning Materials
+Step-by-step tutorials to learn prompt engineering concepts.
 
-### 🧠 `learnings/` - Concepts & Quick Reference
-Quick reference for concepts, Bloom's taxonomy, and comparisons.
+**Contents:**
+- `01-prompt-engineering/` - Introduction to prompt engineering with Mistral-7B
 
-### 📝 `assignments/` - Assignment Requirements
-Assignment requirements, evaluation criteria, and starting template (students copy template to begin work).
+### 🧠 `03-learnings/` - Concepts & Quick Reference
+Quick reference for prompt engineering concepts, best practices, and techniques.
+
+### 📝 `02-assignments/` - Assignment Requirements
+Assignment requirements and evaluation criteria.
 
 ## 📚 Learning Path
 
 ```
-exercises/01-prompt-engineering
+01-exercises/01-prompt-engineering
     ↓
-exercises/02-simple-rag
-    ↓
-exercises/03-rag-with-model-evaluation
-    ↓
-assignments/ (when ready)
+02-assignments/ (when ready)
     
-learnings/ (reference anytime)
+03-learnings/ (reference anytime)
 ```
+
+## 🎯 What You'll Learn
+
+- **System Prompts**: Creating effective system prompts for LLMs
+- **Prompt Engineering**: Techniques for better LLM responses
+- **Mistral-7B**: Working with instruction-tuned language models
+- **Business Context**: Applying prompts to real-world scenarios
+
+## 📖 Key Files
+
+- `01-exercises/01-prompt-engineering/prompt_engineering.py` - Standalone Python script
+- `01-exercises/01-prompt-engineering/README.md` - Exercise instructions
+
+## 🔗 Navigation
+
+- **Next**: [`../W02/`](../W02/) - Week 2: Simple RAG
 
 ## 🎯 Clear Separation
 
-- **Learn** → `exercises/` (step-by-step tutorials)
-- **Review** → `learnings/` (concepts & quick reference)
-- **Submit** → `assignments/` (requirements & templates)
+- **Learn** → `01-exercises/` (step-by-step tutorials)
+- **Review** → `03-learnings/` (concepts & quick reference)
+- **Submit** → `02-assignments/` (requirements & templates)

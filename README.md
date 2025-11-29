@@ -174,28 +174,35 @@ pip install -r requirements.txt
 - **Learnings:** [`03-learnings/`](./learning-path/W03/03-learnings/)
 
 **Key Files:**
-- `W3_RAG_System_Exercise.ipynb` - RAG system exercise notebook
-- `rag_system_exercise.py` - Standalone Python script
-- `W3_RAG_Assignment_Final.ipynb` - Final assignment notebook
-- `rag-assignment-specification.md` - Assignment specification
+- **Exercise:**
+  - `W3_RAG_System_Exercise.ipynb` - RAG system exercise notebook
+  - `rag_system_exercise.py` - Standalone Python script
+- **Assignment:**
+  - `W3_RAG_Assignment.ipynb` - Complete assignment notebook (6 objectives)
+  - `assignment.md` - Assignment specification
+  - `design/architecture.md` - Comprehensive architecture guide (interview-ready)
+  - `design/rag_pipeline.html` - Interactive RAG pipeline visualization
+  - `diagrams/rag-pipeline-architecture.png` - Pipeline diagram
 
 **What I Have Learned:**
-- Built complete RAG systems with Mistral-7B
-- Generated business-specific Q&A databases
-- Implemented advanced FAISS indexing
+- Built complete RAG systems with Mistral-7B-Instruct
+- Generated business-specific Q&A databases (21 pairs)
+- Implemented advanced FAISS indexing with semantic search
 - Tested with answerable and unanswerable questions
-- Compared and ranked multiple QA models
-- Evaluated model performance (accuracy, confidence, speed)
+- Compared and ranked 6 QA models on 5 metrics
+- Evaluated model performance (Accuracy, Confidence, Quality, Speed, Robustness)
+- Achieved 100% component reuse across 6 objectives
+- Created production-ready system with caching and optimization
 
-**Steps:**
-1. Choose a business context (e.g., "Tech Startup - AI Consultant")
-2. Create system prompt defining AI role
-3. Generate 10-15 Q&A pairs using Mistral
-4. Build FAISS index for similarity search
-5. Test with answerable/unanswerable questions
-6. Compare 4+ QA models and rank them
+**Assignment Objectives:**
+1. **Objective 1:** Create Assistant System Prompt with business context
+2. **Objective 2:** Generate Business Database Content (21 Q&A pairs)
+3. **Objective 3:** Implement FAISS Vector Database with embeddings
+4. **Objective 4:** Create Test Questions & RAG Pipeline
+5. **Objective 5:** Model Evaluation & Ranking (6 models, 5 metrics)
+6. **Objective 6:** System Analysis & Reflection
 
-**Key Concepts:** Advanced RAG, Model evaluation, Performance metrics, Confidence scoring, Multi-model comparison
+**Key Concepts:** Advanced RAG, Model evaluation, Performance metrics, Confidence calibration, Multi-model comparison, Component reuse, Production-ready design
 
 ---
 
@@ -317,9 +324,10 @@ All learning materials and assignments are located in [`learning-path/`](./learn
   - Learnings: Vector embeddings, document retrieval, QA chatbot
 - **Week 3:** [`W03/`](./learning-path/W03/) - RAG with Model Evaluation
   - Exercise: Complete RAG system with model comparison
-  - Assignment: RAG assignment with evaluation
-  - Files: Exercise notebook, assignment notebook, specification
-  - Learnings: Advanced RAG, model evaluation, performance metrics
+  - Assignment: RAG assignment with 6 objectives and comprehensive evaluation
+  - Files: Exercise notebook, assignment notebook, architecture documentation, visualizations
+  - Learnings: Advanced RAG, model evaluation, performance metrics, component reuse
+  - Documentation: Architecture guide, interactive diagrams, interview-ready materials
 - **Week 6:** [`W06/`](./learning-path/W06/) - AI Agents with n8n (PowerPoint presentation)
 - **Week 7:** [`W07/`](./learning-path/W07/) - Group Assignment (PDF specification)
 - **Week 8:** [`W08/`](./learning-path/W08/) - Multimodal AI Applications

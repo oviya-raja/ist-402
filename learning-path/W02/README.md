@@ -12,8 +12,14 @@
 ### 📚 `01-exercises/` - Learning Materials
 Step-by-step tutorial to build a Simple RAG chatbot.
 
+**Contents:**
+- `01-simple-rag/` - Complete RAG implementation with LangChain and FAISS
+
 ### 🧠 `03-learnings/` - Concepts & Quick Reference
 Quick reference for LangChain, FAISS, RAG, and Embeddings concepts.
+
+**Contents:**
+- `langchain-faiss-rag-embeddings.md` - Comprehensive guide to RAG concepts
 
 ### 📝 `02-assignments/` - Assignment Requirements
 Assignment information (main RAG assignment is in Week 3).
@@ -41,9 +47,10 @@ Week 3: RAG with Model Evaluation
 
 ## 📖 Key Files
 
-- `01-exercises/01-simple-rag/W3__Simple_Rag.ipynb` - Main exercise notebook
 - `01-exercises/01-simple-rag/simple_rag.py` - Standalone Python script
 - `01-exercises/01-simple-rag/faq_data.csv` - Sample FAQ data
+- `01-exercises/01-simple-rag/README.md` - Exercise instructions
+- `03-learnings/langchain-faiss-rag-embeddings.md` - RAG concepts guide
 
 ## 🔗 Navigation
 
