@@ -30,6 +30,14 @@ try:
 except ImportError as e:
     raise ImportError(f"Missing: {e}. Run: pip install faiss-cpu sentence-transformers numpy pandas")
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 
 def validate_prerequisites():
     """Ensure Objective 1 and 2 were run first."""
@@ -47,9 +55,12 @@ def validate_prerequisites():
 # SECTION 2: CONFIGURATION
 # ============================================================================
 
-# Output directory for FAISS index and embeddings
+# Output directory for FAISS index and embeddings (using ObjectiveSupport if available)
 OUTPUT_DIR = "data/vector_database"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+if _support:
+    OUTPUT_DIR = _support.setup_output_dir(OUTPUT_DIR)
+else:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Embedding model - lightweight and efficient
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
@@ -386,18 +397,23 @@ def verify_objective3():
 # EXECUTION - Uses env from Objective 0, wrapped with timing
 # ============================================================================
 
-# Verify env is available from Objective 0
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
-
-# Verify prerequisites from Objective 1 and Objective 2
-if 'system_prompt' not in globals():
-    raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
-
-if 'qa_database' not in globals():
-    raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
-
-print("✅ Prerequisites validated (env, system_prompt, qa_database)")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)',
+        'system_prompt': 'Objective 1',
+        'qa_database': 'Objective 2'
+    }, globals())
+    print("✅ Prerequisites validated (env, system_prompt, qa_database)")
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+    if 'system_prompt' not in globals():
+        raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
+    if 'qa_database' not in globals():
+        raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
+    print("✅ Prerequisites validated (env, system_prompt, qa_database)")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 3 workflow with timing

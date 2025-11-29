@@ -39,6 +39,14 @@ try:
 except ImportError as e:
     raise ImportError(f"Missing: {e}. Run: pip install numpy pandas torch")
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 
 def validate_prerequisites():
     """Ensure Objectives 0, 1, 2, and 3 were run first."""
@@ -72,9 +80,12 @@ def validate_prerequisites():
 # SECTION 2: CONFIGURATION
 # ============================================================================
 
-# Output directory
+# Output directory (using ObjectiveSupport if available)
 OUTPUT_DIR = "data/rag_pipeline"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+if _support:
+    OUTPUT_DIR = _support.setup_output_dir(OUTPUT_DIR)
+else:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ============================================================================
 # RAG CONFIGURATION PARAMETERS EXPLAINED
@@ -514,24 +525,31 @@ def verify_objective4():
 # SECTION 8: EXECUTION - Uses env from Objective 0, wrapped with timing
 # ============================================================================
 
-# Verify env is available from Objective 0
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
-
-# Verify prerequisites from Objectives 1, 2, and 3
-if 'system_prompt' not in globals():
-    raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
-
-if 'inference_engine' not in globals():
-    raise RuntimeError("❌ 'inference_engine' not found! Please run Objective 1 first.")
-
-if 'qa_database' not in globals():
-    raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
-
-if 'embedding_model' not in globals() or 'faiss_index' not in globals() or 'embed_query' not in globals():
-    raise RuntimeError("❌ Missing Objective 3 components! Please run Objective 3 first.")
-
-print("✅ Prerequisites validated (env, system_prompt, inference_engine, qa_database, embedding_model, faiss_index, embed_query)")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)',
+        'system_prompt': 'Objective 1',
+        'inference_engine': 'Objective 1',
+        'qa_database': 'Objective 2',
+        'embedding_model': 'Objective 3',
+        'faiss_index': 'Objective 3',
+        'embed_query': 'Objective 3'
+    }, globals())
+    print("✅ Prerequisites validated (env, system_prompt, inference_engine, qa_database, embedding_model, faiss_index, embed_query)")
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+    if 'system_prompt' not in globals():
+        raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
+    if 'inference_engine' not in globals():
+        raise RuntimeError("❌ 'inference_engine' not found! Please run Objective 1 first.")
+    if 'qa_database' not in globals():
+        raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
+    if 'embedding_model' not in globals() or 'faiss_index' not in globals() or 'embed_query' not in globals():
+        raise RuntimeError("❌ Missing Objective 3 components! Please run Objective 3 first.")
+    print("✅ Prerequisites validated (env, system_prompt, inference_engine, qa_database, embedding_model, faiss_index, embed_query)")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 4 workflow with timing

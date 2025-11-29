@@ -169,10 +169,10 @@ This objective has **two parts**:
 <summary><b>📤 Outputs</b> (Click to expand)</summary>
 
 **Files Created:**
-- `metrics_summary.csv` - Quantitative metrics summary
+- `analysis_summary.csv` - Quantitative metrics summary
 
 **Global Variables:**
-- `system_analysis` - Dictionary containing all analysis results
+- None (analysis results are displayed and saved to CSV, not stored in globals)
 
 </details>
 
@@ -185,7 +185,7 @@ This objective has **two parts**:
 - ✅ `rankings_df` and `detailed_df` from Objective 5 exist
 - ✅ `qa_database` from Objective 2 exists
 - ✅ `faiss_index` from Objective 3 exists
-- ✅ `metrics_summary.csv` with quantitative metrics
+- ✅ `analysis_summary.csv` with quantitative metrics
 
 **Performance:**
 - **Analysis time:** ~5-10 seconds (reads data from previous objectives)

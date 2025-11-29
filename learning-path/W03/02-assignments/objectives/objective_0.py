@@ -9,6 +9,14 @@ import sys
 import os
 from typing import Optional, Tuple
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 # ============================================================================
 # EnvironmentConfig Class - Single Source of Truth
 # ============================================================================
@@ -390,7 +398,7 @@ class ObjectiveTimingManager:
         env.timer.get_stats("Objective 1")
     """
     
-    def __init__(self, storage_file: str = "objective_timings.csv"):
+    def __init__(self, storage_file: str = "objective_timings.csv", support=None):
         """Initialize timing manager with persistent CSV storage."""
         import csv
         import time
@@ -403,8 +411,19 @@ class ObjectiveTimingManager:
         self.time = time
         self.datetime = datetime
         self.Path = Path
+        self.support = support
         
-        self.storage_file = Path(storage_file)
+        # Use ObjectiveSupport for output directory setup if available (DRY)
+        storage_path = Path(storage_file)
+        if self.support:
+            # Setup parent directory if needed
+            if storage_path.parent != Path('.'):
+                self.support.setup_output_dir(str(storage_path.parent))
+        else:
+            # Fallback: create parent directory manually
+            storage_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        self.storage_file = storage_path
         self.timings = self._load_timings()
         self.current_objective = None
         self.start_time = None
@@ -893,7 +912,8 @@ if env.import_libraries():
     env.print_summary()
     
     # Initialize timing manager and attach to env
-    timer = ObjectiveTimingManager(storage_file="data/objective_timings.csv")
+    # Pass _support for DRY output directory setup
+    timer = ObjectiveTimingManager(storage_file="data/objective_timings.csv", support=_support)
     env.timer = timer
     
     # Optional: Clear all timing data if RESET_TIMINGS is True

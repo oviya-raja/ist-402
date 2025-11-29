@@ -20,6 +20,14 @@ import json
 from typing import List, Dict, Optional
 import pandas as pd
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 # ============================================================================
 # QADatabaseGenerator Class - Centralized Objective 2 Logic
 # ============================================================================
@@ -113,7 +121,7 @@ REFUSAL RULES:
 OUTPUT: Return a valid JSON array with EXACTLY {num_pairs} objects, each with "question" and "answer" fields.
 """
     
-    def __init__(self, env, inference_engine, system_prompt: str):
+    def __init__(self, env, inference_engine, system_prompt: str, support=None):
         """
         Initialize with environment config, inference engine, and system prompt.
         
@@ -121,14 +129,19 @@ OUTPUT: Return a valid JSON array with EXACTLY {num_pairs} objects, each with "q
             env: EnvironmentConfig instance from Objective 0
             inference_engine: InferenceEngine instance from Objective 1
             system_prompt: System prompt from Objective 1
+            support: ObjectiveSupport instance (optional, for DRY)
         """
         self.env = env
         self.inference_engine = inference_engine
         self.system_prompt = system_prompt
+        self.support = support
         self.qa_database = []
         
-        # Create output directory
-        os.makedirs(self.OUTPUT_DIR, exist_ok=True)
+        # Create output directory using ObjectiveSupport if available (DRY)
+        if self.support:
+            self.OUTPUT_DIR = self.support.setup_output_dir(self.OUTPUT_DIR)
+        else:
+            os.makedirs(self.OUTPUT_DIR, exist_ok=True)
         
         # Calculate totals
         self.ANSWERABLE_TOTAL = len(self.QA_CATEGORIES) * self.PAIRS_PER_CATEGORY
@@ -491,17 +504,23 @@ OUTPUT: Return a valid JSON array with EXACTLY {num_pairs} objects, each with "q
 # EXECUTION - Uses env from Objective 0, inference_engine from Objective 1
 # ============================================================================
 
-# Verify prerequisites from Objective 0 and Objective 1
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
-
-if 'inference_engine' not in globals():
-    raise RuntimeError("❌ 'inference_engine' not found! Please run Objective 1 first.")
-
-if 'system_prompt' not in globals():
-    raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
-
-print("✅ Prerequisites validated (env, inference_engine, system_prompt)")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)',
+        'inference_engine': 'Objective 1',
+        'system_prompt': 'Objective 1'
+    }, globals())
+    print("✅ Prerequisites validated (env, inference_engine, system_prompt)")
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+    if 'inference_engine' not in globals():
+        raise RuntimeError("❌ 'inference_engine' not found! Please run Objective 1 first.")
+    if 'system_prompt' not in globals():
+        raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
+    print("✅ Prerequisites validated (env, inference_engine, system_prompt)")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 2 workflow with timing
@@ -511,7 +530,8 @@ with env.timer.objective(ObjectiveNames.OBJECTIVE_2):
     print("Objective 2: Generating Q&A Database\n")
     
     # Create QADatabaseGenerator instance (reuses InferenceEngine and env!)
-    qa_generator = QADatabaseGenerator(env, inference_engine, system_prompt)
+    # Pass _support for DRY output directory setup
+    qa_generator = QADatabaseGenerator(env, inference_engine, system_prompt, support=_support)
     
     # Generate full Q&A database
     qa_database = qa_generator.generate_full_database()

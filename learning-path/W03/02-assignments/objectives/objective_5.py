@@ -39,6 +39,14 @@ from typing import Dict, Tuple, List, Optional, Callable
 import torch
 from transformers import pipeline
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 # ============================================================================
 # VERIFY DEPENDENCIES FROM OBJECTIVES 0-4
 # ============================================================================
@@ -223,7 +231,10 @@ print("✅ ScorePack loaded")
 # CONFIGURATION
 # ============================================================================
 OUTPUT_DIR = "data/model_evaluation"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+if _support:
+    OUTPUT_DIR = _support.setup_output_dir(OUTPUT_DIR)
+else:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Cache files
 CONTEXTS_FILE = os.path.join(OUTPUT_DIR, "contexts.csv")
@@ -244,11 +255,13 @@ print(f"🖥️  Device: {'GPU' if DEVICE == 0 else 'CPU'}")
 # MODELS TO EVALUATE (6 models: 5 extractive + 1 generative)
 # ============================================================================
 MODELS_CONFIG = [
+    # Required models (4)
     ("T5-QA-Generative", "consciousAI/question-answering-generative-t5-v1-base-s-q-c", "text2text-generation"),
     ("RoBERTa-SQuAD2", "deepset/roberta-base-squad2", "question-answering"),
     ("BERT-Large-SQuAD", "google-bert/bert-large-cased-whole-word-masking-finetuned-squad", "question-answering"),
+    ("DynamicRAG-8B", "gasolsun/DynamicRAG-8B", "question-answering"),
+    # Additional models (2)
     ("DistilBERT-SQuAD", "distilbert-base-uncased-distilled-squad", "question-answering"),
-    ("BERT-Tiny-SQuAD", "mrm8488/bert-tiny-finetuned-squadv2", "question-answering"),
     ("MiniLM-SQuAD", "deepset/minilm-uncased-squad2", "question-answering"),
 ]
 
@@ -283,9 +296,9 @@ MODEL_SIZES = {
     'BERT-Large-SQuAD': ('Large', '340M'),
     'RoBERTa-SQuAD2': ('Base', '125M'),
     'T5-QA-Generative': ('Base', '220M'),
+    'DynamicRAG-8B': ('Base', '8B'),
     'DistilBERT-SQuAD': ('Small', '66M'),
     'MiniLM-SQuAD': ('Small', '33M'),
-    'BERT-Tiny-SQuAD': ('Tiny', '4M'),
 }
 
 # ============================================================================
@@ -601,24 +614,29 @@ def clean():
 # EXECUTION - Uses env from Objective 0, wrapped with timing
 # ============================================================================
 
-# Verify env is available from Objective 0
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
-
-# Verify prerequisites from Objectives 1-4
-if 'system_prompt' not in globals():
-    raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
-
-if 'qa_database' not in globals():
-    raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
-
-if 'embed_query' not in globals():
-    raise RuntimeError("❌ 'embed_query' not found! Please run Objective 3 first.")
-
-if 'rag_query' not in globals():
-    raise RuntimeError("❌ 'rag_query' not found! Please run Objective 4 first.")
-
-print("✅ Prerequisites validated (env, system_prompt, qa_database, embed_query, rag_query)")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)',
+        'system_prompt': 'Objective 1',
+        'qa_database': 'Objective 2',
+        'embed_query': 'Objective 3',
+        'rag_query': 'Objective 4'
+    }, globals())
+    print("✅ Prerequisites validated (env, system_prompt, qa_database, embed_query, rag_query)")
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+    if 'system_prompt' not in globals():
+        raise RuntimeError("❌ 'system_prompt' not found! Please run Objective 1 first.")
+    if 'qa_database' not in globals():
+        raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
+    if 'embed_query' not in globals():
+        raise RuntimeError("❌ 'embed_query' not found! Please run Objective 3 first.")
+    if 'rag_query' not in globals():
+        raise RuntimeError("❌ 'rag_query' not found! Please run Objective 4 first.")
+    print("✅ Prerequisites validated (env, system_prompt, qa_database, embed_query, rag_query)")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 5 workflow with timing

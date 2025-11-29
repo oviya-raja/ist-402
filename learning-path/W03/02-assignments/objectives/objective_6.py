@@ -17,9 +17,20 @@
 import os
 import pandas as pd
 
-# Output directory
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
+# Output directory (using ObjectiveSupport if available)
 OUTPUT_DIR = "data/system_analysis"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+if _support:
+    OUTPUT_DIR = _support.setup_output_dir(OUTPUT_DIR)
+else:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # ============================================================================
@@ -55,21 +66,27 @@ def verify_dependencies():
 # EXECUTION - Uses env from Objective 0, wrapped with timing
 # ============================================================================
 
-# Verify env is available from Objective 0
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
-
-# Verify prerequisites from Objectives 2, 3, and 5
-if 'qa_database' not in globals():
-    raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
-
-if 'faiss_index' not in globals():
-    raise RuntimeError("❌ 'faiss_index' not found! Please run Objective 3 first.")
-
-if 'rankings_df' not in globals() or 'detailed_df' not in globals():
-    raise RuntimeError("❌ 'rankings_df' or 'detailed_df' not found! Please run Objective 5 first.")
-
-print("✅ Prerequisites validated (env, qa_database, faiss_index, rankings_df, detailed_df)")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)',
+        'qa_database': 'Objective 2',
+        'faiss_index': 'Objective 3',
+        'rankings_df': 'Objective 5',
+        'detailed_df': 'Objective 5'
+    }, globals())
+    print("✅ Prerequisites validated (env, qa_database, faiss_index, rankings_df, detailed_df)")
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+    if 'qa_database' not in globals():
+        raise RuntimeError("❌ 'qa_database' not found! Please run Objective 2 first.")
+    if 'faiss_index' not in globals():
+        raise RuntimeError("❌ 'faiss_index' not found! Please run Objective 3 first.")
+    if 'rankings_df' not in globals() or 'detailed_df' not in globals():
+        raise RuntimeError("❌ 'rankings_df' or 'detailed_df' not found! Please run Objective 5 first.")
+    print("✅ Prerequisites validated (env, qa_database, faiss_index, rankings_df, detailed_df)")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 6 workflow with timing

@@ -18,6 +18,14 @@
 import os
 from typing import Optional, Tuple
 
+# Import ObjectiveSupport for DRY (optional - graceful fallback)
+try:
+    from objective_support import ObjectiveSupport
+    _support = ObjectiveSupport()
+except ImportError:
+    # Fallback if not available (for notebook extraction)
+    _support = None
+
 # ============================================================================
 # InferenceEngine Class - Model Loading, Generation & Verification
 # ============================================================================
@@ -246,7 +254,7 @@ class SystemPromptEngineer:
     TOP_P = 0.9
     OUTPUT_DIR = "data/system_prompt_engineering"
     
-    def __init__(self, env):
+    def __init__(self, env, support=None):
         """
         Initialize with environment config.
         
@@ -403,7 +411,11 @@ Keep responses concise but complete. Structure longer responses with clear secti
         if not self.system_prompt:
             raise ValueError("No system prompt created. Call create_system_prompt() first.")
         
-        os.makedirs(self.OUTPUT_DIR, exist_ok=True)
+        # Use ObjectiveSupport if available (DRY)
+        if self.support:
+            self.OUTPUT_DIR = self.support.setup_output_dir(self.OUTPUT_DIR)
+        else:
+            os.makedirs(self.OUTPUT_DIR, exist_ok=True)
         filepath = os.path.join(self.OUTPUT_DIR, filename)
         with open(filepath, 'w') as f:
             f.write(self.system_prompt)
@@ -412,7 +424,11 @@ Keep responses concise but complete. Structure longer responses with clear secti
     
     def save_response(self, response: str, question: str, filename: str = "test_response.txt") -> str:
         """Save generated response to file."""
-        os.makedirs(self.OUTPUT_DIR, exist_ok=True)
+        # Use ObjectiveSupport if available (DRY)
+        if self.support:
+            self.OUTPUT_DIR = self.support.setup_output_dir(self.OUTPUT_DIR)
+        else:
+            os.makedirs(self.OUTPUT_DIR, exist_ok=True)
         filepath = os.path.join(self.OUTPUT_DIR, filename)
         with open(filepath, 'w') as f:
             f.write(f"Question: {question}\n\n")
@@ -460,9 +476,15 @@ Keep responses concise but complete. Structure longer responses with clear secti
 # EXECUTION - Uses env from Objective 0, wrapped with timing
 # ============================================================================
 
-# Verify env is available from Objective 0
-if 'env' not in globals():
-    raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
+# Verify prerequisites using ObjectiveSupport (DRY)
+if _support:
+    _support.ensure_prerequisites({
+        'env': 'Objective 0 (Prerequisites & Setup)'
+    }, globals())
+else:
+    # Fallback to manual checking if ObjectiveSupport not available
+    if 'env' not in globals():
+        raise RuntimeError("❌ 'env' not found! Please run Objective 0 (Prerequisites & Setup) first.")
 
 # ============================================================================
 # EXECUTION - Orchestrates Objective 1 workflow
@@ -482,7 +504,8 @@ with env.timer.objective(ObjectiveNames.OBJECTIVE_1):
         inference_engine = InferenceEngine(env)
     
     # Create SystemPromptEngineer instance (prompt engineering only)
-    system_prompt_engineer = SystemPromptEngineer(env)
+    # Pass _support for DRY output directory setup
+    system_prompt_engineer = SystemPromptEngineer(env, support=_support)
     
     # Authenticate using env from Objective 0
     if env.hf_token:
