@@ -33,10 +33,7 @@
   
   // Jupyter Notebook Settings
   "jupyter.defaultKernel": "python3",
-  "jupyter.kernels.filter": [
-    {
-      "type": "pythonEnvironment",
-      "path": "${workspaceFolder}/.venv"
-    }
+  "jupyter.kernels.excludePythonEnvironments": [
+    "${workspaceFolder}/.venv"
   ]
 }
