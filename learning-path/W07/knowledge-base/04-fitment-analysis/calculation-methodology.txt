@@ -1,0 +1,237 @@
+FITMENT CALCULATION METHODOLOGY
+Job Fitment Analysis Agent - Knowledge Base
+
+This document explains how to calculate job fitment percentages for students.
+
+FITMENT CALCULATION OVERVIEW
+============================
+
+Fitment percentage represents how well a student's profile matches a job's requirements.
+Range: 0-100%
+Higher percentage = better match
+
+CALCULATION COMPONENTS
+======================
+
+1. REQUIRED SKILLS MATCH (Weight: 40%)
+--------------------------------------
+Most Critical Component
+
+Calculation:
+- Count required skills from job posting
+- Count how many student has
+- Match percentage = (student's required skills / total required skills) × 100
+
+Example:
+Job requires: Python, Java, AWS, SQL (4 required skills)
+Student has: Python, Java, AWS (3 skills)
+Match: 3/4 = 75%
+
+Weighted Score: 75% × 40% = 30 points
+
+2. PREFERRED SKILLS MATCH (Weight: 20%)
+----------------------------------------
+Bonus Points Component
+
+Calculation:
+- Count preferred skills from job posting
+- Count how many student has
+- Match percentage = (student's preferred skills / total preferred skills) × 100
+
+Example:
+Job prefers: Kubernetes, Docker, React (3 preferred skills)
+Student has: Docker, React (2 skills)
+Match: 2/3 = 67%
+
+Weighted Score: 67% × 20% = 13.4 points
+
+3. EXPERIENCE MATCH (Weight: 25%)
+----------------------------------
+Years of Experience Alignment
+
+Calculation:
+- Job requires: X years
+- Student has: Y years
+- If Y >= X: 100% match
+- If Y < X: (Y / X) × 100% (capped at 100%)
+
+Example 1:
+Job requires: 2+ years
+Student has: 3 years
+Match: 100% (exceeds requirement)
+
+Example 2:
+Job requires: 3+ years
+Student has: 1 year
+Match: 1/3 = 33%
+
+Weighted Score: 33% × 25% = 8.25 points
+
+Special Cases:
+- Entry-level/New grad: 0-1 years = 100% match
+- Internship: Currently enrolled = 100% match
+
+4. EDUCATION MATCH (Weight: 10%)
+----------------------------------
+Degree Level Alignment
+
+Calculation:
+- Job requires: BS/MS/PhD
+- Student has: BS/MS/PhD
+- Exact match: 100%
+- Higher degree: 100% (BS required, student has MS = 100%)
+- Lower degree: 50% (MS required, student has BS = 50%)
+- Related field: 75% (CS required, student has EE = 75%)
+
+Example:
+Job requires: BS in Computer Science
+Student has: BS in Computer Science
+Match: 100%
+
+Weighted Score: 100% × 10% = 10 points
+
+5. LOCATION MATCH (Weight: 5%)
+-------------------------------
+Work Arrangement Alignment
+
+Calculation:
+- Job offers: Remote/Hybrid/On-site
+- Student prefers: Remote/Hybrid/On-site
+- Exact match: 100%
+- Flexible student: 100% (student flexible = always match)
+- Mismatch: 0% (job on-site, student wants remote = 0%)
+
+Example:
+Job offers: Remote or San Francisco, CA
+Student prefers: Remote or San Francisco, CA
+Match: 100%
+
+Weighted Score: 100% × 5% = 5 points
+
+PRIORITY-BASED WEIGHTING
+=========================
+
+Priority 1 Companies (High Focus):
+- More detailed analysis
+- All components calculated
+- Detailed breakdown provided
+
+Priority 2 Companies (Moderate Focus):
+- Standard analysis
+- All components calculated
+- Summary breakdown
+
+Priority 3 Companies (Lower Focus):
+- Basic analysis
+- Key components only
+- High-level fitment
+
+FINAL FITMENT CALCULATION
+==========================
+
+Formula:
+Total Fitment = (Required Skills × 40%) + (Preferred Skills × 20%) + 
+                 (Experience × 25%) + (Education × 10%) + (Location × 5%)
+
+Example Calculation:
+====================
+
+Job Requirements:
+- Required Skills: Python, Java, AWS, SQL (4 skills)
+- Preferred Skills: Kubernetes, Docker (2 skills)
+- Experience: 2+ years
+- Education: BS in CS
+- Location: Remote or SF
+
+Student Profile:
+- Skills: Python, Java, AWS, Docker (3 required, 1 preferred)
+- Experience: 1.5 years
+- Education: BS in CS
+- Location: Remote or SF
+
+Calculation:
+1. Required Skills: 3/4 = 75% × 40% = 30 points
+2. Preferred Skills: 1/2 = 50% × 20% = 10 points
+3. Experience: 1.5/2 = 75% × 25% = 18.75 points
+4. Education: 100% × 10% = 10 points
+5. Location: 100% × 5% = 5 points
+
+Total Fitment: 30 + 10 + 18.75 + 10 + 5 = 73.75% ≈ 74%
+
+FITMENT INTERPRETATION
+======================
+
+90-100%: EXCELLENT MATCH
+-------------------------
+- Student meets or exceeds all requirements
+- Strong candidate
+- High confidence recommendation
+- Minor gaps only
+
+75-89%: GOOD MATCH
+------------------
+- Student meets most requirements
+- Competitive candidate
+- Some skill gaps but manageable
+- Worth applying
+
+60-74%: MODERATE MATCH
+----------------------
+- Student meets core requirements
+- Some significant gaps
+- May need skill development
+- Consider if interested, but prioritize better matches
+
+45-59%: WEAK MATCH
+------------------
+- Significant skill gaps
+- Missing key requirements
+- Would need substantial learning
+- Not recommended unless very interested
+
+Below 45%: POOR MATCH
+---------------------
+- Major gaps in requirements
+- Missing critical skills
+- Not a good fit
+- Recommend alternative roles
+
+ADJUSTMENTS & CONSIDERATIONS
+=============================
+
+Skill Proficiency Levels:
+- If job requires "Advanced" but student has "Intermediate": 75% match for that skill
+- If job requires "Intermediate" but student has "Advanced": 100% match (exceeds)
+
+Project Experience:
+- Personal projects can count as experience
+- Academic projects can supplement
+- Internships count as professional experience
+
+Transferable Skills:
+- Related skills can partially count
+- Example: Java experience can partially count for C# requirement (50%)
+
+Soft Skills:
+- Considered but not heavily weighted
+- Important for overall assessment
+- Can boost fitment by 2-5% if strong
+
+SPECIAL CASES
+=============
+
+New Grad Programs:
+- Designed for entry-level
+- 0-1 years experience = 100% experience match
+- Focus on fundamentals and potential
+
+Internships:
+- Currently enrolled student = 100% education match
+- No experience required = 100% experience match
+- Focus on learning ability
+
+Career Changers:
+- Transferable skills important
+- Related experience can count
+- Willingness to learn emphasized
+

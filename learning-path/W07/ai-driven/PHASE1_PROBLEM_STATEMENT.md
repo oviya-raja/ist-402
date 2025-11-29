@@ -18,6 +18,13 @@ Final year students face significant challenges in efficiently identifying and e
 
 **The Solution:**
 A Job Fitment Analysis Agent powered by OpenAI's Agent Builder that:
+- **Searches company job posting websites** and finds jobs matching student's interests based on multiple criteria (not just job title):
+  - Skills match (required vs. student's skills)
+  - Experience level (entry, mid, senior)
+  - Education requirements
+  - Location preferences
+  - Department/team alignment
+  - Job type and other criteria
 - Accepts company lists organized by priority levels (Priority 1, Priority 2, Priority 3, etc.) - see `AGENT_INPUT_FORMAT.md` for format specification
 - Analyzes job postings from target companies against student profile with priority-based weighting
 - Searches within publicly available company job posting websites (see `TARGET_COMPANIES_JOB_SITES.md` for list)

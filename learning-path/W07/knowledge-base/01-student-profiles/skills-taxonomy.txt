@@ -1,0 +1,227 @@
+SKILLS TAXONOMY REFERENCE
+Job Fitment Analysis Agent - Knowledge Base
+
+This document provides a comprehensive taxonomy of skills commonly required for software engineering roles.
+
+TECHNICAL SKILLS CATEGORIES
+============================
+
+1. PROGRAMMING LANGUAGES
+------------------------
+Popular Languages (2024-2025):
+- Python: Data science, backend, automation
+- Java: Enterprise applications, Android
+- JavaScript/TypeScript: Web development, full-stack
+- C++: Systems programming, performance-critical
+- C#: Microsoft ecosystem, enterprise
+- Go: Cloud services, microservices
+- Rust: Systems programming, safety-critical
+- Swift: iOS/macOS development
+- Kotlin: Android development
+- Ruby: Web development, scripting
+
+2. WEB DEVELOPMENT FRAMEWORKS
+------------------------------
+Frontend:
+- React: Component-based UI
+- Vue.js: Progressive framework
+- Angular: Enterprise frontend
+- Next.js: React framework with SSR
+- Svelte: Compile-time framework
+
+Backend:
+- Node.js: JavaScript runtime
+- Express: Node.js framework
+- Django: Python web framework
+- Flask: Lightweight Python framework
+- Spring Boot: Java framework
+- FastAPI: Modern Python API framework
+
+3. DATABASES
+------------
+Relational:
+- PostgreSQL: Open-source SQL
+- MySQL: Popular SQL database
+- SQL Server: Microsoft SQL
+- Oracle: Enterprise SQL
+
+NoSQL:
+- MongoDB: Document database
+- Redis: In-memory cache
+- Cassandra: Distributed database
+- DynamoDB: AWS NoSQL
+
+4. CLOUD PLATFORMS
+------------------
+Major Providers:
+- AWS (Amazon Web Services)
+  - EC2, S3, Lambda, RDS, DynamoDB
+- Google Cloud Platform (GCP)
+  - Compute Engine, Cloud Storage, BigQuery
+- Microsoft Azure
+  - Virtual Machines, Blob Storage, Functions
+
+Services:
+- Container Orchestration: Kubernetes, Docker Swarm
+- Serverless: AWS Lambda, Google Cloud Functions
+- CI/CD: GitHub Actions, Jenkins, GitLab CI
+
+5. VERSION CONTROL & DEVOPS
+----------------------------
+- Git: Version control system
+- GitHub/GitLab/Bitbucket: Code hosting
+- Docker: Containerization
+- Kubernetes: Container orchestration
+- Jenkins: CI/CD automation
+- Terraform: Infrastructure as code
+- Ansible: Configuration management
+
+6. TESTING FRAMEWORKS
+---------------------
+- JUnit: Java testing
+- pytest: Python testing
+- Jest: JavaScript testing
+- Selenium: Web automation
+- Cypress: End-to-end testing
+
+7. MOBILE DEVELOPMENT
+---------------------
+- iOS: Swift, Objective-C, Xcode
+- Android: Kotlin, Java, Android Studio
+- React Native: Cross-platform
+- Flutter: Cross-platform (Dart)
+
+8. DATA SCIENCE & ML
+--------------------
+- Machine Learning: scikit-learn, TensorFlow, PyTorch
+- Data Analysis: pandas, NumPy
+- Data Visualization: matplotlib, seaborn, Plotly
+- Big Data: Spark, Hadoop
+
+SOFT SKILLS CATEGORIES
+=======================
+
+1. COMMUNICATION
+----------------
+- Written communication
+- Verbal communication
+- Technical documentation
+- Presentation skills
+- Cross-functional collaboration
+
+2. PROBLEM-SOLVING
+------------------
+- Analytical thinking
+- Debugging skills
+- Root cause analysis
+- Creative solutions
+- Critical thinking
+
+3. TEAMWORK & COLLABORATION
+---------------------------
+- Team collaboration
+- Code reviews
+- Pair programming
+- Agile/Scrum experience
+- Cross-functional teamwork
+
+4. LEADERSHIP
+-------------
+- Mentoring
+- Technical leadership
+- Project management
+- Decision-making
+- Conflict resolution
+
+5. TIME MANAGEMENT
+-----------------
+- Task prioritization
+- Deadline management
+- Multitasking
+- Organization
+
+6. ADAPTABILITY
+--------------
+- Learning new technologies
+- Handling change
+- Flexibility
+- Continuous learning
+
+SKILL PROFICIENCY LEVELS
+========================
+
+BEGINNER
+--------
+- Basic understanding of concepts
+- Can use with guidance and documentation
+- Limited practical experience
+- Needs supervision
+
+INTERMEDIATE
+------------
+- Comfortable using independently
+- Can solve common problems
+- Some practical experience (1-2 years)
+- Can work with minimal supervision
+
+ADVANCED
+--------
+- Proficient and confident
+- Can solve complex problems
+- Significant experience (3+ years)
+- Can teach others
+- Can design solutions
+
+EXPERT
+------
+- Deep expertise and mastery
+- Can architect systems
+- Extensive experience (5+ years)
+- Industry recognition
+- Can innovate
+
+COMMON SKILL COMBINATIONS FOR ROLES
+====================================
+
+Full-Stack Developer:
+- Frontend: React/Vue/Angular
+- Backend: Node.js/Python/Java
+- Database: PostgreSQL/MySQL/MongoDB
+- Cloud: AWS/GCP/Azure
+
+Backend Developer:
+- Language: Python/Java/Go
+- Framework: Django/Flask/Spring Boot
+- Database: PostgreSQL/MongoDB
+- Cloud: AWS/GCP
+- APIs: REST, GraphQL
+
+Frontend Developer:
+- Framework: React/Vue/Angular
+- Language: JavaScript/TypeScript
+- Styling: CSS, Sass, Tailwind
+- Build Tools: Webpack, Vite
+
+DevOps Engineer:
+- Cloud: AWS/GCP/Azure
+- Containers: Docker, Kubernetes
+- CI/CD: Jenkins, GitHub Actions
+- IaC: Terraform, Ansible
+- Monitoring: Prometheus, Grafana
+
+Data Engineer:
+- Language: Python, SQL
+- Big Data: Spark, Hadoop
+- Cloud: AWS (S3, Redshift), GCP (BigQuery)
+- ETL Tools: Airflow, dbt
+
+Mobile Developer (iOS):
+- Language: Swift, Objective-C
+- Framework: UIKit, SwiftUI
+- Tools: Xcode, CocoaPods
+
+Mobile Developer (Android):
+- Language: Kotlin, Java
+- Framework: Android SDK
+- Tools: Android Studio, Gradle
+

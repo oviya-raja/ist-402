@@ -1,0 +1,279 @@
+JOB POSTING STRUCTURE GUIDE
+Job Fitment Analysis Agent - Knowledge Base
+
+This guide explains how to extract and analyze information from job postings for fitment analysis.
+
+JOB POSTING SECTIONS
+====================
+
+1. JOB TITLE
+------------
+What to Extract:
+- Exact job title
+- Level indicator (I, II, Senior, Principal, etc.)
+- Department/Team (if mentioned)
+
+Examples:
+- "Software Engineer I"
+- "Senior Software Engineer - Backend"
+- "Associate Software Engineer"
+- "Software Engineer - New Grad"
+
+2. COMPANY INFORMATION
+----------------------
+What to Extract:
+- Company name
+- Department/Division
+- Team/Group
+- Location (city, state, country)
+- Remote/Hybrid/On-site arrangement
+
+3. JOB DESCRIPTION
+-----------------
+What to Extract:
+- Role overview
+- Key responsibilities
+- Day-to-day activities
+- Team structure
+- Project types
+
+4. REQUIRED QUALIFICATIONS
+--------------------------
+Critical Section - Must-Have Requirements
+
+What to Extract:
+- Required skills (programming languages, frameworks, tools)
+- Required experience level (years of experience)
+- Required education (degree level, field of study)
+- Required certifications
+- Required work authorization
+
+Format:
+- List each requirement separately
+- Note if it's "required" vs "must have"
+- Identify skill proficiency level expected
+
+Example Extraction:
+Required Qualifications:
+- Bachelor's degree in Computer Science or related field (REQUIRED)
+- 2+ years of software development experience (REQUIRED)
+- Proficiency in Python (REQUIRED)
+- Experience with AWS (REQUIRED)
+- Strong problem-solving skills (REQUIRED)
+
+5. PREFERRED QUALIFICATIONS
+---------------------------
+Nice-to-Have Requirements
+
+What to Extract:
+- Preferred skills (bonus points)
+- Preferred experience
+- Preferred education
+- Preferred certifications
+- Nice-to-have attributes
+
+Format:
+- List each preference separately
+- Note it's "preferred" or "nice to have"
+- These add to fitment but aren't required
+
+Example Extraction:
+Preferred Qualifications:
+- Master's degree in Computer Science (PREFERRED)
+- Experience with Kubernetes (PREFERRED)
+- Experience with microservices architecture (PREFERRED)
+- Published research papers (PREFERRED)
+
+6. LOCATION & WORK ARRANGEMENT
+------------------------------
+What to Extract:
+- Office location (city, state)
+- Remote work options
+- Hybrid work arrangement
+- Travel requirements
+- Time zone requirements
+
+Examples:
+- "Remote - US"
+- "San Francisco, CA (Hybrid - 3 days in office)"
+- "On-site in Seattle, WA"
+- "Remote or New York, NY"
+
+7. SALARY & BENEFITS
+--------------------
+What to Extract (if available):
+- Salary range
+- Equity/Stock options
+- Benefits package
+- Perks
+
+Note: Not always available, but useful for student decision-making
+
+8. APPLICATION PROCESS
+----------------------
+What to Extract:
+- Application deadline
+- Interview process
+- Required materials (resume, portfolio, etc.)
+
+EXTRACTION METHODOLOGY
+======================
+
+Step 1: Identify Section Headers
+---------------------------------
+Look for common headers:
+- "Requirements"
+- "Qualifications"
+- "What We're Looking For"
+- "Required Skills"
+- "Must Have"
+- "Nice to Have"
+- "Preferred"
+
+Step 2: Categorize Requirements
+--------------------------------
+For each requirement, classify as:
+- REQUIRED: Must-have, critical
+- PREFERRED: Nice-to-have, bonus
+- OPTIONAL: Mentioned but not emphasized
+
+Step 3: Extract Skills
+----------------------
+For technical skills:
+- Programming languages
+- Frameworks
+- Tools
+- Platforms
+- Databases
+- Cloud services
+
+For each skill, note:
+- Proficiency level expected (if mentioned)
+- Years of experience (if mentioned)
+- Context of use (if mentioned)
+
+Step 4: Extract Experience Requirements
+----------------------------------------
+Look for:
+- "X+ years of experience"
+- "Entry-level"
+- "Mid-level"
+- "Senior"
+- "New grad"
+- "Internship"
+
+Step 5: Extract Education Requirements
+---------------------------------------
+Look for:
+- Degree level (BS, MS, PhD)
+- Field of study
+- "or equivalent experience"
+- Certification requirements
+
+Step 6: Extract Location Information
+--------------------------------------
+Look for:
+- City, state, country
+- "Remote"
+- "Hybrid"
+- "On-site"
+- "Flexible"
+
+ANALYSIS FRAMEWORK
+==================
+
+For Fitment Analysis, organize extracted information:
+
+REQUIRED SKILLS (Must Match):
+- Skill 1: [extracted]
+- Skill 2: [extracted]
+- Skill 3: [extracted]
+
+PREFERRED SKILLS (Bonus Points):
+- Skill 1: [extracted]
+- Skill 2: [extracted]
+
+EXPERIENCE REQUIREMENT:
+- Level: [Entry/Mid/Senior]
+- Years: [X+ years]
+
+EDUCATION REQUIREMENT:
+- Degree: [BS/MS/PhD]
+- Field: [Computer Science/related]
+
+LOCATION:
+- Arrangement: [Remote/Hybrid/On-site]
+- Location: [City, State]
+
+COMMON PATTERNS
+===============
+
+Pattern 1: Entry-Level Role
+---------------------------
+- "New grad" or "0-2 years experience"
+- BS in CS or related
+- Basic programming skills
+- Willingness to learn
+
+Pattern 2: Mid-Level Role
+-------------------------
+- "2-5 years experience"
+- BS in CS (MS preferred)
+- Specific technology stack
+- Some leadership experience
+
+Pattern 3: Senior Role
+----------------------
+- "5+ years experience"
+- Deep expertise in specific area
+- Leadership/mentoring experience
+- System design experience
+
+Pattern 4: Internship
+---------------------
+- Currently enrolled student
+- Basic programming skills
+- Eagerness to learn
+- No experience required
+
+EXAMPLE: COMPLETE EXTRACTION
+=============================
+
+Job Posting: Software Engineer I - Backend
+
+EXTRACTED INFORMATION:
+
+Job Title: Software Engineer I - Backend
+Company: Tech Company Inc.
+Location: Remote or San Francisco, CA
+
+REQUIRED QUALIFICATIONS:
+- Bachelor's degree in Computer Science or related field
+- 1+ years of software development experience
+- Proficiency in Python
+- Experience with REST API development
+- Experience with PostgreSQL or similar database
+- Strong problem-solving skills
+
+PREFERRED QUALIFICATIONS:
+- Experience with AWS
+- Experience with Docker
+- Experience with microservices architecture
+- Master's degree in Computer Science
+
+EXPERIENCE REQUIREMENT:
+- Level: Entry to Mid
+- Years: 1+ years
+
+EDUCATION REQUIREMENT:
+- Degree: Bachelor's (Master's preferred)
+- Field: Computer Science or related
+
+LOCATION:
+- Arrangement: Remote or Hybrid
+- Location: San Francisco, CA
+
+WORK ARRANGEMENT:
+- Remote option available
+- Hybrid option (3 days in office if in SF)
+

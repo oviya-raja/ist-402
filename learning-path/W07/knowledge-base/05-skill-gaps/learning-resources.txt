@@ -1,0 +1,309 @@
+LEARNING RESOURCES REFERENCE
+Job Fitment Analysis Agent - Knowledge Base
+
+This document provides recommended learning resources for common skill gaps.
+
+PROGRAMMING LANGUAGES
+=====================
+
+PYTHON
+------
+Beginner to Intermediate:
+- "Python for Everybody" (Coursera - University of Michigan)
+- "Automate the Boring Stuff with Python" (book + online)
+- Python.org official tutorial
+- Practice: HackerRank Python challenges
+
+Intermediate to Advanced:
+- "Fluent Python" (book by Luciano Ramalho)
+- "Effective Python" (book by Brett Slatkin)
+- Real Python tutorials
+- Practice: Build a web API with Flask/FastAPI
+
+JAVA
+----
+Beginner to Intermediate:
+- "Java Programming and Software Engineering Fundamentals" (Coursera - Duke)
+- Oracle Java Tutorials (official)
+- "Head First Java" (book)
+- Practice: Build a Spring Boot application
+
+Intermediate to Advanced:
+- "Effective Java" (book by Joshua Bloch)
+- "Java Concurrency in Practice" (book)
+- Spring Framework documentation
+- Practice: Build microservices
+
+JAVASCRIPT/TYPESCRIPT
+---------------------
+Beginner to Intermediate:
+- "JavaScript: The Complete Guide" (Udemy)
+- MDN Web Docs (official documentation)
+- "You Don't Know JS" (book series)
+- Practice: Build a React app
+
+Intermediate to Advanced:
+- TypeScript Handbook (official)
+- "Eloquent JavaScript" (book)
+- React documentation
+- Practice: Build a full-stack application
+
+CLOUD PLATFORMS
+===============
+
+AWS (Amazon Web Services)
+--------------------------
+Beginner:
+- AWS Cloud Practitioner Essentials (free course)
+- AWS Free Tier (hands-on practice)
+- AWS Well-Architected Framework
+
+Intermediate:
+- AWS Solutions Architect Associate (certification prep)
+- AWS documentation and tutorials
+- Build projects: Deploy a web app to EC2, use S3, Lambda
+
+Advanced:
+- AWS Solutions Architect Professional
+- AWS Advanced Networking
+- Build complex architectures
+
+GOOGLE CLOUD PLATFORM (GCP)
+----------------------------
+Beginner:
+- Google Cloud Platform Fundamentals (Coursera)
+- GCP Free Tier
+- Qwiklabs hands-on labs
+
+Intermediate:
+- GCP Professional Cloud Architect (certification)
+- GCP documentation
+- Build projects using GCP services
+
+AZURE
+-----
+Beginner:
+- Microsoft Azure Fundamentals (free course)
+- Azure Free Account
+- Azure documentation
+
+Intermediate:
+- Azure Solutions Architect Expert (certification)
+- Azure tutorials
+- Build projects on Azure
+
+CONTAINERS & ORCHESTRATION
+==========================
+
+DOCKER
+------
+Beginner:
+- Docker Getting Started tutorial (official)
+- "Docker Deep Dive" (book by Nigel Poulton)
+- Practice: Containerize a simple app
+
+Intermediate:
+- Docker Compose tutorials
+- Multi-stage builds
+- Practice: Containerize a full-stack app
+
+KUBERNETES
+----------
+Beginner:
+- Kubernetes Basics (official tutorial)
+- "Kubernetes Up & Running" (book)
+- Minikube for local practice
+
+Intermediate:
+- Kubernetes the Hard Way (tutorial)
+- CKAD (Certified Kubernetes Application Developer) prep
+- Practice: Deploy applications to Kubernetes
+
+DATABASES
+=========
+
+POSTGRESQL
+----------
+Beginner:
+- PostgreSQL Tutorial (official docs)
+- "PostgreSQL: Up and Running" (book)
+- Practice: Create database, write queries
+
+Intermediate:
+- Advanced PostgreSQL features
+- Performance tuning
+- Practice: Design and optimize database schema
+
+MONGODB
+-------
+Beginner:
+- MongoDB University (free courses)
+- MongoDB documentation
+- Practice: Build a simple app with MongoDB
+
+Intermediate:
+- MongoDB Advanced Concepts
+- Aggregation pipelines
+- Practice: Build a complex application
+
+WEB FRAMEWORKS
+==============
+
+REACT
+-----
+Beginner:
+- React Official Tutorial
+- "React - The Complete Guide" (Udemy)
+- Practice: Build a todo app, weather app
+
+Intermediate:
+- React Hooks deep dive
+- State management (Redux, Context)
+- Practice: Build a complex SPA
+
+NODE.JS
+-------
+Beginner:
+- Node.js Official Guide
+- "The Complete Node.js Developer Course" (Udemy)
+- Practice: Build REST APIs
+
+Intermediate:
+- Express.js framework
+- Authentication and security
+- Practice: Build a full-stack application
+
+SYSTEM DESIGN
+=============
+
+Beginner:
+- "System Design Primer" (GitHub)
+- "Designing Data-Intensive Applications" (book)
+- System Design Interview videos (YouTube)
+
+Intermediate:
+- "System Design Interview" (book by Alex Xu)
+- Practice designing: Twitter, Uber, Netflix
+- Learn: Load balancing, caching, databases
+
+Advanced:
+- Distributed systems concepts
+- Microservices architecture
+- Practice: Design complex systems
+
+ALGORITHMS & DATA STRUCTURES
+=============================
+
+Beginner:
+- "Cracking the Coding Interview" (book)
+- LeetCode Easy problems
+- HackerRank algorithms track
+
+Intermediate:
+- LeetCode Medium problems
+- "Elements of Programming Interviews" (book)
+- Practice: 50-100 problems
+
+Advanced:
+- LeetCode Hard problems
+- Competitive programming
+- Practice: 200+ problems
+
+LEARNING STRATEGY
+=================
+
+1. FOUNDATION FIRST
+-------------------
+- Learn fundamentals before advanced topics
+- Master basics before moving on
+- Build strong foundation
+
+2. HANDS-ON PRACTICE
+--------------------
+- Build projects, don't just watch tutorials
+- Apply knowledge immediately
+- Create portfolio projects
+
+3. CONSISTENT PRACTICE
+----------------------
+- Daily practice is better than weekly marathons
+- 30 minutes daily > 4 hours once a week
+- Maintain momentum
+
+4. PROJECT-BASED LEARNING
+-------------------------
+- Learn by building real projects
+- Start simple, increase complexity
+- Showcase in portfolio
+
+5. COMMUNITY ENGAGEMENT
+-----------------------
+- Join online communities
+- Ask questions, help others
+- Contribute to open source
+
+TIMELINE ESTIMATES
+==================
+
+Quick Wins (1-2 weeks):
+- New tool (Docker basics)
+- New framework basics
+- Simple API development
+
+Medium-Term (1-2 months):
+- New programming language (basics)
+- Cloud platform fundamentals
+- Framework proficiency
+
+Long-Term (3-6 months):
+- Deep expertise in language
+- Cloud architecture expertise
+- System design mastery
+
+RESOURCE TYPES
+==============
+
+Free Resources:
+- Official documentation
+- YouTube tutorials
+- Free online courses (Coursera audit, edX)
+- Open source projects
+- Community forums
+
+Paid Resources:
+- Online courses (Udemy, Pluralsight)
+- Books
+- Certifications
+- Bootcamps
+- Mentorship
+
+RECOMMENDED LEARNING PATHS
+===========================
+
+Path 1: Full-Stack Developer
+-----------------------------
+1. JavaScript/TypeScript (2 months)
+2. React (1 month)
+3. Node.js/Express (1 month)
+4. Database (PostgreSQL/MongoDB) (1 month)
+5. Cloud deployment (AWS) (1 month)
+Total: ~6 months
+
+Path 2: Backend Developer
+--------------------------
+1. Python or Java (2 months)
+2. REST API development (1 month)
+3. Database (PostgreSQL) (1 month)
+4. Cloud (AWS) (1 month)
+5. System Design (2 months)
+Total: ~7 months
+
+Path 3: Cloud Engineer
+-----------------------
+1. Cloud fundamentals (AWS/GCP) (1 month)
+2. Docker (2 weeks)
+3. Kubernetes (1 month)
+4. Infrastructure as Code (Terraform) (1 month)
+5. CI/CD (1 month)
+Total: ~4.5 months
+

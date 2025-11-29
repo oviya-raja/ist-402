@@ -1,0 +1,188 @@
+STUDENT PROFILE TEMPLATE
+Job Fitment Analysis Agent - Knowledge Base
+
+This template defines the standard format for student profiles used in job fitment analysis.
+
+PROFILE STRUCTURE
+================
+
+1. SKILLS SECTION
+-----------------
+Format: List skills with proficiency levels
+
+Required Information:
+- Technical Skills: Programming languages, frameworks, tools, platforms
+- Soft Skills: Communication, teamwork, leadership, problem-solving
+- Domain Knowledge: Industry-specific knowledge
+
+Proficiency Levels:
+- Beginner: Basic understanding, can use with guidance
+- Intermediate: Comfortable using independently
+- Advanced: Proficient, can teach others
+- Expert: Deep expertise, can design/architect
+
+Example:
+Technical Skills:
+- Python: Advanced (3 years, multiple projects)
+- Java: Intermediate (2 years, coursework + 1 project)
+- AWS: Intermediate (1 year, 2 projects)
+- SQL: Advanced (2 years, database design experience)
+- Git: Advanced (3 years, collaborative development)
+
+Soft Skills:
+- Problem-solving: Advanced
+- Communication: Intermediate
+- Teamwork: Advanced
+- Leadership: Beginner
+
+2. EXPERIENCE SECTION
+---------------------
+Format: Chronological or reverse chronological
+
+Required Information:
+- Role/Position Title
+- Company/Organization
+- Duration (start date - end date)
+- Key Responsibilities
+- Technologies Used
+- Achievements/Impact
+
+Example:
+Software Engineering Intern
+Tech Company Inc.
+June 2023 - August 2023 (3 months)
+- Developed REST APIs using Python and Flask
+- Collaborated on team of 5 developers
+- Reduced API response time by 30%
+- Technologies: Python, Flask, PostgreSQL, Git
+
+3. EDUCATION SECTION
+--------------------
+Format: Most recent first
+
+Required Information:
+- Degree Level (BS, MS, PhD)
+- Field of Study
+- Institution Name
+- Graduation Date (or expected)
+- GPA (optional)
+- Relevant Coursework
+- Academic Projects
+
+Example:
+Bachelor of Science in Computer Science
+State University
+Expected: May 2025
+GPA: 3.7/4.0
+Relevant Coursework:
+- Data Structures and Algorithms
+- Software Engineering
+- Database Systems
+- Machine Learning
+- Operating Systems
+
+Academic Projects:
+- Built a web application using React and Node.js (Fall 2024)
+- Designed and implemented a distributed system (Spring 2024)
+
+4. PROJECTS SECTION
+-------------------
+Format: List significant projects
+
+Required Information:
+- Project Name
+- Description
+- Technologies Used
+- Duration
+- Role/Contribution
+- Key Features/Results
+
+Example:
+E-Commerce Platform
+Full-stack web application for online shopping
+Technologies: React, Node.js, MongoDB, AWS
+Duration: 3 months (Jan 2024 - Mar 2024)
+Role: Full-stack Developer
+- Implemented user authentication
+- Built product catalog with search
+- Integrated payment processing
+- Deployed to AWS
+
+5. LOCATION PREFERENCES
+----------------------
+Format: List preferences
+
+Options:
+- Remote: Fully remote work
+- Hybrid: Mix of remote and office
+- On-site: Office-based work
+- Specific Cities: List preferred locations
+- Flexible: Open to any arrangement
+
+Example:
+Location Preferences:
+- Preferred: Remote or San Francisco, CA
+- Willing to consider: Hybrid in Seattle, WA
+- Not interested: Fully on-site
+
+6. JOB LEVEL PREFERENCES
+------------------------
+Format: Specify target level
+
+Options:
+- Entry-level: New grad, 0-1 years experience
+- Associate: 1-2 years experience
+- Mid-level: 2-5 years experience
+- Senior: 5+ years experience
+- Internship: Student internships
+
+Example:
+Job Level: Entry-level or New Grad positions
+
+7. SALARY EXPECTATIONS (Optional)
+--------------------------------
+Format: Range or minimum
+
+Example:
+Salary Expectations: $80,000 - $100,000 (entry-level)
+
+COMPLETE PROFILE EXAMPLE
+=========================
+
+Name: Alex Johnson
+Email: alex.johnson@university.edu
+
+Skills:
+Technical:
+- Python: Advanced (3 years)
+- Java: Intermediate (2 years)
+- AWS: Intermediate (1 year)
+- SQL: Advanced (2 years)
+- React: Intermediate (1 year)
+- Git: Advanced (3 years)
+
+Soft Skills:
+- Problem-solving: Advanced
+- Communication: Intermediate
+- Teamwork: Advanced
+
+Experience:
+Software Engineering Intern
+Tech Corp
+June 2023 - August 2023
+- Developed REST APIs
+- Technologies: Python, Flask, PostgreSQL
+
+Education:
+BS Computer Science
+State University
+Expected: May 2025
+GPA: 3.7/4.0
+
+Projects:
+E-Commerce Platform (React, Node.js, MongoDB)
+Social Media App (Python, Flask)
+
+Location: Remote or San Francisco, CA
+Job Level: Entry-level or New Grad
+
