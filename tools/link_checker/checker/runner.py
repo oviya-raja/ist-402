@@ -42,3 +42,4 @@ def main(base_url: Optional[str] = None, max_depth: int = 2, use_ai: bool = True
     
     return summary
 
+
