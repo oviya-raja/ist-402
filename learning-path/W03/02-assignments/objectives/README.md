@@ -8,6 +8,9 @@ This directory contains extracted objective code from `W3_RAG_Assignment.ipynb` 
 - `objective_1.py` - Design System Prompts
 - `objective_2.py` - Generate Q&A Database
 - `objective_3.py` - Implement Vector Database
+- `objective_4.py` - Build Complete RAG Pipeline
+- `objective_5.py` - Model Evaluation & Ranking
+- `objective_6.py` - System Analysis & Reflection
 - `objective_X.md` - Documentation for each objective
 - `run_objectives.py` - **Runner script to execute objectives sequentially**
 
@@ -16,11 +19,11 @@ This directory contains extracted objective code from `W3_RAG_Assignment.ipynb` 
 ### Run All Objectives (Sequential)
 
 ```bash
-cd learning-path/W03/02-assignments/temp_objectives
+cd learning-path/W03/02-assignments/objectives
 python run_objectives.py
 ```
 
-This will run Objectives 0, 1, 2, and 3 in sequence, preserving state between them (just like a notebook).
+This will run Objectives 0, 1, 2, 3, 4, 5, and 6 in sequence, preserving state between them (just like a notebook).
 
 ### Run Specific Objectives
 
@@ -61,6 +64,8 @@ The runner maintains these variables across objectives:
 - `qa_database` - Q&A database list (from Objective 2)
 - `embedding_model` - SentenceTransformer model (from Objective 3)
 - `faiss_index` - FAISS index (from Objective 3)
+- `rag_query()` - RAG pipeline function (from Objective 4)
+- `rankings_df`, `detailed_df` - Evaluation results (from Objective 5)
 - And all other globals created by each objective
 
 ## Example Output
@@ -93,6 +98,6 @@ The runner maintains these variables across objectives:
 - Run objectives in order: `python run_objectives.py 0 1`
 
 **Error: Import errors**
-- Make sure you're in the `temp_objectives` directory
+- Make sure you're in the `objectives` directory
 - Install required packages (Objective 0 handles this)
 

@@ -5,7 +5,7 @@
 To run objectives sequentially (like in a notebook):
 
 ```bash
-cd learning-path/W03/02-assignments/temp_objectives
+cd learning-path/W03/02-assignments/objectives
 
 # Run Objective 0 first
 python run_objectives.py 0
@@ -43,6 +43,9 @@ python run_objectives.py
 2. **Objective 1** uses `env` to create `system_prompt` and `inference_engine`
 3. **Objective 2** uses `env`, `inference_engine`, and `system_prompt` to create `qa_database`
 4. **Objective 3** uses `env` and `qa_database` to create embeddings and FAISS index
+5. **Objective 4** uses all previous components to build complete RAG pipeline
+6. **Objective 5** uses RAG pipeline to evaluate and rank 6 QA models
+7. **Objective 6** analyzes results and provides insights for reflection
 
 The runner script preserves all state between objectives, just like a Jupyter notebook!
 

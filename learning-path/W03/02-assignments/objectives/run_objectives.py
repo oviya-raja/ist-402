@@ -4,10 +4,11 @@ Runner script to execute objectives sequentially, simulating notebook behavior.
 This preserves global state between objectives, just like a Jupyter notebook.
 
 Usage:
-    python run_objectives.py              # Run all objectives
+    python run_objectives.py              # Run all objectives (0-6)
     python run_objectives.py 0            # Run only Objective 0
     python run_objectives.py 0 1         # Run Objectives 0 and 1
-    python run_objectives.py 1            # Run only Objective 1 (requires 0 first)
+    python run_objectives.py 0 1 2 3 4 5 6  # Run all objectives in sequence
+    python run_objectives.py 4            # Run only Objective 4 (requires 0-3 first)
 """
 
 import sys
@@ -69,11 +70,11 @@ def main():
                 objectives.append(obj_num)
             except ValueError:
                 print(f"❌ Invalid objective number: {arg}")
-                print("Usage: python run_objectives.py [0] [1] [2] [3] ...")
+                print("Usage: python run_objectives.py [0] [1] [2] [3] [4] [5] [6] ...")
                 sys.exit(1)
     else:
         # Run all objectives in sequence
-        objectives = [0, 1, 2, 3]
+        objectives = [0, 1, 2, 3, 4, 5, 6]
     
     # Sort objectives to ensure correct order
     objectives = sorted(set(objectives))
@@ -118,7 +119,8 @@ def main():
     # Print summary of what's available
     print("\n📦 Available in global namespace:")
     important_vars = ['env', 'system_prompt', 'inference_engine', 'qa_database', 
-                     'embedding_model', 'faiss_index', 'qa_embeddings']
+                     'embedding_model', 'faiss_index', 'qa_embeddings', 'rag_pipeline',
+                     'rag_response', 'evaluation_results']
     for var in important_vars:
         if var in shared_globals:
             print(f"   ✅ {var}")

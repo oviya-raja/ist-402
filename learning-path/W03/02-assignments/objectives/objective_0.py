@@ -336,6 +336,7 @@ class ObjectiveNames:
     OBJECTIVE_3 = "Objective 3"
     OBJECTIVE_4 = "Objective 4"
     OBJECTIVE_5 = "Objective 5"
+    OBJECTIVE_6 = "Objective 6"
     
     @classmethod
     def get_number(cls, objective_name: str) -> Optional[int]:
