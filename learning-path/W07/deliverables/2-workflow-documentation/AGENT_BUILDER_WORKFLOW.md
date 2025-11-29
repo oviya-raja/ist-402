@@ -23,6 +23,25 @@ This document explains how the Job Fitment Analysis Agent workflow is configured
 
 ## How the Workflow Works in Agent Builder
 
+### Automated Workflow Setup
+
+**The workflow is fully automated via API** - no manual configuration required!
+
+**Automation Script:** `deliverables/1-functional-agent/scripts/automate_workflow_setup.py`
+
+This script automatically:
+1. Loads system prompt (workflow logic)
+2. Uploads knowledge base files
+3. Creates vector store
+4. Creates/updates assistant with workflow configuration
+5. Verifies all components
+
+**To run automation:**
+```bash
+cd deliverables/1-functional-agent/scripts
+python3 automate_workflow_setup.py
+```
+
 ### Agent Builder Architecture
 
 The OpenAI Agent Builder uses a **system prompt-driven approach** rather than a traditional visual workflow builder. Here's how it works:
@@ -47,7 +66,7 @@ The OpenAI Agent Builder uses a **system prompt-driven approach** rather than a 
 
 ### Workflow Execution in Agent Builder
 
-**The workflow is NOT configured in a visual editor.** Instead, it's implemented through:
+**The workflow is fully automated via API** - configured programmatically, not manually. It's implemented through:
 
 1. **System Prompt** (`deliverables/1-functional-agent/system-prompt.txt`)
    - Contains all workflow logic
@@ -263,24 +282,49 @@ The OpenAI Agent Builder may have a visual workflow editor, but for this project
 
 ## Summary
 
-**The workflow for the agent is configured in:**
+**The workflow for the agent is fully automated and configured via:**
 
-1. **System Prompt** (Primary)
+1. **Automation Script** (Primary Method)
+   - File: `deliverables/1-functional-agent/scripts/automate_workflow_setup.py`
+   - **Fully automated** - no manual clicks required
+   - Configures all workflow components via API
+   - Sets up system prompt, model, tools, and knowledge base
+
+2. **System Prompt** (Workflow Logic)
    - File: `deliverables/1-functional-agent/system-prompt.txt`
    - Contains all workflow logic and routing
+   - Loaded automatically by automation script
 
-2. **Agent Builder Interface** (Configuration)
-   - System instructions field (where prompt is entered)
-   - Tools configuration (File Search enabled)
-   - Files section (knowledge base)
-   - Model selection (GPT-4o)
+3. **API Configuration** (Automated)
+   - Assistant creation/update via OpenAI API
+   - File uploads via API
+   - Vector store creation via API
+   - Tool configuration via API
 
-3. **Documentation** (Reference)
+4. **Documentation** (Reference)
    - `workflow-overview.md` - Logical workflow
    - `step-by-step-process.md` - Detailed steps
-   - Screenshots - Visual configuration evidence
+   - Screenshots - Visual evidence of configuration
 
-**The workflow executes automatically** when users interact with the agent, following the instructions in the system prompt.
+**The workflow is created automatically** by running the automation script, and **executes automatically** when users interact with the agent, following the instructions in the system prompt.
+
+### Quick Start - Automated Workflow Setup
+
+```bash
+# Navigate to scripts directory
+cd learning-path/W07/deliverables/1-functional-agent/scripts
+
+# Run automation (fully automated - no manual steps)
+python3 automate_workflow_setup.py
+```
+
+This single command:
+- ✅ Loads workflow logic (system prompt)
+- ✅ Uploads all knowledge base files
+- ✅ Creates vector store
+- ✅ Configures agent with workflow
+- ✅ Verifies configuration
+- ✅ Ready to use!
 
 ---
 
