@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Authentication Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 40px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: #1e293b;
+        }
+
+        /* Sequence Diagram */
+        .sequence {
+            position: relative;
+            padding-top: 60px;
+        }
+
+        /* Entity Headers */
+        .entities {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .entity {
+            width: 100px;
+            text-align: center;
+        }
+
+        .entity-box {
+            background: #f1f5f9;
+            border: 2px solid #334155;
+            border-radius: 6px;
+            padding: 10px 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1e293b;
+        }
+
+        /* Lifelines */
+        .lifelines {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            min-height: 580px;
+        }
+
+        .lifeline {
+            width: 100px;
+            position: relative;
+        }
+
+        .lifeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #94a3b8 0px,
+                #94a3b8 6px,
+                transparent 6px,
+                transparent 12px
+            );
+        }
+
+        /* Messages */
+        .message {
+            position: absolute;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 50px;
+        }
+
+        .message-content {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .message-line {
+            height: 2px;
+            background: #334155;
+            flex: 1;
+            position: relative;
+        }
+
+        .message-line.arrow-right::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -5px;
+            border: 6px solid transparent;
+            border-left-color: #334155;
+        }
+
+        .message-line.arrow-left::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: -5px;
+            border: 6px solid transparent;
+            border-right-color: #334155;
+        }
+
+        .message-label {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            color: #475569;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .message-number {
+            font-weight: 700;
+            color: #1e293b;
+            margin-right: 4px;
+        }
+
+        /* Position classes for messages */
+        .msg-1 { top: 30px; }
+        .msg-2 { top: 90px; }
+        .msg-3 { top: 150px; }
+        .msg-4 { top: 210px; }
+        .msg-5 { top: 270px; }
+        .msg-6 { top: 350px; }
+        .msg-7 { top: 430px; }
+        .msg-8 { top: 510px; }
+
+        /* Span positions */
+        .span-1 { left: 50px; right: calc(100% - 150px); }
+        .span-2 { left: 150px; right: calc(100% - 350px); }
+        .span-3 { left: 50px; right: calc(100% - 350px); }
+        .span-4 { left: 350px; right: calc(100% - 550px); }
+        .span-5 { left: 50px; right: calc(100% - 550px); }
+        .span-6 { left: 350px; right: calc(100% - 550px); }
+        .span-7 { left: 150px; right: calc(100% - 350px); }
+        .span-8 { left: 50px; right: calc(100% - 150px); }
+
+        /* Key Concept */
+        .key-concept {
+            margin-top: 32px;
+            padding: 16px;
+            background: #f8fafc;
+            border-left: 3px solid #334155;
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .key-concept code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Technologies Section */
+        .tech-section {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .tech-section h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 24px;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .tech-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .tech-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .tech-card p {
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .tech-card ul {
+            font-size: 0.8rem;
+            color: #475569;
+            padding-left: 16px;
+            line-height: 1.8;
+        }
+
+        .tech-card code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .tech-full {
+            grid-column: 1 / -1;
+        }
+
+        .role-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.8rem;
+        }
+
+        .role-table th,
+        .role-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .role-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .role-table td {
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OAuth Authentication Flow: Sign in with Google → PSU</h1>
+
+        <div class="sequence">
+            <!-- Entity Headers -->
+            <div class="entities">
+                <div class="entity">
+                    <div class="entity-box">You</div>
+                </div>
+                <div class="entity">
+                    <div class="entity-box">OpenAI</div>
+                </div>
+                <div class="entity">
+                    <div class="entity-box">Google</div>
+                </div>
+                <div class="entity">
+                    <div class="entity-box">PSU</div>
+                </div>
+            </div>
+
+            <!-- Lifelines and Messages -->
+            <div class="lifelines">
+                <div class="lifeline"></div>
+                <div class="lifeline"></div>
+                <div class="lifeline"></div>
+                <div class="lifeline"></div>
+
+                <!-- Message 1: You → OpenAI -->
+                <div class="message msg-1 span-1">
+                    <div class="message-content">
+                        <div class="message-line arrow-right">
+                            <span class="message-label"><span class="message-number">1.</span> Click "Sign in with Google"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 2: OpenAI → Google -->
+                <div class="message msg-2 span-2">
+                    <div class="message-content">
+                        <div class="message-line arrow-right">
+                            <span class="message-label"><span class="message-number">2.</span> Redirect to Google OAuth</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 3: You → Google -->
+                <div class="message msg-3 span-3">
+                    <div class="message-content">
+                        <div class="message-line arrow-right">
+                            <span class="message-label"><span class="message-number">3.</span> Enter @psu.edu email</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 4: Google → PSU -->
+                <div class="message msg-4 span-4">
+                    <div class="message-content">
+                        <div class="message-line arrow-right">
+                            <span class="message-label"><span class="message-number">4.</span> Federated SSO redirect</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 5: You → PSU -->
+                <div class="message msg-5 span-5">
+                    <div class="message-content">
+                        <div class="message-line arrow-right">
+                            <span class="message-label"><span class="message-number">5.</span> Login with PSU credentials</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 6: PSU → Google -->
+                <div class="message msg-6 span-6">
+                    <div class="message-content">
+                        <div class="message-line arrow-left">
+                            <span class="message-label"><span class="message-number">6.</span> "User verified"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 7: Google → OpenAI -->
+                <div class="message msg-7 span-7">
+                    <div class="message-content">
+                        <div class="message-line arrow-left">
+                            <span class="message-label"><span class="message-number">7.</span> "User verified"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message 8: OpenAI → You -->
+                <div class="message msg-8 span-8">
+                    <div class="message-content">
+                        <div class="message-line arrow-left">
+                            <span class="message-label"><span class="message-number">8.</span> Logged in!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="key-concept">
+            <strong>Key concept:</strong> Google recognizes <code>@psu.edu</code> → delegates authentication to PSU (federated SSO) → PSU verifies you → confirmation flows back through Google to OpenAI.
+        </div>
+
+        <!-- Technologies Section -->
+        <div class="tech-section">
+            <h2>Technologies Behind the Flow</h2>
+
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <h3>OAuth 2.0</h3>
+                    <p>Industry-standard authorization protocol that allows third-party services (like OpenAI) to access user information without handling passwords.</p>
+                    <ul>
+                        <li>OpenAI uses <strong>Authorization Code Flow</strong></li>
+                        <li>Google acts as the OAuth Provider</li>
+                        <li>Returns access token + ID token (OpenID Connect)</li>
+                    </ul>
+                </div>
+
+                <div class="tech-card">
+                    <h3>SAML 2.0</h3>
+                    <p>Security Assertion Markup Language — XML-based protocol for exchanging authentication data between identity providers and service providers.</p>
+                    <ul>
+                        <li>Used between Google and PSU (steps 4-6)</li>
+                        <li>PSU sends SAML assertion to Google</li>
+                        <li>Contains: user identity, authentication time, attributes</li>
+                    </ul>
+                </div>
+
+                <div class="tech-card">
+                    <h3>Federated Identity / SSO</h3>
+                    <p>Single Sign-On allows users to authenticate once and access multiple services. Federation links identity across organizational boundaries.</p>
+                    <ul>
+                        <li>One login for multiple services</li>
+                        <li>PSU controls its own user credentials</li>
+                        <li>Google trusts PSU's authentication decision</li>
+                    </ul>
+                </div>
+
+                <div class="tech-card">
+                    <h3>Google Workspace</h3>
+                    <p>PSU uses Google Workspace for Education, allowing Google to manage the <code>@psu.edu</code> domain while delegating authentication to PSU's identity system.</p>
+                    <ul>
+                        <li>Domain: <code>@psu.edu</code> registered with Google</li>
+                        <li>SSO configured in Google Admin Console</li>
+                        <li>Redirects to PSU's IdP automatically</li>
+                    </ul>
+                </div>
+
+                <div class="tech-card tech-full">
+                    <h3>Roles in the Flow</h3>
+                    <table class="role-table">
+                        <tr>
+                            <th>Entity</th>
+                            <th>Role</th>
+                            <th>Technology</th>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenAI</strong></td>
+                            <td>Service Provider (SP) / Relying Party</td>
+                            <td>OAuth 2.0 Client</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Google</strong></td>
+                            <td>OAuth Provider + SAML Service Provider</td>
+                            <td>OAuth 2.0 + SAML 2.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PSU</strong></td>
+                            <td>Identity Provider (IdP)</td>
+                            <td>SAML 2.0 IdP</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
