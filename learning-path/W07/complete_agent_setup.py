@@ -106,12 +106,54 @@ try:
         raise AttributeError("vector_stores not available")
 except Exception as e:
     print(f"⚠️  Could not link files automatically: {e}")
-    print(f"\n📝 Manual step required:")
-    print(f"   1. Go to: https://platform.openai.com/assistants/{ASSISTANT_ID}")
-    print(f"   2. Enable 'File Search' tool")
-    print(f"   3. Upload these file IDs:")
-    for fid in file_ids:
-        print(f"      - {fid}")
+    print(f"\n💡 Trying alternative method with raw HTTP API...")
+    try:
+        import httpx
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "OpenAI-Beta": "assistants=v2",
+            "Content-Type": "application/json"
+        }
+        # Create vector store
+        vs_response = httpx.post(
+            "https://api.openai.com/v1/vector_stores",
+            headers=headers,
+            json={
+                "name": "Job Fitment Analysis Knowledge Base",
+                "file_ids": file_ids
+            },
+            timeout=60.0
+        )
+        if vs_response.status_code == 200:
+            vs_id = vs_response.json()["id"]
+            # Update assistant
+            update_response = httpx.post(
+                f"https://api.openai.com/v1/assistants/{ASSISTANT_ID}",
+                headers=headers,
+                json={
+                    "tool_resources": {
+                        "file_search": {
+                            "vector_store_ids": [vs_id]
+                        }
+                    }
+                },
+                timeout=30.0
+            )
+            if update_response.status_code == 200:
+                print(f"✅ Files linked using raw HTTP API!")
+                print(f"   Vector Store ID: {vs_id}")
+            else:
+                raise Exception(f"Failed to update assistant: {update_response.status_code}")
+        else:
+            raise Exception(f"Failed to create vector store: {vs_response.status_code}")
+    except Exception as e2:
+        print(f"⚠️  Alternative method also failed: {e2}")
+        print(f"\n📝 Manual step required:")
+        print(f"   1. Go to: https://platform.openai.com/assistants/{ASSISTANT_ID}")
+        print(f"   2. Enable 'File Search' tool")
+        print(f"   3. Upload these file IDs:")
+        for fid in file_ids:
+            print(f"      - {fid}")
 
 print(f"\n🎉 Setup complete!")
 print(f"   Assistant ID: {ASSISTANT_ID}")

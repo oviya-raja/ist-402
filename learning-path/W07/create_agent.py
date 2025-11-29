@@ -33,6 +33,7 @@ if existing_assistant:
     print(f"   ID: {existing_assistant.id}")
     print(f"   Use this assistant or delete it first if you want to recreate.")
     print(f"\n🌐 View in browser: https://platform.openai.com/assistants/{existing_assistant.id}")
+    print(f"\n💡 To use this assistant, set ASSISTANT_ID={existing_assistant.id} in .env")
     sys.exit(0)
 
 # Read system prompt
@@ -161,5 +162,9 @@ print(f"   Model: {assistant.model}")
 if vector_store_id:
     print(f"   Vector Store ID: {vector_store_id}")
 print(f"   Files: {len(file_ids)}")
+print(f"\n💡 To use this assistant in other scripts, add to .env:")
+print(f"   ASSISTANT_ID={assistant.id}")
+if vector_store_id:
+    print(f"   VECTOR_STORE_ID={vector_store_id}")
 print(f"\n🌐 View in browser: https://platform.openai.com/assistants/{assistant.id}")
 

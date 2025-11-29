@@ -38,10 +38,12 @@ if env_path.exists():
     env_path.write_text('\n'.join(new_lines))
     print(f"✅ Updated .env file with new API key")
     print(f"   Key prefix: {new_key[:15]}...{new_key[-8:]}")
+    print(f"   Location: {env_path}")
 else:
     # Create new .env
     env_path.write_text(f'OPENAI_API_KEY={new_key}\n')
     print(f"✅ Created .env file with new API key")
+    print(f"   Location: {env_path}")
 
 print()
 print("Next step: Run 'python3 create_agent.py' to recreate assistant in browser account")

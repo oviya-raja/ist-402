@@ -142,7 +142,7 @@ def test_use_case(use_case):
         waited += 2
     
     if waited >= max_wait:
-        return False, "Timeout", None
+        return False, "Timeout waiting for response", None
     
     # Get response
     messages = client.beta.threads.messages.list(thread_id=thread.id)
@@ -172,7 +172,10 @@ def test_use_case(use_case):
                     if hasattr(tool_call, 'type') and tool_call.type == 'file_search':
                         kb_used = True
                         break
-    except:
+            if kb_used:
+                break
+    except Exception as e:
+        # Silently continue - tool usage verification is optional
         pass
     
     # Check for expected keywords

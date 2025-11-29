@@ -106,6 +106,8 @@ except Exception as e:
 print(f"\n🎉 Complete!")
 print(f"   Vector Store ID: {VS_ID}")
 print(f"   Files: {len(file_ids)}")
+print(f"\n💡 Note: These are hardcoded file IDs from a previous upload.")
+print(f"   If files were re-uploaded, update the file_ids list in this script.")
 
 
 

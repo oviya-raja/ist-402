@@ -88,8 +88,12 @@ try:
             print(f"   ✅ Vector store linked: {vs_ids[0]}")
             
             # Check files in vector store
-            vs_files = client.beta.vector_stores.files.list(vector_store_id=vs_ids[0])
-            print(f"   ✅ Files in vector store: {vs_files.data.__len__()}")
+            try:
+                vs_files = client.beta.vector_stores.files.list(vector_store_id=vs_ids[0])
+                file_count = len(vs_files.data) if hasattr(vs_files, 'data') else 0
+                print(f"   ✅ Files in vector store: {file_count}")
+            except Exception as e:
+                print(f"   ⚠️  Could not list files: {e}")
         else:
             print(f"   ⚠️  No vector store IDs")
     else:

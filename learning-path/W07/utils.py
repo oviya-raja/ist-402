@@ -37,15 +37,24 @@ def get_api_key():
         print(f"ERROR: OPENAI_API_KEY not found in .env file")
         print(f"Please add OPENAI_API_KEY to {env_path}")
         sys.exit(1)
+    # Basic validation
+    if not api_key.startswith(('sk-', 'sk-proj-')):
+        print(f"WARNING: API key format may be incorrect (should start with 'sk-' or 'sk-proj-')")
     return api_key
 
 
 def get_assistant_id():
     """Get assistant ID from environment or return default"""
-    return os.getenv("ASSISTANT_ID", "asst_jPS7NmMYqh3QPxxl1nyCI7Yj")
+    assistant_id = os.getenv("ASSISTANT_ID", "asst_jPS7NmMYqh3QPxxl1nyCI7Yj")
+    if not assistant_id.startswith("asst_"):
+        print(f"WARNING: Assistant ID format may be incorrect (should start with 'asst_')")
+    return assistant_id
 
 
 def get_vector_store_id():
     """Get vector store ID from environment or return default"""
-    return os.getenv("VECTOR_STORE_ID", "vs_692b51c5140c8191aca47cf90d444c0f")
+    vs_id = os.getenv("VECTOR_STORE_ID", "vs_692b51c5140c8191aca47cf90d444c0f")
+    if not vs_id.startswith("vs_"):
+        print(f"WARNING: Vector store ID format may be incorrect (should start with 'vs_')")
+    return vs_id
 

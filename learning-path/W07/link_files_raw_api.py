@@ -100,6 +100,10 @@ while waited < max_wait:
     time.sleep(3)
     waited += 3
 
+if waited >= max_wait:
+    print(f"\n   ⚠️  Timeout waiting for files to process (max {max_wait}s)")
+    print(f"   Continuing anyway - files may still be processing...")
+
 # Step 3: Link vector store to assistant
 print("\n🔗 Step 3: Linking vector store to assistant...")
 try:

@@ -195,25 +195,27 @@ try:
             print("   ℹ️  Note: Assistant used tools/functions")
         
         # Check run steps for file search usage
+        file_search_used = False
         try:
             steps = client.beta.threads.runs.steps.list(
                 thread_id=thread.id,
                 run_id=run.id
             )
-            file_search_used = False
             for step in steps.data:
                 if hasattr(step, 'step_details') and hasattr(step.step_details, 'tool_calls'):
                     for tool_call in step.step_details.tool_calls:
                         if hasattr(tool_call, 'type') and tool_call.type == 'file_search':
                             file_search_used = True
                             break
-            
-            if file_search_used:
-                print("   ✅ Knowledge Base Access: File search tool was used!")
-            else:
-                print("   ℹ️  Knowledge Base Access: May have used cached knowledge")
-        except:
-            print("   ℹ️  Could not verify tool usage")
+                if file_search_used:
+                    break
+        except Exception as e:
+            print(f"   ℹ️  Could not verify tool usage: {e}")
+        
+        if file_search_used:
+            print("   ✅ Knowledge Base Access: File search tool was used!")
+        else:
+            print("   ℹ️  Knowledge Base Access: May have used cached knowledge")
             
     else:
         print("   ❌ No assistant response found")

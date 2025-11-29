@@ -59,14 +59,21 @@ try:
         print("   Using direct API call method...")
         import json
         
-        # Create vector store via raw API
-        response = client._client.post(
-            "/vector_stores",
+        # Create vector store via raw API using httpx (more reliable)
+        import httpx
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "OpenAI-Beta": "assistants=v2",
+            "Content-Type": "application/json"
+        }
+        response = httpx.post(
+            "https://api.openai.com/v1/vector_stores",
+            headers=headers,
             json={
                 "name": "Job Fitment Analysis Knowledge Base",
                 "file_ids": file_ids
             },
-            headers={"OpenAI-Beta": "assistants=v2"}
+            timeout=60.0
         )
         
         if response.status_code == 200:
@@ -76,10 +83,13 @@ try:
             
             # Wait for processing
             print("\n⏳ Waiting for processing...")
-            for i in range(40):  # 2 minutes max
-                vs_status = client._client.get(
-                    f"/vector_stores/{vs_id}",
-                    headers={"OpenAI-Beta": "assistants=v2"}
+            max_wait = 120
+            waited = 0
+            while waited < max_wait:
+                vs_status = httpx.get(
+                    f"https://api.openai.com/v1/vector_stores/{vs_id}",
+                    headers=headers,
+                    timeout=30.0
                 )
                 if vs_status.status_code == 200:
                     status = vs_status.json().get("status")
@@ -87,10 +97,12 @@ try:
                         print("   ✅ Processing complete!")
                         break
                 time.sleep(3)
+                waited += 3
             
             # Update assistant
-            update_response = client._client.post(
-                f"/assistants/{ASSISTANT_ID}",
+            update_response = httpx.post(
+                f"https://api.openai.com/v1/assistants/{ASSISTANT_ID}",
+                headers=headers,
                 json={
                     "tool_resources": {
                         "file_search": {
@@ -98,7 +110,7 @@ try:
                         }
                     }
                 },
-                headers={"OpenAI-Beta": "assistants=v2"}
+                timeout=30.0
             )
             
             if update_response.status_code == 200:
