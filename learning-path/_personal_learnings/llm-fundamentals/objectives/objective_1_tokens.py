@@ -132,13 +132,14 @@ if 'tokenizer' in locals():
     text = "Hello world! How are you?"
     try:
         from transformers import AutoTokenizer
-        models = ["gpt2", "bert-base-uncased"]
+        # Compare modern open-source models (using latest Qwen 2.5)
+        models = ["Qwen/Qwen2.5-1.5B", "microsoft/Phi-3-mini-4k-instruct"]
         print(f"\n📝 Text: '{text}'\n")
         
         for model_name in models:
             try:
                 loader_temp = ModelLoader(model_name)
-                tok = loader_temp.load_tokenizer()
+                tok = loader_temp.load_tokenizer(use_cache=True)
                 tokens = tok.tokenize(text)
                 print(f"  {model_name}:")
                 print(f"    Tokens ({len(tokens)}): {tokens}")
@@ -146,10 +147,11 @@ if 'tokenizer' in locals():
                 print(f"  {model_name}: Error - {e}")
         
         print(formatter.output_summary([
-            "GPT-2 uses BPE (Byte Pair Encoding) - preserves case, uses 'Ġ' for spaces",
-            "BERT uses WordPiece - lowercases text, different splitting strategy",
+            "Qwen2 uses modern BPE tokenization - efficient and preserves meaning",
+            "Phi-3 uses similar tokenization with optimized vocabulary",
             "Same text produces different tokens with different tokenizers",
-            "Tokenization strategy affects model performance and vocabulary size"
+            "Tokenization strategy affects model performance and vocabulary size",
+            "Modern models use larger vocabularies (100K+ tokens) for better coverage"
         ]))
     except Exception as e:
         print(f"⚠️  Could not compare tokenizers: {e}")

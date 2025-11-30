@@ -16,6 +16,60 @@ This directory contains standalone Python scripts for learning LLM fundamentals,
 
 ## 🚀 Usage
 
+### Modern Open-Source LLM
+
+We use **Qwen 2.5-1.5B** by Alibaba (2025) - the latest fully open-source LLM:
+- ✅ **Fully Open**: Weights, architecture, training methodology all open
+- ✅ **Latest Version**: Qwen 2.5 with improved performance (Jan 2025)
+- ✅ **Modern Architecture**: Latest transformer improvements
+- ✅ **Great for Learning**: Perfect size for understanding LLM internals
+- ✅ **No Restrictions**: Completely free to use and study
+
+Alternative models you can use:
+- `Qwen/Qwen2.5-7B` - Larger, more powerful (latest Qwen 2.5)
+- `Qwen/Qwen2.5-3B` - Medium size (latest Qwen 2.5)
+- `microsoft/Phi-3-mini-4k-instruct` - Microsoft's modern model
+- `google/gemma-2-2b` - Google's Gemma model
+
+### Model & Tokenizer Caching
+
+All models and tokenizers are automatically cached to avoid re-downloading:
+- **Cache Location**: `~/.cache/huggingface` (default Hugging Face cache)
+- **First Run**: Models will be downloaded and cached (~3GB for Qwen2-1.5B)
+- **Subsequent Runs**: Models load instantly from cache
+- **Cache Verification**: Automatically verified on each run
+
+The `ModelLoader` class handles all caching automatically - you don't need to do anything!
+
+### List Cached Models
+
+You can list all models available in your local cache and export details to CSV:
+
+```python
+from llm_fundamentals_support import ModelLoader
+
+# List models and print to console
+models = ModelLoader.list_local_models()
+
+# List models and export to CSV
+models = ModelLoader.list_local_models(output_csv="cached_models.csv")
+
+# List models from specific cache directory
+models = ModelLoader.list_local_models(
+    cache_dir="/Users/rajasoun/.cache/huggingface",
+    output_csv="models_list.csv"
+)
+```
+
+The CSV export includes:
+- Model name and type
+- Architecture details (vocab size, hidden size, layers, etc.)
+- File size (GB, MB, bytes)
+- File count
+- Cache location
+- Last modified date
+- Key files present
+
 ### Run All Objectives (Sequential)
 
 ```bash

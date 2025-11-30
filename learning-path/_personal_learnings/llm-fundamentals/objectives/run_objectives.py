@@ -130,10 +130,14 @@ def main():
         success = run_objective(obj_num, global_namespace)
         results[obj_num] = success
         
-        # Pause between objectives (except for the last one)
-        if obj_num != obj_numbers[-1]:
+        # Pause between objectives (except for the last one, and only if interactive)
+        if obj_num != obj_numbers[-1] and sys.stdin.isatty():
             print(formatter.section(""))
-            input("⏸️  Press Enter to continue to next objective (or Ctrl+C to stop)...")
+            try:
+                input("⏸️  Press Enter to continue to next objective (or Ctrl+C to stop)...")
+            except (EOFError, KeyboardInterrupt):
+                print("\n⚠️  Interrupted. Stopping...")
+                break
     
     # Summary
     print(formatter.header("📊 SUMMARY"))

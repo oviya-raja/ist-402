@@ -6,9 +6,12 @@ All code reuse is centralized here.
 """
 
 import sys
+import os
+import csv
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 
 class DeviceDetector:
@@ -44,46 +47,576 @@ class DependencyChecker:
 
 
 class ModelLoader:
-    """Single responsibility: Load models and tokenizers."""
+    """Single responsibility: Load models and tokenizers with caching."""
     
-    DEFAULT_MODEL = "gpt2"
+    # Modern fully open-source LLM (2025) - Qwen 2.5 by Alibaba
+    # Fully open: weights, architecture, training methodology
+    # Qwen 2.5 is the latest version with improved performance
+    # Alternative options:
+    # - "Qwen/Qwen2.5-7B" - Larger, more powerful
+    # - "Qwen/Qwen2.5-3B" - Medium size
+    # - "microsoft/Phi-3-mini-4k-instruct" - Microsoft's modern model
+    # - "google/gemma-2-2b" - Google's Gemma model
+    DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B"  # Latest Qwen 2.5 (2025), fully open-source, great for learning
     
-    def __init__(self, model_name: str = DEFAULT_MODEL):
+    def __init__(self, model_name: str = DEFAULT_MODEL, cache_dir: Optional[str] = None):
+        """
+        Initialize model loader.
+        
+        Args:
+            model_name: Hugging Face model identifier
+            cache_dir: Optional cache directory. If None, uses default HF cache.
+        """
         self.model_name = model_name
         self._tokenizer = None
         self._model = None
+        # Use explicit cache directory if provided, otherwise default to user's cache
+        if cache_dir is not None:
+            cache = cache_dir
+        else:
+            # Default to user's specified cache location
+            user_cache = "/Users/rajasoun/.cache/huggingface"
+            if os.path.exists(user_cache):
+                cache = user_cache
+            else:
+                default_cache = self._get_default_cache_dir()
+                cache = default_cache or "~/.cache/huggingface"
+        # Expand user path if needed
+        self._cache_dir = os.path.expanduser(cache) if isinstance(cache, str) else str(cache)
+        self._cache_verified = False
     
-    def load_tokenizer(self, from_globals: Optional[dict] = None):
-        """Load tokenizer, reusing from globals if available."""
+    @staticmethod
+    def _get_default_cache_dir() -> Optional[str]:
+        """Get default Hugging Face cache directory."""
+        try:
+            from huggingface_hub import default_cache_path
+            return str(default_cache_path())
+        except (ImportError, AttributeError):
+            # Fallback to standard location
+            import os
+            return os.path.expanduser("~/.cache/huggingface")
+    
+    def get_cache_dir(self) -> str:
+        """Get the cache directory being used."""
+        return str(self._cache_dir)
+    
+    def verify_cache(self) -> bool:
+        """Verify cache directory exists and is writable."""
+        if self._cache_verified:
+            return True
+        
+        try:
+            cache_path = Path(self._cache_dir)
+            cache_path.mkdir(parents=True, exist_ok=True)
+            
+            # Test write permissions
+            test_file = cache_path / ".cache_test"
+            test_file.write_text("test")
+            test_file.unlink()
+            
+            self._cache_verified = True
+            return True
+        except Exception as e:
+            print(f"⚠️  Cache verification failed: {e}")
+            return False
+    
+    def is_cached(self) -> Tuple[bool, bool]:
+        """
+        Check if model and tokenizer are cached.
+        
+        Returns:
+            Tuple of (model_cached, tokenizer_cached)
+        """
+        try:
+            cache_path = Path(self._cache_dir)
+            model_cached = False
+            tokenizer_cached = False
+            
+            # Model name in cache format: "Qwen/Qwen2.5-1.5B" -> "models--Qwen--Qwen2.5-1.5B"
+            model_name_safe = self.model_name.replace('/', '--')
+            model_dir_pattern = f"models--{model_name_safe}*"
+            
+            # Check in hub subdirectory (newer HF cache structure)
+            hub_cache = cache_path / "hub"
+            if hub_cache.exists():
+                model_dirs = list(hub_cache.glob(model_dir_pattern))
+                if model_dirs:
+                    model_dir = model_dirs[0]
+                    # Check for model files (config.json, pytorch_model.bin, model.safetensors, etc.)
+                    model_files = list(model_dir.rglob("config.json"))
+                    if model_files:
+                        model_cached = True
+                        # Check for tokenizer files
+                        tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
+                        if tokenizer_files:
+                            tokenizer_cached = True
+                        # Also check for tokenizer_config.json
+                        if not tokenizer_cached:
+                            tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
+                            if tokenizer_config:
+                                tokenizer_cached = True
+            
+            # Also check in root cache directory (older/alternative structure)
+            if not model_cached:
+                model_dirs = list(cache_path.glob(model_dir_pattern))
+                if model_dirs:
+                    model_dir = model_dirs[0]
+                    # Check for model files
+                    model_files = list(model_dir.rglob("config.json"))
+                    if model_files:
+                        model_cached = True
+                        # Check for tokenizer files
+                        tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
+                        if tokenizer_files:
+                            tokenizer_cached = True
+                        if not tokenizer_cached:
+                            tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
+                            if tokenizer_config:
+                                tokenizer_cached = True
+            
+            # Final check: Try to actually load config/tokenizer locally (most reliable)
+            if not model_cached or not tokenizer_cached:
+                try:
+                    from transformers import AutoConfig, AutoTokenizer
+                    # Try to load config locally
+                    if not model_cached:
+                        try:
+                            config = AutoConfig.from_pretrained(
+                                self.model_name,
+                                cache_dir=self._cache_dir,
+                                local_files_only=True
+                            )
+                            model_cached = True
+                        except:
+                            pass
+                    
+                    # Try to load tokenizer locally
+                    if not tokenizer_cached:
+                        try:
+                            tokenizer = AutoTokenizer.from_pretrained(
+                                self.model_name,
+                                cache_dir=self._cache_dir,
+                                local_files_only=True
+                            )
+                            tokenizer_cached = True
+                        except:
+                            pass
+                except:
+                    pass
+            
+            return model_cached, tokenizer_cached
+        except Exception:
+            return False, False
+    
+    def load_tokenizer(self, from_globals: Optional[dict] = None, use_cache: bool = True):
+        """
+        Load tokenizer, reusing from globals if available.
+        
+        Args:
+            from_globals: Global namespace to check for cached tokenizer
+            use_cache: Whether to use Hugging Face cache (default: True)
+        """
         if from_globals and 'tokenizer' in from_globals:
             self._tokenizer = from_globals['tokenizer']
+            print(f"⚡ Using tokenizer from global cache: {self.model_name}")
             return self._tokenizer
         
         try:
             from transformers import AutoTokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-            return self._tokenizer
+            
+            # Verify cache before loading
+            local_files_only = False
+            if use_cache:
+                self.verify_cache()
+                model_cached, tokenizer_cached = self.is_cached()
+                if tokenizer_cached:
+                    print(f"💾 Loading tokenizer from cache: {self.model_name}")
+                    print(f"   Cache location: {self._cache_dir}")
+                    local_files_only = True  # Use local files only to avoid download
+                else:
+                    print(f"⚠️  Tokenizer not found in cache: {self.model_name}")
+                    print(f"   Cache location: {self._cache_dir}")
+                    print(f"   Attempting download (if online)...")
+                    local_files_only = False
+            
+            # Load with explicit cache directory and local_files_only flag
+            try:
+                self._tokenizer = AutoTokenizer.from_pretrained(
+                    self.model_name,
+                    cache_dir=self._cache_dir if use_cache else None,
+                    local_files_only=local_files_only
+                )
+                if local_files_only:
+                    print(f"✅ Successfully loaded tokenizer from cache (offline mode)")
+                return self._tokenizer
+            except Exception as e:
+                if local_files_only:
+                    # If local_files_only failed, try without it (fallback)
+                    print(f"⚠️  Failed to load from cache, trying with download enabled...")
+                    self._tokenizer = AutoTokenizer.from_pretrained(
+                        self.model_name,
+                        cache_dir=self._cache_dir if use_cache else None,
+                        local_files_only=False
+                    )
+                    return self._tokenizer
+                else:
+                    raise
         except ImportError:
             raise ImportError("transformers library not installed. Install with: pip install transformers")
     
-    def load_model(self, from_globals: Optional[dict] = None):
-        """Load model, reusing from globals if available."""
+    def load_model(self, from_globals: Optional[dict] = None, use_cache: bool = True):
+        """
+        Load model, reusing from globals if available.
+        
+        Args:
+            from_globals: Global namespace to check for cached model
+            use_cache: Whether to use Hugging Face cache (default: True)
+        """
         if from_globals and 'model' in from_globals:
             self._model = from_globals['model']
+            print(f"⚡ Using model from global cache: {self.model_name}")
             return self._model
         
         try:
             from transformers import AutoModel
-            self._model = AutoModel.from_pretrained(self.model_name)
-            return self._model
+            
+            # Verify cache before loading
+            local_files_only = False
+            if use_cache:
+                self.verify_cache()
+                model_cached, _ = self.is_cached()
+                if model_cached:
+                    print(f"💾 Loading model from cache: {self.model_name}")
+                    print(f"   Cache location: {self._cache_dir}")
+                    local_files_only = True  # Use local files only to avoid download
+                else:
+                    print(f"⚠️  Model not found in cache: {self.model_name}")
+                    print(f"   Cache location: {self._cache_dir}")
+                    print(f"   Attempting download (if online)...")
+                    local_files_only = False
+            
+            # Load with explicit cache directory and local_files_only flag
+            try:
+                self._model = AutoModel.from_pretrained(
+                    self.model_name,
+                    cache_dir=self._cache_dir if use_cache else None,
+                    local_files_only=local_files_only
+                )
+                if local_files_only:
+                    print(f"✅ Successfully loaded model from cache (offline mode)")
+                return self._model
+            except Exception as e:
+                if local_files_only:
+                    # If local_files_only failed, try without it (fallback)
+                    print(f"⚠️  Failed to load from cache, trying with download enabled...")
+                    self._model = AutoModel.from_pretrained(
+                        self.model_name,
+                        cache_dir=self._cache_dir if use_cache else None,
+                        local_files_only=False
+                    )
+                    return self._model
+                else:
+                    raise
         except ImportError:
             raise ImportError("transformers library not installed. Install with: pip install transformers")
     
-    def load_both(self, from_globals: Optional[dict] = None):
+    def load_both(self, from_globals: Optional[dict] = None, use_cache: bool = True):
         """Load both tokenizer and model."""
-        tokenizer = self.load_tokenizer(from_globals)
-        model = self.load_model(from_globals)
+        tokenizer = self.load_tokenizer(from_globals, use_cache=use_cache)
+        model = self.load_model(from_globals, use_cache=use_cache)
         return tokenizer, model
+    
+    @staticmethod
+    def list_local_models(cache_dir: Optional[str] = None, output_csv: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        List all models available in the local cache directory.
+        
+        Args:
+            cache_dir: Cache directory to scan. If None, uses default cache.
+            output_csv: Optional path to CSV file to save results. If None, prints to console.
+        
+        Returns:
+            List of dictionaries containing model information.
+        """
+        # Determine cache directory
+        if cache_dir is None:
+            user_cache = "/Users/rajasoun/.cache/huggingface"
+            if os.path.exists(user_cache):
+                cache_dir = user_cache
+            else:
+                cache_dir = ModelLoader._get_default_cache_dir() or "~/.cache/huggingface"
+        
+        cache_path = Path(cache_dir).expanduser()
+        models = []
+        
+        if not cache_path.exists():
+            print(f"⚠️  Cache directory does not exist: {cache_path}")
+            return models
+        
+        # Scan both hub subdirectory and root cache directory
+        search_paths = [
+            cache_path / "hub",
+            cache_path
+        ]
+        
+        for search_path in search_paths:
+            if not search_path.exists():
+                continue
+            
+            # Find all model directories (pattern: models--*)
+            model_dirs = list(search_path.glob("models--*"))
+            
+            for model_dir in model_dirs:
+                try:
+                    # Convert cache name back to model name: "models--Qwen--Qwen2.5-1.5B" -> "Qwen/Qwen2.5-1.5B"
+                    model_name_cache = model_dir.name
+                    model_name = model_name_cache.replace("models--", "").replace("--", "/")
+                    
+                    # Check if this is a valid model directory
+                    config_files = list(model_dir.rglob("config.json"))
+                    if not config_files:
+                        continue
+                    
+                    # Get model details
+                    model_info = {
+                        'model_name': model_name,
+                        'cache_name': model_name_cache,
+                        'cache_location': str(model_dir),
+                        'has_config': len(config_files) > 0,
+                        'has_tokenizer': len(list(model_dir.rglob("tokenizer*.json"))) > 0 or 
+                                       len(list(model_dir.rglob("tokenizer_config.json"))) > 0,
+                        'last_modified': datetime.fromtimestamp(model_dir.stat().st_mtime).isoformat(),
+                    }
+                    
+                    # Calculate total size
+                    total_size = 0
+                    file_count = 0
+                    model_files = []
+                    
+                    for file_path in model_dir.rglob("*"):
+                        if file_path.is_file():
+                            try:
+                                size = file_path.stat().st_size
+                                total_size += size
+                                file_count += 1
+                                # Track important files
+                                if file_path.name in ['config.json', 'tokenizer_config.json', 'vocab.json', 
+                                                      'pytorch_model.bin', 'model.safetensors', 'model.bin']:
+                                    model_files.append(file_path.name)
+                            except:
+                                pass
+                    
+                    model_info['total_size_bytes'] = total_size
+                    model_info['total_size_mb'] = round(total_size / (1024 * 1024), 2)
+                    model_info['total_size_gb'] = round(total_size / (1024 * 1024 * 1024), 2)
+                    model_info['file_count'] = file_count
+                    model_info['key_files'] = ', '.join(sorted(set(model_files)))
+                    
+                    # Try to load config for additional details (all from core-concepts.md)
+                    try:
+                        from transformers import AutoConfig
+                        config = AutoConfig.from_pretrained(
+                            model_name,
+                            cache_dir=str(cache_path),
+                            local_files_only=True
+                        )
+                        
+                        # Core configuration details (from core-concepts.md section "Retrieving Model Configuration")
+                        # 1. Vocabulary size
+                        model_info['vocab_size'] = getattr(config, 'vocab_size', None)
+                        
+                        # 2. Hidden size
+                        model_info['hidden_size'] = getattr(config, 'hidden_size', None)
+                        
+                        # 3. Number of layers
+                        model_info['num_layers'] = getattr(config, 'num_hidden_layers', 
+                                                          getattr(config, 'num_layers', None))
+                        
+                        # 4. Number of attention heads
+                        model_info['num_attention_heads'] = getattr(config, 'num_attention_heads', None)
+                        
+                        # 5. Max position embeddings (context length)
+                        model_info['max_position_embeddings'] = getattr(config, 'max_position_embeddings', None)
+                        
+                        # 6. Embedding size (usually same as hidden_size, but some models have separate)
+                        model_info['embedding_size'] = getattr(config, 'embedding_size', 
+                                                               getattr(config, 'embedding_dim', 
+                                                                      model_info['hidden_size']))
+                        
+                        # 7. Activation function
+                        model_info['activation_function'] = getattr(config, 'activation_function', 
+                                                                   getattr(config, 'hidden_act', None))
+                        
+                        # 8. Positional embedding type
+                        model_info['position_embedding_type'] = getattr(config, 'position_embedding_type', None)
+                        
+                        # 9. Attention variant/type
+                        model_info['attention_type'] = getattr(config, 'attention_type', 
+                                                              getattr(config, 'attn_implementation', None))
+                        
+                        # Additional useful details
+                        model_info['model_type'] = getattr(config, 'model_type', None)
+                        model_info['architectures'] = ', '.join(getattr(config, 'architectures', []))
+                        
+                        # Intermediate size (feedforward dimension)
+                        model_info['intermediate_size'] = getattr(config, 'intermediate_size', 
+                                                                 getattr(config, 'ffn_dim', None))
+                        
+                        # Number of key-value heads (for grouped query attention)
+                        model_info['num_key_value_heads'] = getattr(config, 'num_key_value_heads', None)
+                        
+                        # Head dimension
+                        if model_info['hidden_size'] and model_info['num_attention_heads']:
+                            model_info['head_dim'] = model_info['hidden_size'] // model_info['num_attention_heads']
+                        else:
+                            model_info['head_dim'] = getattr(config, 'head_dim', None)
+                        
+                        # Try to estimate parameter count from config (approximate)
+                        try:
+                            if model_info['num_layers'] and model_info['hidden_size']:
+                                # Rough estimate: 12 * num_layers * hidden_size^2
+                                # This is a simplified estimate, actual count varies by architecture
+                                estimated_params = 12 * model_info['num_layers'] * (model_info['hidden_size'] ** 2)
+                                model_info['estimated_parameters'] = int(estimated_params)
+                                model_info['estimated_parameters_billions'] = round(estimated_params / 1e9, 2)
+                            else:
+                                model_info['estimated_parameters'] = None
+                                model_info['estimated_parameters_billions'] = None
+                        except:
+                            model_info['estimated_parameters'] = None
+                            model_info['estimated_parameters_billions'] = None
+                        
+                    except Exception as e:
+                        model_info['config_error'] = str(e)[:100]  # Truncate long errors
+                        # Set all config fields to None
+                        for field in ['vocab_size', 'hidden_size', 'num_layers', 'num_attention_heads', 
+                                     'max_position_embeddings', 'embedding_size', 'activation_function',
+                                     'position_embedding_type', 'attention_type', 'model_type', 'architectures',
+                                     'intermediate_size', 'num_key_value_heads', 'head_dim', 
+                                     'estimated_parameters', 'estimated_parameters_billions']:
+                            model_info[field] = None
+                    
+                    models.append(model_info)
+                    
+                except Exception as e:
+                    print(f"⚠️  Error processing {model_dir}: {e}")
+                    continue
+        
+        # Remove duplicates (same model in hub and root)
+        seen = set()
+        unique_models = []
+        for model in models:
+            key = model['model_name']
+            if key not in seen:
+                seen.add(key)
+                unique_models.append(model)
+        
+        models = unique_models
+        
+        # Sort by model name
+        models.sort(key=lambda x: x['model_name'])
+        
+        # Output to CSV if requested
+        if output_csv:
+            try:
+                output_path = Path(output_csv)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                if models:
+                    # Define CSV columns - includes all details from core-concepts.md
+                    fieldnames = [
+                        # Basic info
+                        'model_name', 'model_type', 'architectures',
+                        # Core components (from core-concepts.md)
+                        'vocab_size',           # 1. Tokens - vocabulary size
+                        'embedding_size',       # 2. Embeddings - embedding dimension
+                        'hidden_size',          # Hidden dimension
+                        'num_attention_heads',  # 3. Attention - number of heads
+                        'attention_type',       # 3. Attention - variant/type
+                        'num_layers',           # 4. Layers - number of transformer layers
+                        'intermediate_size',    # 4. Layers - feedforward dimension
+                        'head_dim',            # Attention head dimension
+                        'num_key_value_heads', # Grouped query attention
+                        'estimated_parameters', # 6. Parameters - estimated count
+                        'estimated_parameters_billions', # Parameters in billions
+                        'max_position_embeddings', # Context length
+                        'activation_function',  # Activation function
+                        'position_embedding_type', # Positional embedding type
+                        # File info
+                        'total_size_gb', 'total_size_mb', 'total_size_bytes', 
+                        'file_count', 'has_config', 'has_tokenizer',
+                        'key_files', 'last_modified', 'cache_location'
+                    ]
+                    
+                    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
+                        writer.writeheader()
+                        writer.writerows(models)
+                    
+                    print(f"✅ Exported {len(models)} models to CSV: {output_path}")
+                else:
+                    print(f"⚠️  No models found to export")
+            except Exception as e:
+                print(f"❌ Error writing CSV file: {e}")
+        else:
+            # Print to console with all details from core-concepts.md
+            if models:
+                print(f"\n📋 Found {len(models)} cached model(s):\n")
+                for model in models:
+                    print(f"  Model: {model['model_name']}")
+                    
+                    # Core Components (from core-concepts.md)
+                    print(f"    📊 Core Components:")
+                    if model.get('vocab_size'):
+                        print(f"      1️⃣  Tokens: vocab_size = {model['vocab_size']:,}")
+                    if model.get('embedding_size') or model.get('hidden_size'):
+                        emb_size = model.get('embedding_size') or model.get('hidden_size')
+                        print(f"      2️⃣  Embeddings: size = {emb_size}")
+                    if model.get('num_attention_heads'):
+                        attn_info = f"heads = {model['num_attention_heads']}"
+                        if model.get('attention_type'):
+                            attn_info += f", type = {model['attention_type']}"
+                        if model.get('head_dim'):
+                            attn_info += f", head_dim = {model['head_dim']}"
+                        print(f"      3️⃣  Attention: {attn_info}")
+                    if model.get('num_layers'):
+                        layer_info = f"layers = {model['num_layers']}"
+                        if model.get('intermediate_size'):
+                            layer_info += f", intermediate_size = {model['intermediate_size']}"
+                        print(f"      4️⃣  Layers: {layer_info}")
+                    if model.get('estimated_parameters_billions'):
+                        print(f"      6️⃣  Parameters: ~{model['estimated_parameters_billions']}B")
+                    
+                    # Additional Configuration Details
+                    if model.get('hidden_size') or model.get('max_position_embeddings') or model.get('activation_function'):
+                        print(f"    🔍 Configuration Details:")
+                        if model.get('hidden_size'):
+                            print(f"      Hidden Size: {model['hidden_size']}")
+                        if model.get('max_position_embeddings'):
+                            print(f"      Max Position Embeddings: {model['max_position_embeddings']:,}")
+                        if model.get('activation_function'):
+                            print(f"      Activation Function: {model['activation_function']}")
+                        if model.get('position_embedding_type'):
+                            print(f"      Position Embedding Type: {model['position_embedding_type']}")
+                        if model.get('num_key_value_heads'):
+                            print(f"      Key-Value Heads: {model['num_key_value_heads']}")
+                    
+                    # File Info
+                    print(f"    💾 File Info:")
+                    print(f"      Size: {model['total_size_gb']} GB ({model['total_size_mb']} MB)")
+                    print(f"      Files: {model['file_count']}")
+                    print(f"      Has Config: {model['has_config']}")
+                    print(f"      Has Tokenizer: {model['has_tokenizer']}")
+                    if model.get('model_type'):
+                        print(f"      Type: {model['model_type']}")
+                    if model.get('architectures'):
+                        print(f"      Architectures: {model['architectures']}")
+                    print(f"      Location: {model['cache_location']}")
+                    print()
+            else:
+                print("⚠️  No cached models found")
+        
+        return models
     
     @property
     def tokenizer(self):
@@ -242,6 +775,16 @@ class LLMFundamentalsSupport:
         """Print environment information."""
         print(f"🔧 Python: {sys.version.split()[0]}")
         print(f"🔧 Device: {self.device_detector.detect()}")
+        
+        # Show cache information
+        try:
+            cache_dir = ModelLoader._get_default_cache_dir()
+            if cache_dir and Path(cache_dir).exists():
+                print(f"💾 HF Cache: {cache_dir}")
+            else:
+                print(f"💾 HF Cache: {cache_dir} (will be created on first download)")
+        except Exception:
+            pass
     
     @property
     def device(self) -> str:
