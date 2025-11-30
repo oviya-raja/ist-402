@@ -103,4 +103,8 @@ credentials.json
 .venv/
 .env
 
+# Automation cookies (contains session data)
+**/.cookies/
+*.cookies.json
+
 

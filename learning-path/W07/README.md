@@ -159,6 +159,20 @@ For detailed information, see:
 
 > 📄 **Detailed Setup Guide:** See workflow diagrams in `docs/workflow-diagrams/` for step-by-step OpenAI Agent Builder setup
 
+### Alternative: Automated Workflow Creation
+
+Instead of manual clickops, you can use the automation script:
+
+```bash
+# 1. Generate workflow definitions
+python3 scripts/create_workflow_sdk.py --workflow both
+
+# 2. Run automation (opens browser and creates workflows)
+python3 scripts/agent_builder_automation.py --workflow both
+```
+
+**Note:** The automation script uses Playwright to automate Agent Builder UI. Some steps may require manual intervention. See `scripts/AUTOMATION_README.md` for details.
+
 ---
 
 ## 👥 Team Members
