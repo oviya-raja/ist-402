@@ -13,6 +13,7 @@ Usage:
 
 import sys
 from pathlib import Path
+from llm_fundamentals_support import Formatter
 
 # Get script directory
 SCRIPT_DIR = Path(__file__).parent.absolute()
@@ -67,10 +68,9 @@ def run_objective(obj_num: int, global_namespace: dict):
         print(f"   Skipping...")
         return False
     
-    print(f"\n{'='*80}")
-    print(f"🚀 RUNNING OBJECTIVE {obj_num}: {obj_info['name']}")
-    print(f"   {obj_info['description']}")
-    print(f"{'='*80}\n")
+    formatter = Formatter()
+    print(formatter.header(f"🚀 RUNNING OBJECTIVE {obj_num}: {obj_info['name']}"))
+    print(f"   {obj_info['description']}\n")
     
     try:
         # Read and execute the objective script
@@ -113,9 +113,8 @@ def main():
     # Sort to run in order
     obj_numbers = sorted(set(obj_numbers))
     
-    print("\n" + "="*80)
-    print("LLM FUNDAMENTALS - OBJECTIVES RUNNER")
-    print("="*80)
+    formatter = Formatter()
+    print(formatter.header("LLM FUNDAMENTALS - OBJECTIVES RUNNER"))
     print(f"\n📋 Objectives to run: {obj_numbers}")
     print(f"   Total: {len(obj_numbers)} objective(s)\n")
     
@@ -133,13 +132,11 @@ def main():
         
         # Pause between objectives (except for the last one)
         if obj_num != obj_numbers[-1]:
-            print("\n" + "-"*80)
+            print(formatter.section(""))
             input("⏸️  Press Enter to continue to next objective (or Ctrl+C to stop)...")
     
     # Summary
-    print("\n" + "="*80)
-    print("📊 SUMMARY")
-    print("="*80)
+    print(formatter.header("📊 SUMMARY"))
     
     successful = [n for n, s in results.items() if s]
     failed = [n for n, s in results.items() if not s]

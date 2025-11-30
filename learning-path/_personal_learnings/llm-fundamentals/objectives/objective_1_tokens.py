@@ -3,69 +3,76 @@
 # ============================================================================
 # Understanding how text is split into tokens (the basic units of LLMs)
 
-import sys
-from pathlib import Path
+from llm_fundamentals_support import (
+    LLMFundamentalsSupport, ModelLoader, TextProcessor, Formatter, StateManager
+)
 
-# Add support module if available
-try:
-    from llm_fundamentals_support import LLMFundamentalsSupport
-    support = LLMFundamentalsSupport()
-except ImportError:
-    support = None
-    print("Note: Running without support module")
+support = LLMFundamentalsSupport()
+formatter = Formatter()
+state_mgr = StateManager()
 
-print("=" * 80)
-print("OBJECTIVE 1: TOKENS")
-print("=" * 80)
-print("\n🧠 Learning Goal: Understand how text is split into tokens")
-print("   Tokens are the basic units that LLMs process.\n")
+print(formatter.header("OBJECTIVE 1: TOKENS"))
+print(formatter.learning_intro(
+    concept="Tokenization",
+    description="Text is split into tokens - subword units that LLMs can process. Each token has a unique ID in the model's vocabulary.",
+    what_we_learn=[
+        "How text is converted to tokens (subword units)",
+        "Token IDs and vocabulary mapping",
+        "Different tokenization strategies (BPE, WordPiece, etc.)",
+        "Special tokens and their purposes"
+    ],
+    what_we_do=[
+        "Load a tokenizer from Hugging Face",
+        "Tokenize example text and see the tokens",
+        "Compare tokenization across different models",
+        "Examine special tokens in the vocabulary"
+    ],
+    hands_on=[
+        "Use AutoTokenizer to load GPT-2 tokenizer",
+        "Tokenize text: 'Hello! How are you today?'",
+        "See tokens: ['Hello', '!', 'ĠHow', 'Ġare', 'Ġyou', 'Ġtoday', '?']",
+        "Compare GPT-2 vs BERT tokenization",
+        "Inspect vocabulary size and special tokens"
+    ]
+))
 
 # ============================================================================
 # Part 1: Basic Tokenization
 # ============================================================================
-print("\n" + "-" * 80)
-print("Part 1: Basic Tokenization")
-print("-" * 80)
+print(formatter.section("Part 1: Basic Tokenization - Hands-On Code"))
 
+loader = ModelLoader()
 try:
-    from transformers import AutoTokenizer
+    tokenizer = loader.load_tokenizer(globals())
+    print(f"\n📥 Loaded tokenizer from: {loader.model_name}")
     
-    # Use a small model for demonstration
-    model_name = "gpt2"  # Small, fast model for learning
-    
-    print(f"\n📥 Loading tokenizer from: {model_name}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    
-    # Example text
+    processor = TextProcessor(tokenizer)
     text = "Hello! How are you today?"
-    print(f"\n📝 Original text: '{text}'")
+    info = processor.get_token_info(text)
     
-    # Tokenize
-    tokens = tokenizer.tokenize(text)
-    token_ids = tokenizer.encode(text, return_tensors=None)
+    print(f"\n📝 Original text: '{info['text']}'")
+    print(f"🔤 Tokens: {info['tokens']}")
+    print(f"🔢 Token IDs: {info['token_ids']}")
+    print(f"📊 Number of tokens: {info['num_tokens']}")
+    print(f"📊 Number of characters: {info['num_chars']}")
+    print(f"📈 Ratio: {info['ratio']:.2f} tokens per character")
+    print(f"\n↩️  Decoded back: '{processor.decode(info['token_ids'])}'")
     
-    print(f"\n🔤 Tokens: {tokens}")
-    print(f"🔢 Token IDs: {token_ids}")
-    print(f"📊 Number of tokens: {len(tokens)}")
-    print(f"📊 Number of characters: {len(text)}")
-    print(f"📈 Ratio: {len(tokens) / len(text):.2f} tokens per character")
+    # Output summary
+    print(formatter.output_summary([
+        f"Text '{text}' was split into {info['num_tokens']} tokens",
+        f"Each token has a unique ID (e.g., 'Hello' = {info['token_ids'][0]})",
+        f"Tokenization ratio: {info['ratio']:.2f} tokens per character",
+        "Decoding token IDs back produces the original text"
+    ]))
     
-    # Decode back
-    decoded = tokenizer.decode(token_ids)
-    print(f"\n↩️  Decoded back: '{decoded}'")
-    
-except ImportError:
-    print("⚠️  transformers library not installed")
-    print("   Install with: pip install transformers")
 except Exception as e:
     print(f"❌ Error: {e}")
 
 # ============================================================================
 # Part 2: Tokenization Examples
 # ============================================================================
-print("\n" + "-" * 80)
-print("Part 2: Tokenization Examples")
-print("-" * 80)
+print(formatter.section("Part 2: Tokenization Examples - Different Texts"))
 
 if 'tokenizer' in locals():
     examples = [
@@ -77,16 +84,21 @@ if 'tokenizer' in locals():
     
     print("\n📚 Example tokenizations:")
     for example in examples:
-        tokens = tokenizer.tokenize(example)
+        tokens = processor.tokenize(example)
         print(f"\n  Text: '{example}'")
         print(f"  Tokens ({len(tokens)}): {tokens[:10]}{'...' if len(tokens) > 10 else ''}")
+    
+    print(formatter.output_summary([
+        "Different texts produce different numbers of tokens",
+        "Longer words may be split (e.g., 'Tokenization' → 'Token' + 'ization')",
+        "Punctuation is often separate tokens",
+        "Spaces are represented as 'Ġ' prefix in GPT-2 tokens"
+    ]))
 
 # ============================================================================
 # Part 3: Special Tokens
 # ============================================================================
-print("\n" + "-" * 80)
-print("Part 3: Special Tokens")
-print("-" * 80)
+print(formatter.section("Part 3: Special Tokens - Vocabulary Features"))
 
 if 'tokenizer' in locals():
     print("\n🔑 Special tokens in vocabulary:")
@@ -104,49 +116,56 @@ if 'tokenizer' in locals():
             print(f"  {name}: '{token}'")
     
     print(f"\n📊 Vocabulary size: {len(tokenizer)}")
+    
+    print(formatter.output_summary([
+        f"Vocabulary contains {len(tokenizer)} unique tokens",
+        "Special tokens mark boundaries (BOS/EOS), unknown words (UNK), padding (PAD)",
+        "Different models use different special token sets"
+    ]))
 
 # ============================================================================
 # Part 4: Different Tokenizers
 # ============================================================================
-print("\n" + "-" * 80)
-print("Part 4: Comparing Different Tokenizers")
-print("-" * 80)
+print(formatter.section("Part 4: Comparing Different Tokenizers - Strategy Differences"))
 
 if 'tokenizer' in locals():
     text = "Hello world! How are you?"
-    
     try:
         from transformers import AutoTokenizer
-        
         models = ["gpt2", "bert-base-uncased"]
         print(f"\n📝 Text: '{text}'\n")
         
         for model_name in models:
             try:
-                tok = AutoTokenizer.from_pretrained(model_name)
+                loader_temp = ModelLoader(model_name)
+                tok = loader_temp.load_tokenizer()
                 tokens = tok.tokenize(text)
                 print(f"  {model_name}:")
                 print(f"    Tokens ({len(tokens)}): {tokens}")
             except Exception as e:
                 print(f"  {model_name}: Error - {e}")
+        
+        print(formatter.output_summary([
+            "GPT-2 uses BPE (Byte Pair Encoding) - preserves case, uses 'Ġ' for spaces",
+            "BERT uses WordPiece - lowercases text, different splitting strategy",
+            "Same text produces different tokens with different tokenizers",
+            "Tokenization strategy affects model performance and vocabulary size"
+        ]))
     except Exception as e:
         print(f"⚠️  Could not compare tokenizers: {e}")
 
 # ============================================================================
 # Summary
 # ============================================================================
-print("\n" + "=" * 80)
-print("✅ Objective 1 Complete: Tokens")
-print("=" * 80)
-print("\n📚 Key Takeaways:")
-print("  1. Text is split into tokens (subword units)")
-print("  2. Each token has a unique ID in the vocabulary")
-print("  3. Different models use different tokenization strategies")
-print("  4. Special tokens mark sentence boundaries, padding, etc.")
-print("\n➡️  Next: Objective 2 - Embeddings (Tokens → Vectors)")
+takeaways = [
+    "Text is split into tokens (subword units)",
+    "Each token has a unique ID in the vocabulary",
+    "Different models use different tokenization strategies",
+    "Special tokens mark sentence boundaries, padding, etc."
+]
+print(formatter.summary("Objective 1 Complete: Tokens", takeaways, "Objective 2 - Embeddings (Tokens → Vectors)"))
 
-# Store tokenizer for next objective
+# Save state
 if 'tokenizer' in locals():
-    globals()['tokenizer'] = tokenizer
+    state_mgr.save_to_globals(globals(), tokenizer=tokenizer)
     print("\n💾 Tokenizer saved for next objective")
-

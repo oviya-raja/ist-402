@@ -3,77 +3,88 @@
 # ============================================================================
 # Understanding model parameters, weights, and configuration
 
+from llm_fundamentals_support import (
+    LLMFundamentalsSupport, ModelLoader, Formatter, StateManager
+)
 import torch
 
-print("=" * 80)
-print("OBJECTIVE 6: PARAMETERS")
-print("=" * 80)
-print("\n🧠 Learning Goal: Understand model parameters and configuration")
-print("   Parameters are learned weights that define model behavior.\n")
+support = LLMFundamentalsSupport()
+formatter = Formatter()
+state_mgr = StateManager()
 
-# ============================================================================
+print(formatter.header("OBJECTIVE 6: PARAMETERS"))
+print(formatter.learning_intro(
+    concept="Model Parameters",
+    description="Parameters are learned weights stored in tensors that define model behavior. Model configuration specifies architecture (layers, heads, dimensions).",
+    what_we_learn=[
+        "Model configuration (architecture hyperparameters)",
+        "Parameter counting and memory usage",
+        "Weight initialization and statistics",
+        "Model architecture inspection",
+        "Parameter sharing and efficiency techniques"
+    ],
+    what_we_do=[
+        "Inspect model configuration (layers, heads, dimensions)",
+        "Count total and trainable parameters",
+        "Analyze parameters by component (embeddings, attention, MLP)",
+        "Inspect weight statistics (mean, std, min, max)",
+        "Check for parameter sharing between layers"
+    ],
+    hands_on=[
+        "Access model.config to see architecture parameters",
+        "Count parameters: sum(p.numel() for p in model.parameters())",
+        "Break down parameters by component type",
+        "Inspect embedding layer weights",
+        "Calculate memory usage (float32 vs float16)",
+        "Check if embedding and output layers share weights"
+    ]
+))
+
 # Part 1: Model Configuration
-# ============================================================================
-print("\n" + "-" * 80)
-print("Part 1: Model Configuration")
-print("-" * 80)
+print(formatter.section("Part 1: Model Configuration - Architecture Parameters"))
 
+loader = ModelLoader()
 try:
-    from transformers import AutoTokenizer, AutoModel
-    
-    model_name = "gpt2"
-    
-    # Get model from previous objective if available
+    tokenizer, model = loader.load_both(globals())
     if 'model' in globals() and 'tokenizer' in globals():
-        print(f"\n✅ Using model and tokenizer from previous objectives")
+        print("✅ Using model and tokenizer from previous objectives")
     else:
-        print(f"\n📥 Loading tokenizer and model: {model_name}")
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModel.from_pretrained(model_name)
+        print(f"📥 Loaded tokenizer and model: {loader.model_name}")
     
-    # Access model configuration
     if hasattr(model, 'config'):
         config = model.config
-        
         print(f"\n📋 Model Configuration:")
         print(f"   Model type: {config.model_type}")
         
-        # Architecture parameters
-        if hasattr(config, 'n_layer'):
-            print(f"   Number of layers: {config.n_layer}")
-        if hasattr(config, 'n_head'):
-            print(f"   Number of attention heads: {config.n_head}")
-        if hasattr(config, 'n_embd'):
-            print(f"   Embedding dimension: {config.n_embd}")
-        if hasattr(config, 'n_positions'):
-            print(f"   Max sequence length: {config.n_positions}")
-        if hasattr(config, 'vocab_size'):
-            print(f"   Vocabulary size: {config.vocab_size}")
+        attrs = ['n_layer', 'n_head', 'n_embd', 'n_positions', 'vocab_size']
+        config_values = {}
+        for attr in attrs:
+            if hasattr(config, attr):
+                value = getattr(config, attr)
+                config_values[attr] = value
+                label = attr.replace('n_', '').replace('_', ' ').title()
+                print(f"   {label}: {value}")
         
-        # Activation and other settings
         if hasattr(config, 'activation_function'):
             print(f"   Activation: {config.activation_function}")
         if hasattr(config, 'layer_norm_epsilon'):
             print(f"   LayerNorm epsilon: {config.layer_norm_epsilon}")
         
-except ImportError as e:
-    print(f"⚠️  Missing dependency: {e}")
-    print("   Install with: pip install transformers torch")
-    model = None
+        print(formatter.output_summary([
+            f"Model architecture: {config_values.get('n_layer', 'N/A')} layers, {config_values.get('n_head', 'N/A')} heads",
+            f"Hidden dimension: {config_values.get('n_embd', 'N/A')}, Vocabulary: {config_values.get('vocab_size', 'N/A')}",
+            "Configuration defines model capacity and behavior",
+            "All hyperparameters are set before training"
+        ]))
 except Exception as e:
     print(f"❌ Error: {e}")
     model = None
 
-# ============================================================================
 # Part 2: Parameter Counting
-# ============================================================================
-print("\n" + "-" * 80)
-print("Part 2: Parameter Counting")
-print("-" * 80)
+print(formatter.section("Part 2: Parameter Counting - Model Size Analysis"))
 
 if model is not None:
     try:
-        # Count total parameters
         total_params = sum(p.numel() for p in model.parameters())
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         
@@ -83,46 +94,41 @@ if model is not None:
         print(f"   Memory (float32): ~{total_params * 4 / 1024 / 1024:.2f} MB")
         print(f"   Memory (float16): ~{total_params * 2 / 1024 / 1024:.2f} MB")
         
-        # Count by layer type
         print(f"\n🔍 Parameters by Component:")
-        embedding_params = 0
-        attention_params = 0
-        mlp_params = 0
-        norm_params = 0
-        other_params = 0
+        component_params = {'embedding': 0, 'attention': 0, 'mlp': 0, 'norm': 0, 'other': 0}
         
         for name, param in model.named_parameters():
             num_params = param.numel()
             if 'embed' in name.lower():
-                embedding_params += num_params
+                component_params['embedding'] += num_params
             elif 'attn' in name.lower():
-                attention_params += num_params
+                component_params['attention'] += num_params
             elif 'mlp' in name.lower() or 'c_fc' in name.lower() or 'c_proj' in name.lower():
-                mlp_params += num_params
+                component_params['mlp'] += num_params
             elif 'ln' in name.lower() or 'norm' in name.lower():
-                norm_params += num_params
+                component_params['norm'] += num_params
             else:
-                other_params += num_params
+                component_params['other'] += num_params
         
-        print(f"   Embeddings: {embedding_params:,} ({embedding_params/total_params*100:.1f}%)")
-        print(f"   Attention: {attention_params:,} ({attention_params/total_params*100:.1f}%)")
-        print(f"   MLP/Feedforward: {mlp_params:,} ({mlp_params/total_params*100:.1f}%)")
-        print(f"   LayerNorm: {norm_params:,} ({norm_params/total_params*100:.1f}%)")
-        print(f"   Other: {other_params:,} ({other_params/total_params*100:.1f}%)")
+        for comp, count in component_params.items():
+            if count > 0:
+                pct = count / total_params * 100
+                print(f"   {comp.capitalize()}: {count:,} ({pct:.1f}%)")
         
+        print(formatter.output_summary([
+            f"Total parameters: {total_params:,} (defines model capacity)",
+            f"Memory: ~{total_params * 4 / 1024 / 1024:.2f} MB (float32) or ~{total_params * 2 / 1024 / 1024:.2f} MB (float16)",
+            f"Largest component: {max(component_params.items(), key=lambda x: x[1])[0]} ({max(component_params.values())/total_params*100:.1f}%)",
+            "More parameters = more capacity but also more memory and computation"
+        ]))
     except Exception as e:
         print(f"⚠️  Error counting parameters: {e}")
 
-# ============================================================================
 # Part 3: Weight Inspection
-# ============================================================================
-print("\n" + "-" * 80)
-print("Part 3: Weight Inspection")
-print("-" * 80)
+print(formatter.section("Part 3: Weight Inspection - Learned Values"))
 
 if model is not None:
     try:
-        # Inspect a specific weight matrix
         if hasattr(model, 'transformer') and hasattr(model.transformer, 'wte'):
             embedding_layer = model.transformer.wte
             
@@ -131,15 +137,20 @@ if model is not None:
             print(f"   Dtype: {embedding_layer.weight.dtype}")
             print(f"   Requires grad: {embedding_layer.weight.requires_grad}")
             
-            # Weight statistics
             weight = embedding_layer.weight.data
             print(f"\n📊 Weight Statistics:")
             print(f"   Mean: {weight.mean().item():.6f}")
             print(f"   Std: {weight.std().item():.6f}")
             print(f"   Min: {weight.min().item():.6f}")
             print(f"   Max: {weight.max().item():.6f}")
+            
+            print(formatter.output_summary([
+                f"Embedding weights shape: {embedding_layer.weight.shape}",
+                f"Weight distribution: mean={weight.mean().item():.6f}, std={weight.std().item():.6f}",
+                "Weights are learned during training (not random after training)",
+                "Weight initialization affects training stability"
+            ]))
         
-        # Inspect attention weights
         if hasattr(model, 'transformer') and hasattr(model.transformer, 'h'):
             first_layer = model.transformer.h[0]
             if hasattr(first_layer, 'attn') and hasattr(first_layer.attn, 'c_attn'):
@@ -147,29 +158,22 @@ if model is not None:
                 print(f"\n🔍 Attention Weights (QKV projection):")
                 print(f"   Shape: {attn_weights.shape}")
                 print(f"   This projects embeddings to Q, K, V")
-                
     except Exception as e:
         print(f"⚠️  Error inspecting weights: {e}")
 
-# ============================================================================
 # Part 4: Model Architecture Inspection
-# ============================================================================
-print("\n" + "-" * 80)
-print("Part 4: Model Architecture Inspection")
-print("-" * 80)
+print(formatter.section("Part 4: Model Architecture Inspection - Component Analysis"))
 
 if model is not None:
     try:
         print(f"\n🏗️  Model Structure:")
         print(f"   Type: {type(model).__name__}")
         
-        # List main components
         print(f"\n📦 Main Components:")
         for name, module in model.named_children():
             num_params = sum(p.numel() for p in module.parameters())
             print(f"   {name}: {type(module).__name__} ({num_params:,} params)")
         
-        # Layer structure
         if hasattr(model, 'transformer') and hasattr(model.transformer, 'h'):
             num_layers = len(model.transformer.h)
             print(f"\n🔢 Layer Details:")
@@ -181,15 +185,17 @@ if model is not None:
                 print(f"   Parameters per block: ~{block_params:,}")
                 print(f"   Total block parameters: ~{block_params * num_layers:,}")
         
+        print(formatter.output_summary([
+            "Model is composed of main components (transformer, embeddings, etc.)",
+            f"Each transformer block has ~{block_params if num_layers > 0 else 'N/A':,} parameters",
+            "Architecture determines how parameters are organized",
+            "Understanding architecture helps optimize and debug models"
+        ]))
     except Exception as e:
         print(f"⚠️  Error inspecting architecture: {e}")
 
-# ============================================================================
 # Part 5: Parameter Sharing and Efficiency
-# ============================================================================
-print("\n" + "-" * 80)
-print("Part 5: Parameter Sharing and Efficiency")
-print("-" * 80)
+print(formatter.section("Part 5: Parameter Sharing and Efficiency - Optimization Techniques"))
 
 print(f"\n💡 Parameter Efficiency Techniques:")
 print(f"   1. Weight Sharing: Same weights used in multiple places")
@@ -200,39 +206,39 @@ print(f"   5. Distillation: Smaller model learns from larger")
 
 if model is not None:
     try:
-        # Check for shared embeddings
-        if hasattr(model, 'transformer'):
-            if hasattr(model.transformer, 'wte') and hasattr(model, 'lm_head'):
-                wte = model.transformer.wte
-                lm_head = model.lm_head
-                
-                # Check if weights are shared
-                if hasattr(wte, 'weight') and hasattr(lm_head, 'weight'):
-                    if wte.weight.data_ptr() == lm_head.weight.data_ptr():
-                        print(f"\n✅ Weight Sharing Detected:")
-                        print(f"   Embedding and output layers share weights!")
-                        print(f"   Saves: {wte.weight.numel() * 4 / 1024 / 1024:.2f} MB")
-                    else:
-                        print(f"\n📊 No weight sharing between embeddings and output")
+        if hasattr(model, 'transformer') and hasattr(model, 'lm_head'):
+            wte = model.transformer.wte
+            lm_head = model.lm_head
+            
+            if hasattr(wte, 'weight') and hasattr(lm_head, 'weight'):
+                if wte.weight.data_ptr() == lm_head.weight.data_ptr():
+                    print(f"\n✅ Weight Sharing Detected:")
+                    print(f"   Embedding and output layers share weights!")
+                    print(f"   Saves: {wte.weight.numel() * 4 / 1024 / 1024:.2f} MB")
+                else:
+                    print(f"\n📊 No weight sharing between embeddings and output")
         
+        print(formatter.output_summary([
+            "Weight sharing reduces parameters and memory",
+            "LoRA allows fine-tuning with fewer parameters",
+            "Quantization (float16/int8) reduces memory by 2-4x",
+            "Pruning removes unimportant parameters",
+            "Efficiency techniques enable running large models on smaller hardware"
+        ]))
     except Exception as e:
         print(f"⚠️  Could not check parameter sharing: {e}")
 
-# ============================================================================
 # Summary
-# ============================================================================
-print("\n" + "=" * 80)
-print("✅ Objective 6 Complete: Parameters")
-print("=" * 80)
-print("\n📚 Key Takeaways:")
-print("  1. Model config defines architecture (layers, heads, dimensions)")
-print("  2. Parameters are learned weights (millions to billions)")
-print("  3. Different components use different parameter amounts")
-print("  4. Weight sharing can reduce memory and parameters")
-print("  5. Parameters define model capacity and behavior")
-print("\n" + "=" * 80)
-print("🎉 ALL OBJECTIVES COMPLETE!")
-print("=" * 80)
+takeaways = [
+    "Model config defines architecture (layers, heads, dimensions)",
+    "Parameters are learned weights (millions to billions)",
+    "Different components use different parameter amounts",
+    "Weight sharing can reduce memory and parameters",
+    "Parameters define model capacity and behavior"
+]
+print(formatter.summary("Objective 6 Complete: Parameters", takeaways))
+
+print(formatter.header("🎉 ALL OBJECTIVES COMPLETE!"))
 print("\n📚 You now understand the complete LLM pipeline:")
 print("   1. Tokens → Text split into subword units")
 print("   2. Embeddings → Tokens converted to vectors")
