@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oviva Raja - AI Engineering Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #ffffff;
+            color: #24292e;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 60px;
+            border-bottom: 3px solid #0366d6;
+        }
+
+        .hero-name {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #0366d6;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .hero-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0366d6;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: #586069;
+            margin-bottom: 30px;
+        }
+
+        .hero-tagline {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #24292e;
+            margin: 30px 0 15px;
+        }
+
+        .hero-description {
+            max-width: 800px;
+            margin: 0 auto;
+            color: #6a737d;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .ai-stack {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .stack-layer {
+            padding: 15px 25px;
+            background: #f6f8fa;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #24292e;
+            position: relative;
+        }
+
+        .stack-layer::after {
+            content: "→";
+            position: absolute;
+            right: -30px;
+            color: #0366d6;
+            font-size: 1.5rem;
+        }
+
+        .stack-layer:last-child::after {
+            display: none;
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #24292e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 5px;
+            height: 32px;
+            background: #0366d6;
+            border-radius: 3px;
+        }
+
+        .section-intro {
+            color: #6a737d;
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 900px;
+        }
+
+        /* Project Cards Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .project-card {
+            background: #ffffff;
+            border: 2px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .project-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #0366d6;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #0366d6;
+        }
+
+        .project-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .project-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .icon-orange {
+            background: #fff4e6;
+            color: #ff8c00;
+        }
+
+        .icon-pink {
+            background: #ffe6f0;
+            color: #e91e63;
+        }
+
+        .icon-blue {
+            background: #e6f3ff;
+            color: #0366d6;
+        }
+
+        .icon-green {
+            background: #e6f7f0;
+            color: #28a745;
+        }
+
+        .project-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #24292e;
+            margin-bottom: 12px;
+        }
+
+        .project-card p {
+            color: #586069;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .nav a {
+            color: #0366d6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #0056b3;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 2px solid #e1e4e8;
+            color: #6a737d;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #0366d6;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-name {
+                font-size: 2.5rem;
+            }
+
+            .hero-title {
+                font-size: 1.2rem;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-stack {
+                flex-direction: column;
+            }
+
+            .stack-layer::after {
+                content: "↓";
+                right: auto;
+                bottom: -30px;
+                top: auto;
+            }
+
+            .nav {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">← Learning Path</a>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1 class="hero-name">Oviva Raja</h1>
+            <p class="hero-title">AI Engineering — Building AI Products</p>
+            <p class="hero-subtitle">AI Systems Engineer – Agentic Workflows</p>
+            
+            <p class="hero-tagline">AI is not monolithic.</p>
+            <div class="ai-stack">
+                <div class="stack-layer">Applications</div>
+                <div class="stack-layer">Inference</div>
+                <div class="stack-layer">Training</div>
+            </div>
+            <p class="hero-description">
+                The stack has three layers: Applications → Inference → Training. 
+                My portfolio is structured around these layers to demonstrate skills and systems thinking 
+                across the entire AI lifecycle.
+            </p>
+        </div>
+
+        <!-- AI Applications Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">AI Applications</h2>
+                <p class="section-intro">
+                    The application layer is massively underinvested. I use agentic workflows, retrieval, 
+                    and applied LLM engineering to build useful real-world AI products that solve actual problems.
+                </p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-icon icon-orange">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3>RAG Retrieval-Augmented System</h3>
+                    <p>
+                        Built a comprehensive RAG system with FAISS vector database, custom embeddings, 
+                        and multi-model evaluation. Includes system prompt engineering, Q&A generation, 
+                        and performance analysis.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-pink">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>Job Fitment Agent</h3>
+                    <p>
+                        Developed an AI agent using OpenAI Agent Builder for job fitment analysis. 
+                        Implements multi-workflow architecture with company research, job matching, 
+                        and candidate evaluation capabilities.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-blue">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>Chat-based PDF Research Tool</h3>
+                    <p>
+                        Created an interactive PDF research assistant with semantic search, 
+                        document chunking, and conversational interface for extracting insights 
+                        from large document collections.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inference-Aware Engineering Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Inference-Aware Engineering (Systems Thinking)</h2>
+                <p class="section-intro">
+                    Inference supply is a bottleneck. I optimize token usage, model efficiency, 
+                    and system architecture to build cost-effective and performant AI systems 
+                    that scale in production.
+                </p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-icon icon-orange">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3>Token Cost Optimization for RAG</h3>
+                    <p>
+                        Analyzed and optimized token consumption across RAG pipeline components. 
+                        Reduced costs through strategic prompt engineering, chunking strategies, 
+                        and model selection.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-green">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3>Latency Testing of LLM Pipelines</h3>
+                    <p>
+                        Designed and implemented comprehensive latency testing framework for LLM pipelines. 
+                        Measures end-to-end response times, identifies bottlenecks, and optimizes 
+                        system performance.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-blue">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Model Size Comparison Dashboard</h3>
+                    <p>
+                        Built interactive dashboard comparing model sizes, performance metrics, 
+                        and cost analysis across different LLM architectures. Helps inform 
+                        model selection decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thought Leadership Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Thought Leadership</h2>
+                <p class="section-intro">
+                    Sharing insights on AI engineering, product development, and the evolving 
+                    landscape of production AI systems.
+                </p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-icon icon-orange">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Why the Application Layer is Undervalued</h3>
+                    <p>
+                        Exploring how most AI investment focuses on models and infrastructure, 
+                        while the application layer—where real value is created—remains underinvested. 
+                        Discussing the opportunity and impact.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-pink">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>What Inference Bottlenecks Mean</h3>
+                    <p>
+                        Analyzing how inference supply constraints affect AI product development, 
+                        and strategies for building systems that work within these constraints 
+                        while delivering value.
+                    </p>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon icon-blue">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h3>RAG vs Fine-Tuning – When Each Makes Sense</h3>
+                    <p>
+                        Comparing RAG and fine-tuning approaches, discussing trade-offs, 
+                        use cases, and decision frameworks for choosing the right approach 
+                        for different AI product requirements.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Oviva Raja</strong> — AI Engineering — Building AI Products<br>
+                <a href="https://github.com/oviya-raja/ist-402" target="_blank">GitHub</a> | 
+                <a href="index.html">Learning Path</a>
+            </p>
+            <p style="margin-top: 15px; font-size: 0.85rem;">
+                Last updated: <span id="last-updated"></span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Set last updated date
+        document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    </script>
+</body>
+</html>
+
