@@ -42,3 +42,4 @@ Text → Tokenizer → Tokens → Token IDs
 
 After understanding tokens, we move to **Objective 2: Embeddings** where tokens are converted to numerical vectors.
 
+
