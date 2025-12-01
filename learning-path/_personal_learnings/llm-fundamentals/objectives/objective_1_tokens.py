@@ -39,17 +39,40 @@ print(formatter.learning_intro(
 # ============================================================================
 # Part 1: Basic Tokenization
 # ============================================================================
-print(formatter.section("Part 1: Basic Tokenization - Hands-On Code"))
+print(formatter.section("Part 1: Basic Tokenization"))
+
+# ============================================================================
+# CODE: Load tokenizer and process text
+# ============================================================================
+print(formatter.code_section("Load Tokenizer and Tokenize Text"))
 
 loader = ModelLoader()
 try:
+    # CODE: Load tokenizer
     tokenizer = loader.load_tokenizer(globals())
-    print(f"\n📥 Loaded tokenizer from: {loader.model_name}")
-    
     processor = TextProcessor(tokenizer)
     
-    # Display tokenizer type information
+    # CODE: Get tokenizer type information
     tokenizer_info = processor.get_tokenizer_type_info()
+    
+    # CODE: Tokenize example text
+    text = "Hello! How are you today?"
+    info = processor.get_token_info(text)
+    
+except Exception as e:
+    print(f"❌ Error: {e}")
+    tokenizer = None
+    processor = None
+    info = None
+
+# ============================================================================
+# CONCEPT: Display tokenization results and explanations
+# ============================================================================
+print(formatter.concept_section("Understanding Tokenization Results"))
+
+if tokenizer and processor and info:
+    print(f"\n📥 Loaded tokenizer from: {loader.model_name}")
+    
     print(f"\n🔍 Tokenizer Type Information:")
     print(f"   Class: {tokenizer_info['class_name']}")
     if tokenizer_info['algorithm']:
@@ -57,9 +80,6 @@ try:
     print(f"   Type: {tokenizer_info['tokenizer_type']} ({'Fast' if tokenizer_info['is_fast'] else 'Slow'})")
     print(f"\n💡 Note: AutoTokenizer automatically detected and loaded the correct tokenizer")
     print(f"   for this model - it's the generic tokenizer that works with any model!")
-    
-    text = "Hello! How are you today?"
-    info = processor.get_token_info(text)
     
     print(f"\n📝 Original text: '{info['text']}'")
     print(f"🔤 Tokens: {info['tokens']}")
@@ -76,16 +96,18 @@ try:
         f"Tokenization ratio: {info['ratio']:.2f} tokens per character",
         "Decoding token Identifiers back produces the original text"
     ]))
-    
-except Exception as e:
-    print(f"❌ Error: {e}")
 
 # ============================================================================
 # Part 2: Tokenization Examples
 # ============================================================================
-print(formatter.section("Part 2: Tokenization Examples - Different Texts"))
+print(formatter.section("Part 2: Tokenization Examples"))
 
-if 'tokenizer' in locals():
+# ============================================================================
+# CODE: Tokenize multiple example texts
+# ============================================================================
+print(formatter.code_section("Tokenize Different Example Texts"))
+
+if 'tokenizer' in locals() and tokenizer and 'processor' in locals() and processor:
     examples = [
         "The quick brown fox jumps over the lazy dog.",
         "I love machine learning!",
@@ -93,9 +115,20 @@ if 'tokenizer' in locals():
         "Tokenization splits text into smaller units.",
     ]
     
-    print("\n📚 Example tokenizations:")
+    # CODE: Tokenize each example
+    tokenized_examples = []
     for example in examples:
         tokens = processor.tokenize(example)
+        tokenized_examples.append((example, tokens))
+
+# ============================================================================
+# CONCEPT: Display tokenization examples and explain patterns
+# ============================================================================
+print(formatter.concept_section("Observing Tokenization Patterns"))
+
+if 'tokenized_examples' in locals():
+    print("\n📚 Example tokenizations:")
+    for example, tokens in tokenized_examples:
         print(f"\n  Text: '{example}'")
         print(f"  Tokens ({len(tokens)}): {tokens[:10]}{'...' if len(tokens) > 10 else ''}")
     
@@ -109,10 +142,15 @@ if 'tokenizer' in locals():
 # ============================================================================
 # Part 3: Special Tokens
 # ============================================================================
-print(formatter.section("Part 3: Special Tokens - Vocabulary Features"))
+print(formatter.section("Part 3: Special Tokens"))
 
-if 'tokenizer' in locals():
-    print("\n🔑 Special tokens in vocabulary:")
+# ============================================================================
+# CODE: Extract special tokens and vocabulary information
+# ============================================================================
+print(formatter.code_section("Extract Special Tokens and Vocabulary Info"))
+
+if 'tokenizer' in locals() and tokenizer:
+    # CODE: Get special tokens
     special_tokens = {
         'Beginning of Sequence token': tokenizer.bos_token,
         'End of Sequence token': tokenizer.eos_token,
@@ -122,14 +160,24 @@ if 'tokenizer' in locals():
         'Classification token': tokenizer.cls_token,
     }
     
+    # CODE: Get vocabulary size
+    vocab_size = len(tokenizer)
+
+# ============================================================================
+# CONCEPT: Explain special tokens and vocabulary
+# ============================================================================
+print(formatter.concept_section("Understanding Special Tokens and Vocabulary"))
+
+if 'special_tokens' in locals() and 'vocab_size' in locals():
+    print("\n🔑 Special tokens in vocabulary:")
     for name, token in special_tokens.items():
         if token:
             print(f"  {name}: '{token}'")
     
-    print(f"\n📊 Vocabulary size: {len(tokenizer)}")
+    print(f"\n📊 Vocabulary size: {vocab_size}")
     
     print(formatter.output_summary([
-        f"Vocabulary contains {len(tokenizer)} unique tokens",
+        f"Vocabulary contains {vocab_size} unique tokens",
         "Special tokens mark boundaries (Beginning of Sequence/End of Sequence), unknown words (Unknown), padding (Padding)",
         "Different models use different special token sets"
     ]))
@@ -137,35 +185,57 @@ if 'tokenizer' in locals():
 # ============================================================================
 # Part 4: Different Tokenizers
 # ============================================================================
-print(formatter.section("Part 4: Comparing Different Tokenizers - Strategy Differences"))
+print(formatter.section("Part 4: Comparing Different Tokenizers"))
 
-if 'tokenizer' in locals():
+# ============================================================================
+# CODE: Load and compare different tokenizers
+# ============================================================================
+print(formatter.code_section("Compare Tokenization Across Different Models"))
+
+if 'tokenizer' in locals() and tokenizer:
     text = "Hello world! How are you?"
+    comparison_results = []
+    
     try:
         from transformers import AutoTokenizer
-        # Compare modern open-source models (using latest Qwen 2.5)
+        # CODE: Compare modern open-source models
         models = ["Qwen/Qwen2.5-1.5B", "microsoft/Phi-3-mini-4k-instruct"]
-        print(f"\n📝 Text: '{text}'\n")
         
         for model_name in models:
             try:
                 loader_temp = ModelLoader(model_name)
                 tok = loader_temp.load_tokenizer(use_cache=True)
                 tokens = tok.tokenize(text)
-                print(f"  {model_name}:")
-                print(f"    Tokens ({len(tokens)}): {tokens}")
+                comparison_results.append((model_name, tokens))
             except Exception as e:
-                print(f"  {model_name}: Error - {e}")
-        
-        print(formatter.output_summary([
-            "Qwen2 uses modern Byte Pair Encoding tokenization - efficient and preserves meaning",
-            "Phi-3 uses similar tokenization with optimized vocabulary",
-            "Same text produces different tokens with different tokenizers",
-            "Tokenization strategy affects model performance and vocabulary size",
-            "Modern models use larger vocabularies (100K+ tokens) for better coverage"
-        ]))
+                comparison_results.append((model_name, None, str(e)))
     except Exception as e:
         print(f"⚠️  Could not compare tokenizers: {e}")
+
+# ============================================================================
+# CONCEPT: Explain differences between tokenizers
+# ============================================================================
+print(formatter.concept_section("Understanding Tokenizer Differences"))
+
+if 'comparison_results' in locals():
+    print(f"\n📝 Text: '{text}'\n")
+    
+    for result in comparison_results:
+        if len(result) == 3:  # Error case
+            model_name, _, error = result
+            print(f"  {model_name}: Error - {error}")
+        else:
+            model_name, tokens = result
+            print(f"  {model_name}:")
+            print(f"    Tokens ({len(tokens)}): {tokens}")
+    
+    print(formatter.output_summary([
+        "Qwen2 uses modern Byte Pair Encoding tokenization - efficient and preserves meaning",
+        "Phi-3 uses similar tokenization with optimized vocabulary",
+        "Same text produces different tokens with different tokenizers",
+        "Tokenization strategy affects model performance and vocabulary size",
+        "Modern models use larger vocabularies (100K+ tokens) for better coverage"
+    ]))
 
 # ============================================================================
 # Summary

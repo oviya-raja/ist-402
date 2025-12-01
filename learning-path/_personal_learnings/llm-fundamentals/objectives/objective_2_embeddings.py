@@ -47,15 +47,32 @@ print(formatter.section("Part 1: Basic Embeddings - Hands-On Code"))
 
 loader = ModelLoader()
 try:
-    # Only use cached models - don't attempt to download
-    tokenizer, model = loader.load_both(globals(), use_cache=True, allow_download=False)
+    # Check if model is cached first
+    model_cached, tokenizer_cached = loader.is_cached()
+    
+    # If model not cached, allow download (Objective 2 needs the model)
+    allow_download = not model_cached
+    if allow_download:
+        print(f"⚠️  Model not found in cache: {loader.model_name}")
+        print(f"   Objective 2 requires the model (not just tokenizer)")
+        print(f"   Downloading model (~3GB) - this may take a few minutes...")
+        print(f"   (Model will be cached for future use)")
+    
+    tokenizer, model = loader.load_both(globals(), use_cache=True, allow_download=allow_download)
+    
     if 'tokenizer' in globals() and 'model' in globals():
         print("   ✅ Using tokenizer and model from previous objectives")
     elif 'tokenizer' in globals():
         print("   ✅ Using tokenizer from Objective 1")
-        print(f"   📥 Loaded model from cache: {loader.model_name}")
+        if model_cached:
+            print(f"   📥 Loaded model from cache: {loader.model_name}")
+        else:
+            print(f"   📥 Downloaded and loaded model: {loader.model_name}")
     else:
-        print(f"   📥 Loaded tokenizer and model from cache: {loader.model_name}")
+        if model_cached:
+            print(f"   📥 Loaded tokenizer and model from cache: {loader.model_name}")
+        else:
+            print(f"   📥 Loaded tokenizer from cache, downloaded model: {loader.model_name}")
     
     processor = TextProcessor(tokenizer)
     extractor = EmbeddingExtractor(model, tokenizer)
@@ -85,12 +102,10 @@ try:
     ]))
     
 except FileNotFoundError as e:
-    print(f"❌ Model not found in cache: {loader.model_name}")
+    print(f"❌ Failed to load model: {loader.model_name}")
     print(f"   {str(e)}")
-    print(f"\n💡 Solutions:")
-    print(f"   1. Run Objective 1 first to cache the tokenizer")
-    print(f"   2. Manually download the model: python -c \"from transformers import AutoModel; AutoModel.from_pretrained('{loader.model_name}')\"")
-    print(f"   3. Use a different model that is already cached")
+    print(f"\n💡 This shouldn't happen - the code should auto-download if not cached.")
+    print(f"   If you see this, there may be a network issue or disk space problem.")
     embeddings = None
     model = None
 except Exception as e:

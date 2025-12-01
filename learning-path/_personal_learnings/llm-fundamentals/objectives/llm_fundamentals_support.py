@@ -771,6 +771,16 @@ class Formatter:
         return "\n" + "-" * width + f"\n{title}\n" + "-" * width
     
     @staticmethod
+    def code_section(title: str, width: int = 80) -> str:
+        """Create code section marker - clearly separates code from explanations."""
+        return "\n" + "=" * width + f"\n💻 CODE: {title}\n" + "=" * width
+    
+    @staticmethod
+    def concept_section(title: str, width: int = 80) -> str:
+        """Create concept explanation section marker."""
+        return "\n" + "=" * width + f"\n📚 CONCEPT: {title}\n" + "=" * width
+    
+    @staticmethod
     def learning_intro(concept: str, description: str, what_we_learn: List[str], 
                       what_we_do: List[str], hands_on: List[str]) -> str:
         """Create learning introduction section."""
