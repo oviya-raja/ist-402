@@ -1,7 +1,7 @@
 # ============================================================================
 # Objective 1: Tokens - Text → Tokens
 # ============================================================================
-# Understanding how text is split into tokens (the basic units of LLMs)
+# Understanding how text is split into tokens (the basic units of Large Language Models)
 
 from llm_fundamentals_support import (
     LLMFundamentalsSupport, ModelLoader, TextProcessor, Formatter, StateManager
@@ -14,11 +14,11 @@ state_mgr = StateManager()
 print(formatter.header("OBJECTIVE 1: TOKENS"))
 print(formatter.learning_intro(
     concept="Tokenization",
-    description="Text is split into tokens - subword units that LLMs can process. Each token has a unique ID in the model's vocabulary.",
+    description="Text is split into tokens - subword units that Large Language Models can process. Each token has a unique Identifier in the model's vocabulary.",
     what_we_learn=[
         "How text is converted to tokens (subword units)",
-        "Token IDs and vocabulary mapping",
-        "Different tokenization strategies (BPE, WordPiece, etc.)",
+        "Token Identifiers and vocabulary mapping",
+        "Different tokenization strategies (Byte Pair Encoding, WordPiece, etc.)",
         "Special tokens and their purposes"
     ],
     what_we_do=[
@@ -28,10 +28,10 @@ print(formatter.learning_intro(
         "Examine special tokens in the vocabulary"
     ],
     hands_on=[
-        "Use AutoTokenizer to load GPT-2 tokenizer",
+        "Use AutoTokenizer to load Qwen tokenizer",
         "Tokenize text: 'Hello! How are you today?'",
         "See tokens: ['Hello', '!', 'ĠHow', 'Ġare', 'Ġyou', 'Ġtoday', '?']",
-        "Compare GPT-2 vs BERT tokenization",
+        "Compare Qwen vs other tokenizers",
         "Inspect vocabulary size and special tokens"
     ]
 ))
@@ -47,12 +47,23 @@ try:
     print(f"\n📥 Loaded tokenizer from: {loader.model_name}")
     
     processor = TextProcessor(tokenizer)
+    
+    # Display tokenizer type information
+    tokenizer_info = processor.get_tokenizer_type_info()
+    print(f"\n🔍 Tokenizer Type Information:")
+    print(f"   Class: {tokenizer_info['class_name']}")
+    if tokenizer_info['algorithm']:
+        print(f"   Algorithm: {tokenizer_info['algorithm']}")
+    print(f"   Type: {tokenizer_info['tokenizer_type']} ({'Fast' if tokenizer_info['is_fast'] else 'Slow'})")
+    print(f"\n💡 Note: AutoTokenizer automatically detected and loaded the correct tokenizer")
+    print(f"   for this model - it's the generic tokenizer that works with any model!")
+    
     text = "Hello! How are you today?"
     info = processor.get_token_info(text)
     
     print(f"\n📝 Original text: '{info['text']}'")
     print(f"🔤 Tokens: {info['tokens']}")
-    print(f"🔢 Token IDs: {info['token_ids']}")
+    print(f"🔢 Token Identifiers: {info['token_ids']}")
     print(f"📊 Number of tokens: {info['num_tokens']}")
     print(f"📊 Number of characters: {info['num_chars']}")
     print(f"📈 Ratio: {info['ratio']:.2f} tokens per character")
@@ -61,9 +72,9 @@ try:
     # Output summary
     print(formatter.output_summary([
         f"Text '{text}' was split into {info['num_tokens']} tokens",
-        f"Each token has a unique ID (e.g., 'Hello' = {info['token_ids'][0]})",
+        f"Each token has a unique Identifier (e.g., 'Hello' = {info['token_ids'][0]})",
         f"Tokenization ratio: {info['ratio']:.2f} tokens per character",
-        "Decoding token IDs back produces the original text"
+        "Decoding token Identifiers back produces the original text"
     ]))
     
 except Exception as e:
@@ -92,7 +103,7 @@ if 'tokenizer' in locals():
         "Different texts produce different numbers of tokens",
         "Longer words may be split (e.g., 'Tokenization' → 'Token' + 'ization')",
         "Punctuation is often separate tokens",
-        "Spaces are represented as 'Ġ' prefix in GPT-2 tokens"
+        "Spaces are represented as 'Ġ' prefix in Byte Pair Encoding tokenizers (like Qwen)"
     ]))
 
 # ============================================================================
@@ -103,12 +114,12 @@ print(formatter.section("Part 3: Special Tokens - Vocabulary Features"))
 if 'tokenizer' in locals():
     print("\n🔑 Special tokens in vocabulary:")
     special_tokens = {
-        'bos_token': tokenizer.bos_token,
-        'eos_token': tokenizer.eos_token,
-        'unk_token': tokenizer.unk_token,
-        'pad_token': tokenizer.pad_token,
-        'sep_token': tokenizer.sep_token,
-        'cls_token': tokenizer.cls_token,
+        'Beginning of Sequence token': tokenizer.bos_token,
+        'End of Sequence token': tokenizer.eos_token,
+        'Unknown token': tokenizer.unk_token,
+        'Padding token': tokenizer.pad_token,
+        'Separator token': tokenizer.sep_token,
+        'Classification token': tokenizer.cls_token,
     }
     
     for name, token in special_tokens.items():
@@ -119,7 +130,7 @@ if 'tokenizer' in locals():
     
     print(formatter.output_summary([
         f"Vocabulary contains {len(tokenizer)} unique tokens",
-        "Special tokens mark boundaries (BOS/EOS), unknown words (UNK), padding (PAD)",
+        "Special tokens mark boundaries (Beginning of Sequence/End of Sequence), unknown words (Unknown), padding (Padding)",
         "Different models use different special token sets"
     ]))
 
@@ -147,7 +158,7 @@ if 'tokenizer' in locals():
                 print(f"  {model_name}: Error - {e}")
         
         print(formatter.output_summary([
-            "Qwen2 uses modern BPE tokenization - efficient and preserves meaning",
+            "Qwen2 uses modern Byte Pair Encoding tokenization - efficient and preserves meaning",
             "Phi-3 uses similar tokenization with optimized vocabulary",
             "Same text produces different tokens with different tokenizers",
             "Tokenization strategy affects model performance and vocabulary size",
@@ -161,7 +172,7 @@ if 'tokenizer' in locals():
 # ============================================================================
 takeaways = [
     "Text is split into tokens (subword units)",
-    "Each token has a unique ID in the vocabulary",
+    "Each token has a unique Identifier in the vocabulary",
     "Different models use different tokenization strategies",
     "Special tokens mark sentence boundaries, padding, etc."
 ]

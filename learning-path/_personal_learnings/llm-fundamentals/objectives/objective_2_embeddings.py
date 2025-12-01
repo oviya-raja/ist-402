@@ -47,11 +47,15 @@ print(formatter.section("Part 1: Basic Embeddings - Hands-On Code"))
 
 loader = ModelLoader()
 try:
-    tokenizer, model = loader.load_both(globals())
-    if 'tokenizer' in globals():
+    # Only use cached models - don't attempt to download
+    tokenizer, model = loader.load_both(globals(), use_cache=True, allow_download=False)
+    if 'tokenizer' in globals() and 'model' in globals():
+        print("   ✅ Using tokenizer and model from previous objectives")
+    elif 'tokenizer' in globals():
         print("   ✅ Using tokenizer from Objective 1")
+        print(f"   📥 Loaded model from cache: {loader.model_name}")
     else:
-        print(f"   📥 Loaded tokenizer and model: {loader.model_name}")
+        print(f"   📥 Loaded tokenizer and model from cache: {loader.model_name}")
     
     processor = TextProcessor(tokenizer)
     extractor = EmbeddingExtractor(model, tokenizer)
@@ -80,16 +84,26 @@ try:
         "Shape: [batch_size, sequence_length, hidden_dimension]"
     ]))
     
+except FileNotFoundError as e:
+    print(f"❌ Model not found in cache: {loader.model_name}")
+    print(f"   {str(e)}")
+    print(f"\n💡 Solutions:")
+    print(f"   1. Run Objective 1 first to cache the tokenizer")
+    print(f"   2. Manually download the model: python -c \"from transformers import AutoModel; AutoModel.from_pretrained('{loader.model_name}')\"")
+    print(f"   3. Use a different model that is already cached")
+    embeddings = None
+    model = None
 except Exception as e:
     print(f"❌ Error: {e}")
     embeddings = None
+    model = None
 
 # ============================================================================
 # Part 2: Embedding Layer
 # ============================================================================
 print(formatter.section("Part 2: Embedding Layer - Architecture Inspection"))
 
-if 'model' in locals():
+if 'model' in locals() and model is not None:
     try:
         embedding_layer = model.get_input_embeddings()
         print(f"\n🔍 Embedding Layer:")
@@ -159,6 +173,6 @@ takeaways = [
 print(formatter.summary("Objective 2 Complete: Embeddings", takeaways, "Objective 3 - Attention (Vector Relationships)"))
 
 # Save state
-if 'model' in locals() and 'embeddings' in locals():
+if 'model' in locals() and model is not None and 'embeddings' in locals() and embeddings is not None:
     state_mgr.save_to_globals(globals(), model=model, embeddings=embeddings)
     print("\n💾 Model and embeddings saved for next objective")

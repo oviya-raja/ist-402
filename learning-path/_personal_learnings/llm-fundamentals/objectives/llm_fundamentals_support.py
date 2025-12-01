@@ -142,43 +142,49 @@ class ModelLoader:
                 model_dirs = list(hub_cache.glob(model_dir_pattern))
                 if model_dirs:
                     model_dir = model_dirs[0]
-                    # Check for model files (config.json, pytorch_model.bin, model.safetensors, etc.)
-                    model_files = list(model_dir.rglob("config.json"))
-                    if model_files:
+                    # Check for model files - need both config AND weights
+                    config_files = list(model_dir.rglob("config.json"))
+                    # Check for actual model weight files (safetensors or pytorch_model.bin)
+                    weight_files = list(model_dir.rglob("model.safetensors")) + list(model_dir.rglob("pytorch_model.bin"))
+                    if config_files and weight_files:
                         model_cached = True
-                        # Check for tokenizer files
-                        tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
-                        if tokenizer_files:
+                    # Check for tokenizer files
+                    tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
+                    if tokenizer_files:
+                        tokenizer_cached = True
+                    # Also check for tokenizer_config.json
+                    if not tokenizer_cached:
+                        tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
+                        if tokenizer_config:
                             tokenizer_cached = True
-                        # Also check for tokenizer_config.json
-                        if not tokenizer_cached:
-                            tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
-                            if tokenizer_config:
-                                tokenizer_cached = True
             
             # Also check in root cache directory (older/alternative structure)
             if not model_cached:
                 model_dirs = list(cache_path.glob(model_dir_pattern))
                 if model_dirs:
                     model_dir = model_dirs[0]
-                    # Check for model files
-                    model_files = list(model_dir.rglob("config.json"))
-                    if model_files:
+                    # Check for model files - need both config AND weights
+                    config_files = list(model_dir.rglob("config.json"))
+                    # Check for actual model weight files (safetensors or pytorch_model.bin)
+                    weight_files = list(model_dir.rglob("model.safetensors")) + list(model_dir.rglob("pytorch_model.bin"))
+                    if config_files and weight_files:
                         model_cached = True
-                        # Check for tokenizer files
-                        tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
-                        if tokenizer_files:
+                    # Check for tokenizer files
+                    tokenizer_files = list(model_dir.rglob("tokenizer*.json"))
+                    if tokenizer_files:
+                        tokenizer_cached = True
+                    if not tokenizer_cached:
+                        tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
+                        if tokenizer_config:
                             tokenizer_cached = True
-                        if not tokenizer_cached:
-                            tokenizer_config = list(model_dir.rglob("tokenizer_config.json"))
-                            if tokenizer_config:
-                                tokenizer_cached = True
             
             # Final check: Try to actually load config/tokenizer locally (most reliable)
+            # Only do this if file-based check didn't find them
             if not model_cached or not tokenizer_cached:
                 try:
                     from transformers import AutoConfig, AutoTokenizer
-                    # Try to load config locally
+                    # Try to load config locally (but config alone doesn't mean model is cached)
+                    # We need the actual model weights, so we check for config but don't rely on it alone
                     if not model_cached:
                         try:
                             config = AutoConfig.from_pretrained(
@@ -186,7 +192,8 @@ class ModelLoader:
                                 cache_dir=self._cache_dir,
                                 local_files_only=True
                             )
-                            model_cached = True
+                            # Config exists, but we still need to verify weights exist
+                            # Don't set model_cached=True here - let the file check above handle it
                         except:
                             pass
                     
@@ -264,13 +271,14 @@ class ModelLoader:
         except ImportError:
             raise ImportError("transformers library not installed. Install with: pip install transformers")
     
-    def load_model(self, from_globals: Optional[dict] = None, use_cache: bool = True):
+    def load_model(self, from_globals: Optional[dict] = None, use_cache: bool = True, allow_download: bool = False):
         """
         Load model, reusing from globals if available.
         
         Args:
             from_globals: Global namespace to check for cached model
             use_cache: Whether to use Hugging Face cache (default: True)
+            allow_download: Whether to allow downloading if model not in cache (default: False)
         """
         if from_globals and 'model' in from_globals:
             self._model = from_globals['model']
@@ -290,10 +298,17 @@ class ModelLoader:
                     print(f"   Cache location: {self._cache_dir}")
                     local_files_only = True  # Use local files only to avoid download
                 else:
-                    print(f"⚠️  Model not found in cache: {self.model_name}")
-                    print(f"   Cache location: {self._cache_dir}")
-                    print(f"   Attempting download (if online)...")
-                    local_files_only = False
+                    if allow_download:
+                        print(f"⚠️  Model not found in cache: {self.model_name}")
+                        print(f"   Cache location: {self._cache_dir}")
+                        print(f"   Attempting download (if online)...")
+                        local_files_only = False
+                    else:
+                        raise FileNotFoundError(
+                            f"Model {self.model_name} not found in cache and downloads are disabled. "
+                            f"Cache location: {self._cache_dir}\n"
+                            f"To download the model, set allow_download=True or ensure the model is cached."
+                        )
             
             # Load with explicit cache directory and local_files_only flag
             try:
@@ -307,23 +322,34 @@ class ModelLoader:
                 return self._model
             except Exception as e:
                 if local_files_only:
-                    # If local_files_only failed, try without it (fallback)
-                    print(f"⚠️  Failed to load from cache, trying with download enabled...")
-                    self._model = AutoModel.from_pretrained(
-                        self.model_name,
-                        cache_dir=self._cache_dir if use_cache else None,
-                        local_files_only=False
-                    )
-                    return self._model
+                    # If local_files_only failed, only try download if allowed
+                    if allow_download:
+                        print(f"⚠️  Failed to load from cache (model weights may be missing or incomplete)")
+                        print(f"   Error: {str(e)[:100]}...")
+                        print(f"   Attempting to download/complete model files...")
+                        self._model = AutoModel.from_pretrained(
+                            self.model_name,
+                            cache_dir=self._cache_dir if use_cache else None,
+                            local_files_only=False
+                        )
+                        return self._model
+                    else:
+                        raise FileNotFoundError(
+                            f"Failed to load model {self.model_name} from cache. "
+                            f"Model weights may be missing or incomplete.\n"
+                            f"Error: {str(e)}\n"
+                            f"Cache location: {self._cache_dir}\n"
+                            f"To download the model, set allow_download=True."
+                        ) from e
                 else:
                     raise
         except ImportError:
             raise ImportError("transformers library not installed. Install with: pip install transformers")
     
-    def load_both(self, from_globals: Optional[dict] = None, use_cache: bool = True):
+    def load_both(self, from_globals: Optional[dict] = None, use_cache: bool = True, allow_download: bool = False):
         """Load both tokenizer and model."""
         tokenizer = self.load_tokenizer(from_globals, use_cache=use_cache)
-        model = self.load_model(from_globals, use_cache=use_cache)
+        model = self.load_model(from_globals, use_cache=use_cache, allow_download=allow_download)
         return tokenizer, model
     
     @staticmethod
@@ -661,6 +687,47 @@ class TextProcessor:
             'num_chars': len(text),
             'ratio': len(tokens) / len(text) if len(text) > 0 else 0
         }
+    
+    def get_tokenizer_type_info(self) -> Dict[str, Any]:
+        """Get information about the tokenizer type and algorithm."""
+        info = {
+            'class_name': type(self.tokenizer).__name__,
+            'module': type(self.tokenizer).__module__,
+            'tokenizer_type': None,
+            'algorithm': None,
+            'is_fast': 'Fast' in type(self.tokenizer).__name__,
+        }
+        
+        # Get tokenizer algorithm from backend
+        if hasattr(self.tokenizer, 'backend_tokenizer'):
+            backend = self.tokenizer.backend_tokenizer
+            if hasattr(backend, 'model'):
+                model_type = type(backend.model).__name__
+                info['algorithm'] = model_type
+                # Map to common names
+                algorithm_map = {
+                    'BPE': 'Byte Pair Encoding',
+                    'WordPiece': 'WordPiece',
+                    'Unigram': 'Unigram',
+                    'SentencePiece': 'SentencePiece',
+                }
+                if model_type in algorithm_map:
+                    info['algorithm'] = algorithm_map[model_type]
+        
+        # Get tokenizer class from config
+        if hasattr(self.tokenizer, 'tokenizer_config'):
+            config = self.tokenizer.tokenizer_config
+            if 'tokenizer_class' in config:
+                info['tokenizer_type'] = config['tokenizer_class']
+        
+        # Fallback: infer from class name
+        if not info['tokenizer_type']:
+            class_name = info['class_name']
+            # Remove 'Fast' suffix if present
+            base_name = class_name.replace('TokenizerFast', '').replace('Tokenizer', '')
+            info['tokenizer_type'] = base_name if base_name else 'Unknown'
+        
+        return info
 
 
 class EmbeddingExtractor:
