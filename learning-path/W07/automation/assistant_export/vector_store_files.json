@@ -1,0 +1,178 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "file-2QBcQW2qACiFzGvLjD5Vq5",
+      "object": "vector_store.file",
+      "usage_bytes": 13394,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-6JU2tLxtctDopLaihuroLn",
+      "object": "vector_store.file",
+      "usage_bytes": 11421,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-DyF8xLRicbP4UZb4pGdZoN",
+      "object": "vector_store.file",
+      "usage_bytes": 13389,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-FaBrnXQmTb2YefPUVyn1Yy",
+      "object": "vector_store.file",
+      "usage_bytes": 8164,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-HCTE3BfEfLSfeDwBB4rDQr",
+      "object": "vector_store.file",
+      "usage_bytes": 15547,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-JPGz2dtiHob1wgtv4nMZip",
+      "object": "vector_store.file",
+      "usage_bytes": 12399,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-KkFkgS3g9j6TK8C2YkeZFH",
+      "object": "vector_store.file",
+      "usage_bytes": 12696,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-TBoWhbJXtSgCqf1r3dPTu9",
+      "object": "vector_store.file",
+      "usage_bytes": 11653,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-UmebstViEGpAcGx8tiEtzU",
+      "object": "vector_store.file",
+      "usage_bytes": 16171,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    },
+    {
+      "id": "file-Y4fmWfv5tz2A4EgA82cS6N",
+      "object": "vector_store.file",
+      "usage_bytes": 8747,
+      "created_at": 1764452754,
+      "vector_store_id": "vs_692b699176c481919d2df4d95a0dfa44",
+      "status": "completed",
+      "last_error": null,
+      "chunking_strategy": {
+        "type": "static",
+        "static": {
+          "max_chunk_size_tokens": 800,
+          "chunk_overlap_tokens": 400
+        }
+      },
+      "attributes": {}
+    }
+  ],
+  "first_id": "file-2QBcQW2qACiFzGvLjD5Vq5",
+  "last_id": "file-Y4fmWfv5tz2A4EgA82cS6N",
+  "has_more": false
+}
