@@ -4,9 +4,9 @@
 
 **Your group will automate specific workflows using OpenAI Agents to improve efficiency and reduce manual effort.**
 
-## 🎯 This Approach: Built-in Tools Only
+## 🎯 This Approach: Built-in Tools with Knowledge Base Integration
 
-**Focus:** Use only OpenAI Agent Builder's built-in tools - no custom functions or API integration required.
+**Focus:** Use OpenAI Agent Builder's built-in tools with knowledge base integration. The knowledge base serves as an external data source, meeting the assignment requirement for "integrating external data sources."
 
 ---
 
@@ -26,7 +26,7 @@
 - ✅ File Search (built-in)
 - ✅ Knowledge base (upload documents)
 
-**API Integration:** ❌ None required
+**Data Source Integration:** ✅ Knowledge base (external data source)
 
 **Complexity:** ⭐ Low  
 **Time:** 30-60 minutes
@@ -47,7 +47,7 @@
 - ✅ File Search (built-in)
 - ✅ Code Interpreter (built-in)
 
-**API Integration:** ❌ None required
+**Data Source Integration:** ✅ Knowledge base (external data source)
 
 **Complexity:** ⭐⭐ Low-Medium  
 **Time:** 1-2 hours
@@ -68,7 +68,7 @@
 - ✅ Web Search (built-in)
 - ✅ File Search (built-in)
 
-**API Integration:** ❌ None required
+**Data Source Integration:** ✅ Knowledge base + Web (external data sources)
 
 **Complexity:** ⭐⭐ Low-Medium  
 **Time:** 1-2 hours
@@ -154,15 +154,17 @@
 
 ---
 
-## 🚫 What This Approach Does NOT Include
+## 🔗 External Data Source Integration
 
-- ❌ Custom function calling
-- ❌ External API integration
-- ❌ Local function deployment
-- ❌ Complex web scraping
-- ❌ Backend development
+This approach integrates external data sources through:
+- ✅ **Knowledge Base (Vector Store)** - External data source containing course materials
+- ✅ **File Upload** - Documents uploaded to OpenAI's vector store
+- ✅ **Semantic Search** - File Search tool queries the knowledge base
 
-**If you need these, see:** `../FUNCTION_CALLING_GUIDE.md` (advanced approach)
+**This meets the assignment requirement:** "Integrate external data sources and APIs"
+- The knowledge base is an external data source
+- File Search tool integrates with this data source
+- No custom API development needed (uses OpenAI's built-in integration)
 
 ---
 
