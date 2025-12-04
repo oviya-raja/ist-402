@@ -1,9 +1,10 @@
 # AI Skill Builder Assistant
 
 **Course:** IST402  
-**Assignment:** W07 - Agents Development Using OpenAI  
+**Assignment:** W07 - Agents Development Using OpenAI Agent Builder
 **Submission Type:** Assignment
 **Agent Builder Workflow:** https://platform.openai.com/agent-builder/edit?workflow=wf_6930e578766c819092cacd11934d6cab04ad5ea7f863ddf6&version=1
+**GitHub:** https://github.com/oviya-raja/ist-402/blob/main/learning-path/W07/README.md
 
 ## 📑 Table of Contents
 
