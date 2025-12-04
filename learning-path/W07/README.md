@@ -3,6 +3,7 @@
 **Course:** IST402  
 **Assignment:** W07 - Agents Development Using OpenAI  
 **Submission Type:** Assignment
+**Agent Builder Workflow:** https://platform.openai.com/agent-builder/edit?workflow=wf_6930e578766c819092cacd11934d6cab04ad5ea7f863ddf6&version=1
 
 ## 📑 Table of Contents
 
