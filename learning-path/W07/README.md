@@ -698,33 +698,33 @@ All screenshots are stored in `screenshots/` directory. Capture comprehensive sc
     - Response showing concept explanation
     - File Search tool usage visible in execution trace
 
-12. **13_test_study_plan.png** - Test: Study Plan Generation
+12. **12_test_study_plan.png** - Test: Study Plan Generation
    
-    ![13_test_study_plan.png](screenshots/13_test_study_plan.png)
+    ![12_test_study_plan.png](screenshots/12_test_study_plan.png)
     
     - Preview interface showing test execution
     - Query: "Create a study plan for Week 1"
     - Response showing structured study plan
 
-13. **14_test_quick_test.png** - Test: Quick Concept Testing
+13. **13_test_quick_test.png** - Test: Quick Concept Testing
    
-    ![14_test_quick_test.png](screenshots/14_test_quick_test.png)
+    ![13_test_quick_test.png](screenshots/13_test_quick_test.png)
     
     - Preview interface showing test execution
     - Query: "Test me on embeddings"
     - Response showing quiz questions
 
-14. **15_test_memory_recall.png** - Test: Memory/Recall
+14. **14_test_memory_recall.png** - Test: Memory/Recall
    
-    ![15_test_memory_recall.png](screenshots/15_test_memory_recall.png)
+    ![15_test_memory_recall.png](screenshots/14_test_memory_recall.png)
     
     - Preview interface showing test execution
     - Query: "Help me remember RAG concepts"
     - Response showing review summary
 
-15. **16_deployment_evidence.png** - Cloud deployment confirmation
+15. **15_deployment_evidence.png** - Cloud deployment confirmation
    
-    ![16_deployment_evidence.png](screenshots/16_deployment_evidence.png)
+    ![15_deployment_evidence.png](screenshots/15_deployment_evidence.png)
     
     - Top bar showing "v1 production" status
     - "Deploy" button visible
