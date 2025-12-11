@@ -18,6 +18,13 @@ import json
 import re
 from dotenv import load_dotenv
 
+# Check for FAISS availability
+try:
+    import faiss
+    FAISS_AVAILABLE = True
+except ImportError:
+    FAISS_AVAILABLE = False
+
 # Load environment variables from .env file
 # Use absolute path relative to app.py location
 app_dir = Path(__file__).parent.absolute()
@@ -64,6 +71,61 @@ if 'prompt_engineer' not in st.session_state:
     st.session_state.prompt_engineer = PromptEngineer()
 if 'ist_concepts' not in st.session_state:
     st.session_state.ist_concepts = None
+if 'ist_concepts_vector_store_ready' not in st.session_state:
+    st.session_state.ist_concepts_vector_store_ready = False
+if 'execution_log' not in st.session_state:
+    st.session_state.execution_log = {}  # Store execution logs per tab
+
+
+def log_execution(tab_name: str, step: str, status: str = "⏳", details: str = ""):
+    """
+    Log execution step for flow tracking.
+    
+    Args:
+        tab_name: Name of the tab
+        step: Description of the step
+        status: Status icon (✅, ⏳, ❌)
+        details: Additional details
+    """
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    
+    if tab_name not in st.session_state.execution_log:
+        st.session_state.execution_log[tab_name] = []
+    
+    log_entry = f"[{timestamp}] {status} {step}"
+    if details:
+        log_entry += f" - {details}"
+    
+    st.session_state.execution_log[tab_name].append(log_entry)
+    # Keep only last 20 entries
+    if len(st.session_state.execution_log[tab_name]) > 20:
+        st.session_state.execution_log[tab_name] = st.session_state.execution_log[tab_name][-20:]
+
+
+def show_flow_accordion(tab_name: str, expected_flow: list):
+    """
+    Display flow accordion showing expected and actual execution flow.
+    
+    Args:
+        tab_name: Name of the tab
+        expected_flow: List of expected steps
+    """
+    with st.expander("📋 Process Flow", expanded=False):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Expected Flow")
+            for i, step in enumerate(expected_flow, 1):
+                st.markdown(f"{i}. {step}")
+        
+        with col2:
+            st.subheader("Actual Flow (Execution Log)")
+            if tab_name in st.session_state.execution_log and st.session_state.execution_log[tab_name]:
+                for log_entry in st.session_state.execution_log[tab_name][-10:]:  # Show last 10
+                    st.text(log_entry)
+            else:
+                st.info("No execution log yet. Actions will be logged here.")
 
 
 def initialize_generator():
@@ -81,21 +143,72 @@ def initialize_generator():
 
 
 def load_ist_concepts():
-    """Load IST concepts knowledge base."""
+    """Load IST concepts knowledge base and build vector store for semantic search."""
     try:
-        if st.session_state.ist_concepts is None:
+        if 'ist_concepts' not in st.session_state or st.session_state.ist_concepts is None:
             # Use path relative to app.py file location
             app_dir = Path(__file__).parent
             concepts_path = app_dir / "data" / "ist_concepts.csv"
             
             if concepts_path.exists():
-                st.session_state.ist_concepts = st.session_state.data_processor.load_ist_concepts(
+                ist_concepts_df = st.session_state.data_processor.load_ist_concepts(
                     str(concepts_path)
                 )
-                logger.info(f"Loaded {len(st.session_state.ist_concepts)} IST concepts")
+                st.session_state.ist_concepts = ist_concepts_df
+                logger.info(f"Loaded {len(ist_concepts_df)} IST concepts")
+                
+                # Build vector store from IST concepts for semantic search
+                if st.session_state.data_processor.embeddings_model and FAISS_AVAILABLE:
+                    try:
+                        # Create text chunks from concept information
+                        concept_chunks = []
+                        concept_metadata = []
+                        
+                        for idx, row in ist_concepts_df.iterrows():
+                            # Combine concept information into searchable text
+                            concept_text = f"""
+                            Concept: {row.get('concept_name', '')}
+                            Week: {row.get('week', '')}
+                            Description: {row.get('description', '')}
+                            Learning Objectives: {row.get('learning_objectives', '')}
+                            Prerequisites: {row.get('prerequisites', 'None')}
+                            Difficulty: {row.get('difficulty', '')}
+                            Keywords: {row.get('keywords', '')}
+                            """.strip()
+                            
+                            concept_chunks.append(concept_text)
+                            concept_metadata.append({
+                                'concept_name': row.get('concept_name', ''),
+                                'week': row.get('week', ''),
+                                'difficulty': row.get('difficulty', ''),
+                                'chunk_id': idx
+                            })
+                        
+                        # Build vector store
+                        if concept_chunks:
+                            st.session_state.data_processor.build_vector_store(
+                                chunks=concept_chunks,
+                                metadata=concept_metadata,
+                                model="text-embedding-3-small"
+                            )
+                            st.session_state.ist_concepts_vector_store_ready = True
+                            logger.info(f"Built vector store for {len(concept_chunks)} IST concepts")
+                        else:
+                            st.session_state.ist_concepts_vector_store_ready = False
+                    except Exception as e:
+                        logger.warning(f"Could not build vector store for IST concepts: {str(e)}")
+                        st.session_state.ist_concepts_vector_store_ready = False
+                else:
+                    st.session_state.ist_concepts_vector_store_ready = False
+                    if not st.session_state.data_processor.embeddings_model:
+                        logger.warning("OpenAI API key not configured. Vector search for IST concepts unavailable.")
+                    if not FAISS_AVAILABLE:
+                        logger.warning("FAISS not available. Vector search for IST concepts unavailable.")
             else:
                 logger.warning(f"IST concepts file not found at: {concepts_path}")
                 st.warning(f"IST concepts file not found at: {concepts_path}. Some features may not work.")
+                st.session_state.ist_concepts_vector_store_ready = False
+        
         return st.session_state.ist_concepts
     except Exception as e:
         logger.log_error(e, "Error loading IST concepts")
@@ -128,10 +241,10 @@ def main():
         temperature = st.slider(
             "Temperature",
             min_value=0.0,
-            max_value=2.0,
+            max_value=1.0,
             value=0.7,
             step=0.1,
-            help="Controls randomness in generation"
+            help="Controls randomness in generation (0 = deterministic, 1 = creative)"
         )
         
         # Initialize generator with selected settings
@@ -167,28 +280,30 @@ def main():
             st.caption("⚠️ Required for news and AI conferences functionality")
         
         if ist_concepts_df is not None:
-            st.success(f"✅ IST Concepts: {len(ist_concepts_df)} loaded")
+            vector_status = ""
+            if st.session_state.get('ist_concepts_vector_store_ready', False):
+                vector_status = " (Vector Search Enabled)"
+            st.success(f"✅ IST Concepts: {len(ist_concepts_df)} loaded{vector_status}")
         else:
             st.warning("⚠️ IST Concepts: Not loaded")
     
     # Main tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📚 Topic Explanation",
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📚 Concept Explainer",
         "📅 Study Plan Generator",
-        "🔍 Research Assistant",
         "📁 Data Processing",
         "🎯 AI Conferences"
     ])
     
-    # Tab 1: Topic Explanation (with Quiz Me feature)
+    # Tab 1: Concept Explainer (with Quiz Me feature)
     with tab1:
-        st.header("📚 Topic Explanation & Quiz")
+        st.header("📚 Concept Explainer & Quiz")
         st.markdown("Learn IST concepts through detailed explanations or test your knowledge with quizzes.")
         
         # Mode selector
         mode = st.radio(
             "Select Mode",
-            ["Topic Explanation", "Quiz Me"],
+            ["Concept Explainer", "Quiz Me"],
             horizontal=True
         )
         
@@ -221,29 +336,44 @@ def main():
         
         with col2:
             st.subheader("Options")
-            if mode == "Topic Explanation":
+            if mode == "Concept Explainer":
                 include_prerequisites = st.checkbox("Include Prerequisites", value=True)
                 include_examples = st.checkbox("Include Examples", value=True)
             else:  # Quiz Me mode
                 num_questions = st.slider("Number of Questions", 3, 10, 5)
         
-        if mode == "Topic Explanation":
-            # Topic Explanation Mode
-            st.subheader("📖 Topic Explanation")
+        if mode == "Concept Explainer":
+            # Concept Explainer Mode
+            st.subheader("📖 Concept Explainer")
+            
+            # Flow accordion
+            expected_flow = [
+                "User selects/enters concept name",
+                "System loads concept information from database",
+                "System generates explanation using AI (OpenAI)",
+                "System displays explanation with metadata"
+            ]
+            show_flow_accordion("Concept Explainer", expected_flow)
+            st.divider()
             
             if st.button("Generate Explanation", type="primary"):
                 if not selected_concept or selected_concept == "Select a concept...":
                     st.warning("Please select or enter a concept name")
                 else:
                     try:
+                        log_execution("Concept Explainer", f"Concept selected: {selected_concept}")
+                        
                         if not st.session_state.generator:
                             initialize_generator()
+                            log_execution("Concept Explainer", "Generator initialized", "✅")
                         
                         # Get concept information
                         if ist_concepts_df is not None and isinstance(selected_concept, str):
                             concept_info = st.session_state.data_processor.get_concept_info(
                                 ist_concepts_df, selected_concept
                             )
+                            if concept_info:
+                                log_execution("Concept Explainer", f"Concept info loaded: {concept_info.get('week', 'N/A')}", "✅")
                         else:
                             concept_info = None
                         
@@ -272,11 +402,15 @@ def main():
                                 'keywords': ''
                             }
                         
+                        log_execution("Concept Explainer", "Calling OpenAI API to generate explanation", "⏳")
                         with st.spinner("Generating concept explanation..."):
                             result = st.session_state.generator.generate_with_prompt_type(
                                 prompt_type=PromptType.IST_CONCEPT_EXPLANATION,
                                 **prompt_kwargs
                             )
+                            tokens = result.get('token_usage', {}).get('total_tokens', 'N/A')
+                            model = result.get('model', 'N/A')
+                            log_execution("Concept Explainer", f"Explanation generated", "✅", f"Model: {model}, Tokens: {tokens}")
                         
                         st.subheader("Concept Explanation")
                         st.markdown(result['content'])
@@ -295,7 +429,8 @@ def main():
                     
                     except Exception as e:
                         st.error(f"Error generating explanation: {str(e)}")
-                        logger.log_error(e, "Error in topic explanation")
+                        log_execution("Concept Explainer", f"Error: {str(e)}", "❌")
+                        logger.log_error(e, "Error in concept explainer")
         
         else:  # Quiz Me mode
             st.subheader("🎯 Quiz Me")
@@ -542,6 +677,16 @@ def main():
         st.header("📅 Study Plan Generator")
         st.markdown("Generate personalized study plans by week or topic to help you master IST402 concepts.")
         
+        # Flow accordion
+        expected_flow = [
+            "User selects week(s) or topic filter",
+            "System filters IST concepts based on selection",
+            "System generates personalized study plan using AI (OpenAI)",
+            "System displays study plan with schedule and recommendations"
+        ]
+        show_flow_accordion("Study Plan Generator", expected_flow)
+        st.divider()
+        
         col1, col2 = st.columns([1, 1])
         
         with col1:
@@ -585,17 +730,22 @@ def main():
         
         if st.button("Generate Study Plan", type="primary"):
             try:
+                log_execution("Study Plan Generator", f"Generating study plan for: {weeks}", "⏳")
+                
                 if not st.session_state.generator:
                     initialize_generator()
+                    log_execution("Study Plan Generator", "Generator initialized", "✅")
                 
                 if ist_concepts_df is None:
                     st.error("IST concepts not loaded. Please ensure data/ist_concepts.csv exists.")
+                    log_execution("Study Plan Generator", "IST concepts not loaded", "❌")
                 else:
                     # Filter concepts by week
                     if week_selection == "Single Week":
                         filtered_concepts = st.session_state.data_processor.get_concepts_by_week(
                             ist_concepts_df, weeks
                         )
+                        log_execution("Study Plan Generator", f"Filtered concepts for week {weeks}", "✅", f"Found {len(filtered_concepts)} concepts")
                     else:
                         # Get range of weeks
                         start_idx = int(week_start.replace('W', ''))
@@ -603,6 +753,7 @@ def main():
                         filtered_concepts = ist_concepts_df[
                             ist_concepts_df['week'].str.replace('W', '').astype(int).between(start_idx, end_idx)
                         ]
+                        log_execution("Study Plan Generator", f"Filtered concepts for weeks {weeks}", "✅", f"Found {len(filtered_concepts)} concepts")
                     
                     # Filter by topic if specified
                     if topic_filter:
@@ -610,10 +761,12 @@ def main():
                             filtered_concepts['concept_name'].str.contains(topic_filter, case=False, na=False) |
                             filtered_concepts['keywords'].str.contains(topic_filter, case=False, na=False)
                         ]
+                        log_execution("Study Plan Generator", f"Applied topic filter: {topic_filter}", "✅")
                     
                     # Prepare concepts data for prompt
                     concepts_data = filtered_concepts.to_string(index=False) if not filtered_concepts.empty else "No concepts found"
                     
+                    log_execution("Study Plan Generator", "Calling OpenAI API to generate study plan", "⏳")
                     with st.spinner("Generating personalized study plan..."):
                         result = st.session_state.generator.generate_with_prompt_type(
                             prompt_type=PromptType.STUDY_PLAN_GENERATION,
@@ -623,6 +776,9 @@ def main():
                             difficulty=difficulty.lower(),
                             concepts_data=concepts_data
                         )
+                        tokens = result.get('token_usage', {}).get('total_tokens', 'N/A')
+                        model = result.get('model', 'N/A')
+                        log_execution("Study Plan Generator", "Study plan generated", "✅", f"Model: {model}, Tokens: {tokens}")
                     
                     st.subheader("Your Personalized Study Plan")
                     st.markdown(result['content'])
@@ -643,66 +799,51 @@ def main():
                 st.error(f"Error generating study plan: {str(e)}")
                 logger.log_error(e, "Error in study plan generation")
     
-    # Tab 3: Research Assistant (Retained)
+    # Tab 3: Data Processing (with Vector Search)
     with tab3:
-        st.header("Research Assistant")
-        st.markdown("Synthesize information from multiple sources with external context.")
+        st.header("📁 Data Processing & Vector Search")
+        st.markdown("Upload and preprocess data files, then create embeddings and perform semantic search using FAISS vector database.")
         
-        research_topic = st.text_input("Research Topic", placeholder="Enter research topic...")
+        # Flow accordion
+        expected_flow = [
+            "User uploads file (CSV or TXT)",
+            "System processes and chunks the file",
+            "System creates embeddings using OpenAI",
+            "System builds FAISS vector store",
+            "Vector store ready for semantic search",
+            "User can search uploaded documents"
+        ]
+        show_flow_accordion("Data Processing", expected_flow)
+        st.divider()
         
-        include_news = st.checkbox("Include Recent News")
-        news_cat = st.selectbox(
-            "News Category",
-            ["technology", "science", "business", "general"],
-            disabled=not include_news
-        )
+        # Initialize session state for vector store
+        if 'vector_store_ready' not in st.session_state:
+            st.session_state.vector_store_ready = False
+        if 'uploaded_chunks' not in st.session_state:
+            st.session_state.uploaded_chunks = []
+        if 'current_uploaded_file' not in st.session_state:
+            st.session_state.current_uploaded_file = None
         
-        additional_sources = st.text_area(
-            "Additional Sources/Context",
-            placeholder="Paste additional information or sources here...",
-            height=150
-        )
-        
-        if st.button("Generate Research Summary", type="primary"):
-            if not research_topic:
-                st.warning("Please enter a research topic")
-            else:
-                try:
-                    if not st.session_state.generator:
-                        initialize_generator()
-                    
-                    # Get external context
-                    external_context = {}
-                    if include_news:
-                        try:
-                            external_context = st.session_state.api_manager.get_contextual_data(
-                                news_topic=news_cat
-                            )
-                        except Exception as e:
-                            st.error(f"❌ Failed to fetch news: {str(e)}")
-                            st.info("💡 Please configure OPENAI_API_KEY in your .env file")
-                            external_context = {}
-                    
-                    # Generate research summary
-                    with st.spinner("Generating research summary..."):
-                        result = st.session_state.generator.generate_with_prompt_type(
-                            prompt_type=PromptType.RESEARCH_SUMMARY,
-                            topic=research_topic,
-                            sources=additional_sources or "No additional sources provided",
-                            external_context=st.session_state.api_manager.format_context_for_prompt(external_context)
-                        )
-                    
-                    st.subheader("Research Summary")
-                    st.write(result['content'])
-                
-                except Exception as e:
-                    st.error(f"Error generating research summary: {str(e)}")
-                    logger.log_error(e, "Error in research assistant")
-    
-    # Tab 4: Data Processing (Retained)
-    with tab4:
-        st.header("Data Processing")
-        st.markdown("Upload and preprocess data files for GenAI consumption.")
+        # Vector Store Status Card
+        if st.session_state.vector_store_ready and st.session_state.data_processor.vector_store:
+            st.success("✅ **Vector Store Active**")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("File", st.session_state.current_uploaded_file or "Unknown")
+            with col2:
+                st.metric("Vectors", st.session_state.data_processor.vector_store.ntotal if st.session_state.data_processor.vector_store else 0)
+            with col3:
+                st.metric("Chunks", len(st.session_state.uploaded_chunks))
+            with col4:
+                st.metric("Status", "Ready")
+            
+            st.info("""
+            **📌 This Vector Store is Used For:**
+            - 🔍 Semantic search in this tab (search uploaded documents)
+            - 💾 Can be saved and loaded for reuse
+            - 🔗 Can be integrated with other features (future enhancement)
+            """)
+            st.divider()
         
         uploaded_file = st.file_uploader(
             "Upload File",
@@ -712,11 +853,14 @@ def main():
         
         if uploaded_file:
             try:
+                log_execution("Data Processing", f"File uploaded: {uploaded_file.name}", "✅")
+                st.session_state.current_uploaded_file = uploaded_file.name
                 file_path = f"data/temp_{uploaded_file.name}"
                 Path("data").mkdir(exist_ok=True)
                 
                 with open(file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
+                log_execution("Data Processing", "File saved to disk", "✅")
                 
                 if uploaded_file.name.endswith('.csv'):
                     df = st.session_state.data_processor.load_csv(file_path)
@@ -742,9 +886,23 @@ def main():
                         processed = st.session_state.data_processor.preprocess_dataframe(df)
                         st.success(f"Processed {len(processed)} records")
                         st.json(processed[:3])  # Show first 3 records
+                    
+                    # For CSV, convert to text for vector search
+                    st.info("💡 Tip: For vector search, convert CSV columns to text or upload a text file.")
+                    if st.button("Convert to Text for Vector Search"):
+                        # Combine all text columns
+                        text_columns = df.select_dtypes(include=['object']).columns
+                        if len(text_columns) > 0:
+                            combined_text = "\n\n".join([f"{col}: {df[col].astype(str).str.cat(sep=' ')}" for col in text_columns])
+                            st.session_state.uploaded_chunks = st.session_state.data_processor.chunk_text(combined_text, 1000)
+                            st.success(f"Created {len(st.session_state.uploaded_chunks)} text chunks from CSV")
+                        else:
+                            st.warning("No text columns found in CSV for vector search.")
                 
                 elif uploaded_file.name.endswith('.txt'):
+                    log_execution("Data Processing", "Loading text file", "⏳")
                     text = st.session_state.data_processor.load_text_file(file_path)
+                    log_execution("Data Processing", f"Text loaded: {len(text)} characters", "✅")
                     
                     st.subheader("Text Statistics")
                     col1, col2, col3 = st.columns(3)
@@ -755,22 +913,154 @@ def main():
                     with col3:
                         st.metric("Lines", len(text.split('\n')))
                     
+                    st.divider()
+                    st.subheader("📝 Text Chunking")
                     chunk_size = st.slider("Chunk Size", 500, 2000, 1000, 100)
                     if st.button("Chunk Text"):
+                        log_execution("Data Processing", f"Chunking text with size {chunk_size}", "⏳")
                         chunks = st.session_state.data_processor.chunk_text(text, chunk_size)
+                        st.session_state.uploaded_chunks = chunks
+                        log_execution("Data Processing", f"Created {len(chunks)} chunks", "✅")
                         st.success(f"Created {len(chunks)} chunks")
                         for i, chunk in enumerate(chunks[:3], 1):
-                            with st.expander(f"Chunk {i}"):
+                            with st.expander(f"Chunk {i} (Preview)"):
                                 st.text(chunk[:500])
+                    
+                    # Vector Store Creation
+                    if st.session_state.uploaded_chunks:
+                        st.divider()
+                        st.subheader("🔍 Vector Search Setup")
+                        
+                        col1, col2 = st.columns([2, 1])
+                        with col1:
+                            embedding_model = st.selectbox(
+                                "Embedding Model",
+                                ["text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"],
+                                help="OpenAI embedding model to use"
+                            )
+                        with col2:
+                            st.metric("Chunks Ready", len(st.session_state.uploaded_chunks))
+                        
+                        if st.button("🔨 Build Vector Store", type="primary"):
+                            try:
+                                if not st.session_state.data_processor.embeddings_model:
+                                    st.error("❌ OpenAI API key not configured. Please set OPENAI_API_KEY in .env file.")
+                                    log_execution("Data Processing", "OpenAI API key not configured", "❌")
+                                else:
+                                    log_execution("Data Processing", f"Creating embeddings for {len(st.session_state.uploaded_chunks)} chunks using {embedding_model}", "⏳")
+                                    with st.spinner(f"Creating embeddings for {len(st.session_state.uploaded_chunks)} chunks..."):
+                                        # Create metadata for chunks
+                                        metadata = [{"chunk_id": i, "file": uploaded_file.name} for i in range(len(st.session_state.uploaded_chunks))]
+                                        
+                                        st.session_state.data_processor.build_vector_store(
+                                            chunks=st.session_state.uploaded_chunks,
+                                            metadata=metadata,
+                                            model=embedding_model
+                                        )
+                                        st.session_state.vector_store_ready = True
+                                        num_vectors = st.session_state.data_processor.vector_store.ntotal if st.session_state.data_processor.vector_store else 0
+                                        log_execution("Data Processing", f"Vector store built successfully", "✅", f"{num_vectors} vectors created")
+                                        st.success(f"✅ Vector store created with {num_vectors} vectors!")
+                                        st.balloons()  # Celebration!
+                            except Exception as e:
+                                st.error(f"Error building vector store: {str(e)}")
+                                log_execution("Data Processing", f"Error building vector store: {str(e)}", "❌")
+                                logger.log_error(e, "Error building vector store")
+                        
+                        # Vector Search
+                        if st.session_state.vector_store_ready:
+                            st.divider()
+                            st.subheader("🔎 Semantic Search")
+                            
+                            col1, col2 = st.columns([3, 1])
+                            with col1:
+                                search_query = st.text_input(
+                                    "Search Query",
+                                    placeholder="Enter your search query...",
+                                    key="vector_search_query"
+                                )
+                            with col2:
+                                num_results = st.number_input("Results", min_value=1, max_value=20, value=5, step=1)
+                            
+                            if st.button("🔍 Search", type="primary") and search_query:
+                                try:
+                                    log_execution("Data Processing", f"Searching for: '{search_query}'", "⏳")
+                                    with st.spinner("Searching vector store..."):
+                                        results = st.session_state.data_processor.search_vectors(
+                                            query=search_query,
+                                            k=num_results,
+                                            model=embedding_model
+                                        )
+                                        log_execution("Data Processing", f"Search completed", "✅", f"Found {len(results)} results")
+                                    
+                                    st.subheader(f"📊 Search Results ({len(results)} found)")
+                                    
+                                    for result in results:
+                                        with st.expander(f"Result #{result['rank']} (Similarity: {result['similarity']:.2%})"):
+                                            st.markdown(f"**Similarity Score:** {result['similarity']:.2%}")
+                                            st.markdown(f"**Distance:** {result['score']:.4f}")
+                                            st.markdown("**Content:**")
+                                            st.text(result['chunk'])
+                                            if result['metadata']:
+                                                st.markdown("**Metadata:**")
+                                                st.json(result['metadata'])
+                                    
+                                    # Show summary
+                                    st.info(f"Found {len(results)} most similar chunks for: '{search_query}'")
+                                    
+                                except Exception as e:
+                                    st.error(f"Error searching: {str(e)}")
+                                    logger.log_error(e, "Error in vector search")
+                            
+                            # Save/Load Vector Store
+                            st.divider()
+                            st.subheader("💾 Vector Store Management")
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                if st.button("💾 Save Vector Store"):
+                                    try:
+                                        save_path = f"data/vector_store_{uploaded_file.name.replace('.txt', '')}.pkl"
+                                        st.session_state.data_processor.save_vector_store(save_path)
+                                        st.success(f"Vector store saved to {save_path}")
+                                    except Exception as e:
+                                        st.error(f"Error saving: {str(e)}")
+                            
+                            with col2:
+                                load_file = st.file_uploader(
+                                    "Load Vector Store",
+                                    type=['pkl'],
+                                    key="load_vector_store"
+                                )
+                                if load_file and st.button("📂 Load Vector Store"):
+                                    try:
+                                        load_path = f"data/temp_{load_file.name}"
+                                        with open(load_path, "wb") as f:
+                                            f.write(load_file.getbuffer())
+                                        st.session_state.data_processor.load_vector_store(load_path)
+                                        st.session_state.vector_store_ready = True
+                                        st.success("Vector store loaded successfully!")
+                                    except Exception as e:
+                                        st.error(f"Error loading: {str(e)}")
             
             except Exception as e:
                 st.error(f"Error processing file: {str(e)}")
                 logger.log_error(e, "Error in data processing tab")
     
-    # Tab 5: AI Conferences (NEW)
-    with tab5:
+    # Tab 4: AI Conferences
+    with tab4:
         st.header("🎯 AI Conferences")
         st.markdown("Discover AI-related conferences and events happening around the world.")
+        
+        # Flow accordion
+        expected_flow = [
+            "User requests AI conferences",
+            "System searches web using OpenAI web search",
+            "System parses conference information (title, date, location, URL)",
+            "System displays AI-related conferences with details"
+        ]
+        show_flow_accordion("AI Conferences", expected_flow)
+        st.divider()
         
         col1, col2 = st.columns([2, 1])
         
@@ -793,11 +1083,14 @@ def main():
         
         if st.button("🔍 Fetch AI Conferences", type="primary"):
             try:
+                log_execution("AI Conferences", f"Searching for AI conferences (limit: {limit})", "⏳")
                 with st.spinner("Searching for AI conferences using OpenAI web search..."):
                     conferences_data = st.session_state.api_manager.get_ai_conferences(
                         category=category,
                         limit=limit
                     )
+                    num_conferences = conferences_data.get('total_results', 0)
+                    log_execution("AI Conferences", f"Conferences retrieved", "✅", f"Found {num_conferences} conferences")
             except Exception as e:
                 st.error(f"❌ Failed to fetch conferences: {str(e)}")
                 st.info("💡 Please configure OPENAI_API_KEY in your .env file")
