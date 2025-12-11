@@ -1011,12 +1011,13 @@ def main():
         
         # Flow accordion
         expected_flow = [
-            "User uploads learning notes (TXT or CSV)",
-            "System processes and chunks the notes",
+            "User uploads learning notes (TXT, CSV, or Markdown)",
+            "System loads file using LangChain document loaders (for MD/TXT)",
+            "System chunks text using LangChain RecursiveCharacterTextSplitter",
             "System creates embeddings using OpenAI",
             "System builds FAISS vector store for user notes",
             "Vector store ready - will be used in Concept Explainer & Quiz Me",
-            "Notes are searched when generating explanations/quizzes"
+            "Notes are searched when generating explanations/quizzes with citations"
         ]
         show_flow_accordion("Data Processing", expected_flow)
         st.divider()
@@ -1050,8 +1051,9 @@ def main():
             st.divider()
         
         uploaded_file = st.file_uploader(
-            "Upload File",
-            type=['csv', 'txt'],
+            "Upload Learning Notes",
+            type=['csv', 'txt', 'md'],
+            help="Upload your learning notes in CSV, TXT, or Markdown format. These will be converted to a vector store for use in Concept Explainer and Quiz Me.",
             key="data_processing_uploader"
         )
         
@@ -1092,15 +1094,16 @@ def main():
                         st.json(processed[:3])  # Show first 3 records
                     
                     # For CSV, convert to text for vector search
-                    st.info("💡 Tip: Convert CSV to text chunks for vector search, or upload a text file directly.")
-                    if st.button("Convert to Text for Vector Search"):
+                    st.info("💡 Tip: Convert CSV to text chunks for vector search using LangChain, or upload a text/markdown file directly.")
+                    if st.button("Convert to Text for Vector Search (LangChain)"):
                         # Combine all text columns
                         text_columns = df.select_dtypes(include=['object']).columns
                         if len(text_columns) > 0:
                             combined_text = "\n\n".join([f"{col}: {df[col].astype(str).str.cat(sep=' ')}" for col in text_columns])
-                            st.session_state.user_notes_chunks = st.session_state.user_notes_processor.chunk_text(combined_text, 1000)
-                            st.success(f"Created {len(st.session_state.user_notes_chunks)} text chunks from CSV")
-                            log_execution("Data Processing", f"Created {len(st.session_state.user_notes_chunks)} chunks from CSV", "✅")
+                            log_execution("Data Processing", "Chunking CSV text with LangChain", "⏳")
+                            st.session_state.user_notes_chunks = st.session_state.user_notes_processor.chunk_text(combined_text, 1000, 200, use_langchain=True)
+                            st.success(f"Created {len(st.session_state.user_notes_chunks)} text chunks from CSV using LangChain")
+                            log_execution("Data Processing", f"Created {len(st.session_state.user_notes_chunks)} chunks from CSV using LangChain", "✅")
                         else:
                             st.warning("No text columns found in CSV for vector search.")
                 
@@ -1108,8 +1111,13 @@ def main():
                     log_execution("Data Processing", "Loading learning notes text file", "⏳")
                     text = st.session_state.user_notes_processor.load_text_file(file_path)
                     log_execution("Data Processing", f"Text loaded: {len(text)} characters", "✅")
+                
+                elif uploaded_file.name.endswith('.md'):
+                    log_execution("Data Processing", "Loading learning notes markdown file using LangChain", "⏳")
+                    text = st.session_state.user_notes_processor.load_markdown_file(file_path)
+                    log_execution("Data Processing", f"Markdown loaded: {len(text)} characters using LangChain", "✅")
                     
-                    st.subheader("Text Statistics")
+                    st.subheader("Markdown File Statistics")
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Characters", len(text))
@@ -1119,14 +1127,16 @@ def main():
                         st.metric("Lines", len(text.split('\n')))
                     
                     st.divider()
-                    st.subheader("📝 Text Chunking")
+                    st.subheader("📝 Text Chunking (Using LangChain)")
+                    st.info("💡 **Using LangChain's RecursiveCharacterTextSplitter** for intelligent text chunking that preserves context and markdown structure.")
                     chunk_size = st.slider("Chunk Size", 500, 2000, 1000, 100)
-                    if st.button("Chunk Text"):
-                        log_execution("Data Processing", f"Chunking text with size {chunk_size}", "⏳")
-                        chunks = st.session_state.user_notes_processor.chunk_text(text, chunk_size)
+                    chunk_overlap = st.slider("Chunk Overlap", 0, 500, 200, 50, help="Overlap between chunks to preserve context")
+                    if st.button("Chunk Markdown with LangChain", type="primary"):
+                        log_execution("Data Processing", f"Chunking markdown with LangChain (size: {chunk_size}, overlap: {chunk_overlap})", "⏳")
+                        chunks = st.session_state.user_notes_processor.chunk_text(text, chunk_size, chunk_overlap, use_langchain=True)
                         st.session_state.user_notes_chunks = chunks
-                        log_execution("Data Processing", f"Created {len(chunks)} chunks", "✅")
-                        st.success(f"Created {len(chunks)} chunks")
+                        log_execution("Data Processing", f"Created {len(chunks)} chunks using LangChain", "✅")
+                        st.success(f"✅ Created {len(chunks)} chunks using LangChain's RecursiveCharacterTextSplitter")
                         for i, chunk in enumerate(chunks[:3], 1):
                             with st.expander(f"Chunk {i} (Preview)"):
                                 st.text(chunk[:500])

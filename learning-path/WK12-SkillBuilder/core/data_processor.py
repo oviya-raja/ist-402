@@ -1,7 +1,8 @@
 """
 Data Preprocessing Module
-Handles ingestion and preprocessing of real-world data (CSV, text files).
+Handles ingestion and preprocessing of real-world data (CSV, text files, markdown).
 Includes vector search functionality using OpenAI embeddings.
+Uses LangChain for document processing and text splitting.
 """
 
 import csv
@@ -16,6 +17,24 @@ import numpy as np
 from core.logger import get_logger
 
 logger = get_logger()
+
+# Try to import LangChain components
+try:
+    from langchain_community.document_loaders import TextLoader
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain.schema import Document
+    LANGCHAIN_AVAILABLE = True
+    # Try to import markdown loader (optional dependency)
+    try:
+        from langchain_community.document_loaders import UnstructuredMarkdownLoader
+        MARKDOWN_LOADER_AVAILABLE = True
+    except ImportError:
+        MARKDOWN_LOADER_AVAILABLE = False
+        logger.info("UnstructuredMarkdownLoader not available, will use fallback for markdown files")
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    MARKDOWN_LOADER_AVAILABLE = False
+    logger.warning("LangChain not fully installed. Install with: pip install langchain langchain-community")
 
 # Try to import FAISS for vector storage
 try:
@@ -148,6 +167,58 @@ class DataProcessor:
             self.logger.log_error(e, f"Error loading text file: {file_path}")
             raise
     
+    def load_markdown_file(self, file_path: str) -> str:
+        """
+        Load markdown file content using LangChain.
+        
+        Args:
+            file_path: Path to markdown file
+            
+        Returns:
+            File content as string
+            
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            ImportError: If LangChain is not available
+        """
+        try:
+            file_path_obj = Path(file_path)
+            if not file_path_obj.exists():
+                raise FileNotFoundError(f"Markdown file not found: {file_path}")
+            
+            self.logger.info(f"Loading markdown file: {file_path}")
+            
+            if LANGCHAIN_AVAILABLE and MARKDOWN_LOADER_AVAILABLE:
+                try:
+                    # Use LangChain's markdown loader
+                    loader = UnstructuredMarkdownLoader(file_path)
+                    documents = loader.load()
+                    # Combine all document pages
+                    content = "\n\n".join([doc.page_content for doc in documents])
+                    self.logger.info(f"Successfully loaded markdown file with {len(content)} characters using LangChain UnstructuredMarkdownLoader")
+                    return content
+                except Exception as e:
+                    # Fallback to simple text reading
+                    self.logger.warning(f"LangChain markdown loader failed, using fallback: {str(e)}")
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    self.logger.info(f"Successfully loaded markdown file with {len(content)} characters (fallback)")
+                    return content
+            else:
+                # Fallback to simple text reading if LangChain not available
+                if not LANGCHAIN_AVAILABLE:
+                    self.logger.warning("LangChain not available, using simple text reading for markdown")
+                else:
+                    self.logger.info("Using simple text reading for markdown (UnstructuredMarkdownLoader not available)")
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                self.logger.info(f"Successfully loaded markdown file with {len(content)} characters")
+                return content
+                
+        except Exception as e:
+            self.logger.log_error(e, f"Error loading markdown file: {file_path}")
+            raise
+    
     def preprocess_dataframe(self, df: pd.DataFrame, 
                             text_columns: Optional[List[str]] = None,
                             remove_na: bool = True) -> List[Dict[str, Any]]:
@@ -213,14 +284,15 @@ class DataProcessor:
         return " ".join(text_parts)
     
     def chunk_text(self, text: str, chunk_size: int = 1000, 
-                   overlap: int = 200) -> List[str]:
+                   overlap: int = 200, use_langchain: bool = True) -> List[str]:
         """
-        Split text into chunks for processing.
+        Split text into chunks for processing using LangChain's RecursiveCharacterTextSplitter.
         
         Args:
             text: Input text
             chunk_size: Maximum chunk size in characters
             overlap: Overlap between chunks in characters
+            use_langchain: Whether to use LangChain's text splitter (default: True)
             
         Returns:
             List of text chunks
@@ -229,16 +301,38 @@ class DataProcessor:
             if len(text) <= chunk_size:
                 return [text]
             
-            chunks = []
-            start = 0
-            while start < len(text):
-                end = start + chunk_size
-                chunk = text[start:end]
-                chunks.append(chunk)
-                start = end - overlap  # Overlap for context preservation
-            
-            self.logger.info(f"Split text into {len(chunks)} chunks")
-            return chunks
+            if use_langchain and LANGCHAIN_AVAILABLE:
+                # Use LangChain's RecursiveCharacterTextSplitter for better chunking
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=chunk_size,
+                    chunk_overlap=overlap,
+                    length_function=len,
+                    separators=["\n\n", "\n", " ", ""]  # Split on paragraphs, lines, words
+                )
+                
+                # Create a Document object for LangChain
+                documents = [Document(page_content=text)]
+                split_docs = text_splitter.split_documents(documents)
+                
+                # Extract text chunks
+                chunks = [doc.page_content for doc in split_docs]
+                self.logger.info(f"Split text into {len(chunks)} chunks using LangChain RecursiveCharacterTextSplitter")
+                return chunks
+            else:
+                # Fallback to simple chunking if LangChain not available
+                if use_langchain:
+                    self.logger.warning("LangChain not available, using simple chunking")
+                
+                chunks = []
+                start = 0
+                while start < len(text):
+                    end = start + chunk_size
+                    chunk = text[start:end]
+                    chunks.append(chunk.strip())
+                    start = end - overlap  # Overlap for context preservation
+                
+                self.logger.info(f"Split text into {len(chunks)} chunks using simple chunking")
+                return chunks
             
         except Exception as e:
             self.logger.log_error(e, "Error chunking text")

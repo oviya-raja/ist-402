@@ -9,7 +9,10 @@ numpy>=1.24.0
 # LangChain and OpenAI
 langchain>=0.1.0
 langchain-openai>=0.0.5
+langchain-community>=0.0.20
 openai>=1.0.0
+# For markdown processing (optional, has fallback)
+# unstructured>=0.10.0
 
 # HTTP requests for API integration
 requests>=2.31.0
