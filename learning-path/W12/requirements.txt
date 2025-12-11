@@ -1,0 +1,24 @@
+# Smart Content Generator & Research Assistant
+# Requirements for GenAI-driven application
+
+# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# LangChain and OpenAI
+langchain>=0.1.0
+langchain-openai>=0.0.5
+openai>=1.0.0
+
+# HTTP requests for API integration
+requests>=2.31.0
+
+# Data processing
+python-dotenv>=1.0.0
+
+# YAML configuration
+pyyaml>=6.0
+
+# Optional: For enhanced data processing
+# scikit-learn>=1.3.0
