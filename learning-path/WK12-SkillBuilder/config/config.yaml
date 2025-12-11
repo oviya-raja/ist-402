@@ -1,0 +1,49 @@
+# Configuration file for Skill Builder for IST Students
+
+app:
+  name: "Skill Builder for IST Students"
+  version: "2.0.0"
+  debug: false
+
+openai:
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 2000
+  timeout: 30
+
+data_processing:
+  chunk_size: 1000
+  chunk_overlap: 200
+  remove_na: true
+  encoding: "utf-8"
+  ist_concepts_path: "data/ist_concepts.csv"
+
+api_integrations:
+  eventregistry:
+    enabled: true
+    timeout: 30
+    page_size: 5
+    allow_archive: false  # Only use last 30 days of data
+  
+  conferences:
+    enabled: true
+    default_category: "technology"
+    default_limit: 10
+
+logging:
+  level: "INFO"
+  directory: "logs"
+  file_rotation: "daily"
+
+ui:
+  theme: "light"
+  default_tab: "content_generation"
+  
+skill_builder:
+  study_plan:
+    default_pace: "moderate"
+    default_difficulty: "all levels"
+  
+  concept_explanation:
+    include_prerequisites: true
+    include_examples: true
