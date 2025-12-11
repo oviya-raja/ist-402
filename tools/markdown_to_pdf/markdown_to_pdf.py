@@ -47,18 +47,24 @@ def create_pdf(input_md, output_pdf=None):
     html_file = script_dir / "temp_output.html"
     css_file = script_dir / "pdf_style.css"
     
-    # Create professional CSS
+    # Create professional CSS with improved typography
     css_content = """@page {
     size: A4;
     margin: 2.5cm 2cm 2.5cm 2cm;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 11pt;
     line-height: 1.7;
     color: #2c3e50;
     max-width: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
 h1 {
@@ -69,6 +75,8 @@ h1 {
     margin-bottom: 0.5em;
     padding-bottom: 0.3em;
     border-bottom: 3px solid #3498db;
+    page-break-after: avoid;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 h2 {
@@ -79,6 +87,7 @@ h2 {
     margin-bottom: 0.5em;
     padding-bottom: 0.2em;
     border-bottom: 1px solid #ecf0f1;
+    page-break-after: avoid;
 }
 
 h3 {
@@ -87,15 +96,33 @@ h3 {
     color: #34495e;
     margin-top: 1.2em;
     margin-bottom: 0.4em;
+    page-break-after: avoid;
+}
+
+h4, h5, h6 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #34495e;
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+    page-break-after: avoid;
+}
+
+p {
+    margin: 0.8em 0;
+    text-align: justify;
+    orphans: 3;
+    widows: 3;
 }
 
 code {
     background-color: #f8f9fa;
     padding: 2px 6px;
     border-radius: 3px;
-    font-family: 'Courier New', monospace;
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
     font-size: 0.9em;
     color: #e83e8c;
+    border: 1px solid #e9ecef;
 }
 
 pre {
@@ -103,9 +130,18 @@ pre {
     padding: 1em;
     border-radius: 5px;
     border-left: 4px solid #3498db;
-    font-family: 'Courier New', monospace;
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
     font-size: 0.85em;
     overflow-x: auto;
+    page-break-inside: avoid;
+    line-height: 1.5;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+    color: #333;
 }
 
 img {
@@ -116,12 +152,14 @@ img {
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    page-break-inside: avoid;
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
     margin: 1.5em 0;
+    page-break-inside: avoid;
 }
 
 th {
@@ -130,6 +168,7 @@ th {
     font-weight: 600;
     padding: 10px;
     text-align: left;
+    border: 1px solid #2980b9;
 }
 
 td {
@@ -139,6 +178,67 @@ td {
 
 tr:nth-child(even) {
     background-color: #f8f9fa;
+}
+
+ul, ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+li {
+    margin: 0.4em 0;
+    page-break-inside: avoid;
+}
+
+blockquote {
+    border-left: 4px solid #3498db;
+    margin: 1.5em 0;
+    padding: 0.5em 1em;
+    background-color: #f8f9fa;
+    color: #555;
+    font-style: italic;
+    page-break-inside: avoid;
+}
+
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+strong {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+hr {
+    border: none;
+    border-top: 2px solid #ecf0f1;
+    margin: 2em 0;
+}
+
+/* Handle emojis and special characters */
+.emoji {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+/* Table of contents styling */
+#TOC {
+    page-break-after: always;
+    margin-bottom: 2em;
+}
+
+#TOC ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#TOC li {
+    margin: 0.3em 0;
+}
+
+#TOC a {
+    text-decoration: none;
+    color: #2c3e50;
 }
 """
     
@@ -154,17 +254,19 @@ tr:nth-child(even) {
         result = subprocess.run([
             'pandoc',
             str(input_path),
-            '--from=markdown+smart+raw_html',
+            '--from=markdown+smart+raw_html+emoji',
             '--to=html5',
             '--standalone',
             '--toc',
             '--toc-depth=3',
             '--number-sections',
+            '--highlight-style=tango',
             f'--css={css_file}',
             '--metadata', f'title={title}',
             '--metadata', f'date={__import__("datetime").datetime.now().strftime("%B %Y")}',
+            '--variable=lang=en-US',
             '--output', str(html_file)
-        ], capture_output=True, text=True, check=True)
+        ], capture_output=True, text=True, check=True, encoding='utf-8')
         
         print("✅ HTML created successfully")
         
@@ -192,11 +294,14 @@ tr:nth-child(even) {
             browser = p.chromium.launch()
             page = browser.new_page()
             page.goto(f"file://{html_file.absolute()}")
+            # Wait for fonts and images to load
+            page.wait_for_load_state('networkidle')
             page.pdf(
                 path=str(output_path),
                 format='A4',
                 margin={'top': '2.5cm', 'right': '2cm', 'bottom': '2.5cm', 'left': '2cm'},
-                print_background=True
+                print_background=True,
+                prefer_css_page_size=True
             )
             browser.close()
         
@@ -214,11 +319,14 @@ tr:nth-child(even) {
                 browser = p.chromium.launch()
                 page = browser.new_page()
                 page.goto(f"file://{html_file.absolute()}")
+                # Wait for fonts and images to load
+                page.wait_for_load_state('networkidle')
                 page.pdf(
                     path=str(output_path),
                     format='A4',
                     margin={'top': '2.5cm', 'right': '2cm', 'bottom': '2.5cm', 'left': '2cm'},
-                    print_background=True
+                    print_background=True,
+                    prefer_css_page_size=True
                 )
                 browser.close()
             

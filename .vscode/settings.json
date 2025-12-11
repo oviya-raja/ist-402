@@ -12,7 +12,7 @@
   "python.analysis.stubPath": "${workspaceFolder}/.venv/lib/python*/site-packages",
   
   // Pylance/Pyright Settings for Better Navigation
-  "python.languageServer": "Pylance",
+  "python.languageServer": "None",
   "python.analysis.indexing": true,
   "python.analysis.packageIndexDepths": [
     {
