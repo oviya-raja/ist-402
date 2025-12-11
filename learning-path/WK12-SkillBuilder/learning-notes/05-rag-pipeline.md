@@ -65,57 +65,21 @@
 
 ---
 
-## 3. RAG Implementation in the Project
+## 3. Complete RAG Flow Steps
 
-### Complete RAG Flow (From `app.py`)
+The Concept Explainer demonstrates a full RAG pipeline with these steps:
 
-The Concept Explainer demonstrates a full RAG pipeline:
+### Step-by-Step Process
 
-```python
-# STEP 1: RETRIEVAL - Vector search on IST concepts
-if st.session_state.data_processor.vector_store:
-    search_results = st.session_state.data_processor.search_vectors(
-        query=f"{selected_concept} concept explanation learning objectives",
-        k=5,
-        model="text-embedding-3-small"
-    )
-    
-    # Extract related concepts
-    related_concepts = []
-    for result in search_results:
-        concept_name = result.get('metadata', {}).get('concept_name', '')
-        if concept_name and concept_name.lower() != selected_concept.lower():
-            related_concepts.append(concept_name)
-
-# STEP 2: RETRIEVAL - Search user notes (second knowledge base)
-if st.session_state.user_notes_processor.vector_store:
-    user_notes_results = st.session_state.user_notes_processor.search_vectors(
-        query=f"{selected_concept} explanation notes learning",
-        k=3,
-        model="text-embedding-3-small"
-    )
-    
-    # Extract relevant chunks for augmentation
-    user_notes_chunks = []
-    for result in user_notes_results:
-        if result.get('similarity', 0) > 0.3:  # Relevance threshold
-            user_notes_chunks.append(result.get('chunk', '')[:500])
-
-# STEP 3: AUGMENTATION - Combine all context
-description = concept_info.get('description', '')
-if related_concepts:
-    description += f"\n\nRelated concepts: {', '.join(related_concepts)}"
-if user_notes_chunks:
-    description += f"\n\nFrom your notes:\n" + "\n".join(user_notes_chunks)
-
-# STEP 4: GENERATION - Generate with enhanced context
-result = st.session_state.generator.generate_with_prompt_type(
-    prompt_type=PromptType.IST_CONCEPT_EXPLANATION,
-    concept_name=concept_info.get('concept_name'),
-    description=description,  # Augmented with retrieved context
-    # ... other parameters
-)
-```
+1. **User Action**: User clicks "Generate Explanation" button
+2. **Initialize Generator**: Check/create content generator
+3. **RETRIEVAL - IST Concepts**: Search IST concepts vector store
+4. **RETRIEVAL - User Notes**: Search user's learning notes vector store
+5. **RETRIEVAL - Identify Related**: Extract related concepts from results
+6. **RETRIEVAL - Load Database**: Load concept info from CSV database
+7. **AUGMENTATION - Combine Context**: Merge all retrieved information
+8. **GENERATION - LLM Call**: Generate explanation with enhanced context
+9. **Display with Citations**: Show response with source references
 
 ---
 
@@ -129,7 +93,7 @@ result = st.session_state.generator.generate_with_prompt_type(
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌─────────────────────┐    ┌─────────────────────┐        │
-│  │  IST Concepts DB    │    │  User Notes         │        │
+│  │  IST Concepts DB    │    │  User Notes       │        │
 │  │  (Built at startup) │    │  (Uploaded by user) │        │
 │  │                     │    │                     │        │
 │  │  • Course concepts  │    │  • Personal notes   │        │
@@ -161,37 +125,34 @@ result = st.session_state.generator.generate_with_prompt_type(
 
 ### Strategy 1: Simple Concatenation
 
-```python
-# Basic approach
-enhanced_prompt = f"{original_query}\n\nContext:\n{retrieved_text}"
+```
+Enhanced Prompt = Original Query + "\n\nContext:\n" + Retrieved Text
 ```
 
 ### Strategy 2: Structured Context (Used in Project)
 
-```python
-# More organized approach
-description = concept_info.get('description', '')
-
-# Add related concepts
-if related_concepts:
-    description += f"\n\nRelated concepts found via vector search: {', '.join(related_concepts)}"
-
-# Add user notes
-if user_notes_context:
-    description += f"\n\nRelevant information from your learning notes:\n{user_notes_context}"
-
-# Pass to prompt template
-prompt_kwargs = {
-    'concept_name': concept_name,
-    'description': description,  # Contains all augmented context
-    # ...
-}
+```
+Base Description
+    │
+    ▼
+┌─────────────────┐
+│ Add Related     │
+│ Concepts        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Add User Notes  │
+│ Excerpts        │
+└────────┬────────┘
+         │
+         ▼
+    Final Prompt
 ```
 
 ### Strategy 3: Explicit Context Sections
 
-```python
-prompt = f"""
+```
 CONCEPT: {concept_name}
 
 BASE INFORMATION:
@@ -204,7 +165,6 @@ YOUR NOTES (relevant excerpts):
 {user_notes_text}
 
 Based on all the above, provide a comprehensive explanation...
-"""
 ```
 
 ---
@@ -213,15 +173,7 @@ Based on all the above, provide a comprehensive explanation...
 
 ### Similarity Threshold
 
-```python
-# From the project: Filter by similarity score
-for result in user_notes_results:
-    similarity = result.get('similarity', 0)
-    
-    # Only include if similarity is reasonable
-    if similarity > 0.3:  # Threshold for relevance
-        user_notes_chunks.append(result.get('chunk', '')[:500])
-```
+Only include search results with similarity score > 0.3 (30%)
 
 ### Why Filter?
 
@@ -253,108 +205,59 @@ Search Results:
 
 ### Tracking Sources for Citations
 
-```python
-# From the project: Build citation data during retrieval
-user_notes_citations = []
-for idx, result in enumerate(user_notes_results, 1):
-    chunk_text = result.get('chunk', '')
-    similarity = result.get('similarity', 0)
-    metadata = result.get('metadata', {})
-    
-    if similarity > 0.3:
-        user_notes_citations.append({
-            'source': metadata.get('file', 'Your Notes'),
-            'chunk_id': metadata.get('chunk_id', idx),
-            'similarity': similarity,
-            'excerpt': chunk_text[:200] + "..." if len(chunk_text) > 200 else chunk_text
-        })
+During retrieval, build citation data:
+- Source file name
+- Chunk ID
+- Similarity score
+- Excerpt from chunk
+
+### Citation Display Flow
+
 ```
-
-### Displaying Citations
-
-```python
-# From app.py: Show citations after response
-if user_notes_citations:
-    st.subheader("📚 References from Your Learning Notes")
-    
-    for idx, citation in enumerate(user_notes_citations, 1):
-        with st.expander(f"📝 Reference {idx}: {citation['source']}"):
-            st.markdown(f"**Source:** {citation['source']}")
-            st.markdown(f"**Chunk ID:** {citation['chunk_id']}")
-            st.markdown(f"**Relevance Score:** {citation['similarity']:.1%}")
-            st.markdown("**Excerpt:**")
-            st.text(citation['excerpt'])
+Search Results
+    │
+    ▼
+┌─────────────────┐
+│ Extract Metadata│
+│ • File name     │
+│ • Chunk ID      │
+│ • Similarity    │
+│ • Excerpt       │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Build Citation  │
+│ Object          │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Display to User │
+│ (Expandable)    │
+└─────────────────┘
 ```
 
 ---
 
 ## 8. Knowledge Base Preparation
 
-### IST Concepts Vector Store (From `app.py`)
+### IST Concepts Vector Store Preparation Steps
 
-```python
-def load_ist_concepts():
-    """Load IST concepts and build vector store."""
-    
-    # Load CSV data
-    ist_concepts_df = data_processor.load_ist_concepts("data/ist_concepts.csv")
-    
-    # Create text chunks from concept information
-    concept_chunks = []
-    concept_metadata = []
-    
-    for idx, row in ist_concepts_df.iterrows():
-        # Combine concept information into searchable text
-        concept_text = f"""
-        Concept: {row.get('concept_name', '')}
-        Week: {row.get('week', '')}
-        Description: {row.get('description', '')}
-        Learning Objectives: {row.get('learning_objectives', '')}
-        Prerequisites: {row.get('prerequisites', 'None')}
-        Difficulty: {row.get('difficulty', '')}
-        Keywords: {row.get('keywords', '')}
-        """.strip()
-        
-        concept_chunks.append(concept_text)
-        concept_metadata.append({
-            'concept_name': row.get('concept_name', ''),
-            'week': row.get('week', ''),
-            'difficulty': row.get('difficulty', ''),
-            'chunk_id': idx
-        })
-    
-    # Build vector store
-    data_processor.build_vector_store(
-        chunks=concept_chunks,
-        metadata=concept_metadata,
-        model="text-embedding-3-small"
-    )
-```
+1. **Load CSV**: Read IST concepts from CSV file
+2. **Create Text Chunks**: Combine concept information into searchable text
+3. **Generate Embeddings**: Convert chunks to vectors
+4. **Build FAISS Index**: Create vector store
+5. **Store Metadata**: Track concept names, weeks, difficulty
 
-### User Notes Vector Store
+### User Notes Vector Store Preparation Steps
 
-```python
-# User uploads notes -> chunking -> embeddings -> vector store
-if uploaded_file.name.endswith('.txt'):
-    # Load text
-    text = user_notes_processor.load_text_file(file_path)
-    
-    # Chunk text
-    chunks = user_notes_processor.chunk_text(text, chunk_size=1000)
-    
-    # Create metadata for chunks
-    metadata = [
-        {"chunk_id": i, "file": uploaded_file.name, "source": "user_notes"} 
-        for i in range(len(chunks))
-    ]
-    
-    # Build vector store
-    user_notes_processor.build_vector_store(
-        chunks=chunks,
-        metadata=metadata,
-        model="text-embedding-3-small"
-    )
-```
+1. **Upload File**: User uploads TXT, CSV, or Markdown file
+2. **Load Document**: Use LangChain loaders (for MD/TXT)
+3. **Chunk Text**: Use LangChain RecursiveCharacterTextSplitter
+4. **Generate Embeddings**: Create vectors for chunks
+5. **Build FAISS Index**: Create vector store
+6. **Store Metadata**: Track file name, chunk IDs, source
 
 ---
 
@@ -362,47 +265,32 @@ if uploaded_file.name.endswith('.txt'):
 
 ### Complete Flow with Execution Logging
 
-```python
-# From app.py: Step-by-step RAG execution
-
-# Step 1: User action
-log_execution("Concept Explainer", "Generate Explanation button clicked", "⏳")
-
-# Step 2: Initialize generator
-if not st.session_state.generator:
-    initialize_generator()
-log_execution("Concept Explainer", "Content generator initialized", "✅")
-
-# Step 3: RETRIEVAL - IST concepts vector store
-log_execution("Concept Explainer", "RETRIEVAL - Semantic search on IST concepts", "⏳")
-search_results = data_processor.search_vectors(query=..., k=5)
-log_execution("Concept Explainer", "RETRIEVAL - Completed", "✅", 
-              f"Found {len(related_concepts)} related concepts")
-
-# Step 4: RETRIEVAL - User notes vector store
-log_execution("Concept Explainer", "RETRIEVAL - Searching user notes", "⏳")
-user_notes_results = user_notes_processor.search_vectors(query=..., k=3)
-log_execution("Concept Explainer", "RETRIEVAL - User notes completed", "✅")
-
-# Step 5: Identify related concepts
-log_execution("Concept Explainer", "Identifying related concepts", "✅")
-
-# Step 6: Load concept info from database
-log_execution("Concept Explainer", "Loading concept from database", "✅")
-
-# Step 7: AUGMENTATION - Combine context
-log_execution("Concept Explainer", "AUGMENTATION - Combining context", "⏳")
-# ... context combination logic ...
-log_execution("Concept Explainer", "AUGMENTATION - Context combined", "✅")
-
-# Step 8: GENERATION - Generate with LLM
-log_execution("Concept Explainer", "GENERATION - Generating explanation", "⏳")
-result = generator.generate_with_prompt_type(...)
-log_execution("Concept Explainer", "GENERATION - Complete", "✅", 
-              f"Model: {model}, Tokens: {tokens}")
-
-# Step 9: Display with citations
-log_execution("Concept Explainer", "Displaying with citations", "✅")
+```
+Step 1: User Action
+    │
+    ▼
+Step 2: Initialize Generator
+    │
+    ▼
+Step 3: RETRIEVAL - IST Concepts Vector Store
+    │
+    ▼
+Step 4: RETRIEVAL - User Notes Vector Store
+    │
+    ▼
+Step 5: RETRIEVAL - Identify Related Concepts
+    │
+    ▼
+Step 6: RETRIEVAL - Load Concept from Database
+    │
+    ▼
+Step 7: AUGMENTATION - Combine All Context
+    │
+    ▼
+Step 8: GENERATION - Generate with LLM
+    │
+    ▼
+Step 9: Display with Citations
 ```
 
 ---
@@ -432,51 +320,69 @@ log_execution("Concept Explainer", "Displaying with citations", "✅")
 
 ### Pattern 1: Fallback Chain
 
-```python
-# Try primary source, fallback to alternatives
-results = primary_vector_store.search(query, k=5)
-if not results or max_similarity < 0.3:
-    results = secondary_vector_store.search(query, k=5)
-if not results:
-    # Generate without RAG context
-    results = []
+```
+Try Primary Source
+    │
+    ▼
+┌─────────────────┐
+│ Results Found?  │
+│ Similarity OK?  │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+   Yes       No
+    │         │
+    ▼         ▼
+┌────────┐ ┌──────────────┐
+│ Use    │ │ Try Secondary│
+│ Results│ │ Source       │
+└────────┘ └──────────────┘
 ```
 
 ### Pattern 2: Query Expansion
 
-```python
-# Generate multiple query variations
-queries = [
-    original_query,
-    f"{concept_name} definition",
-    f"{concept_name} explanation examples"
-]
-
-all_results = []
-for q in queries:
-    results = vector_store.search(q, k=3)
-    all_results.extend(results)
-
-# Deduplicate and rank
-unique_results = deduplicate(all_results)
+```
+Original Query
+    │
+    ▼
+┌─────────────────┐
+│ Generate        │
+│ Variations      │
+│ • {query}       │
+│ • {query} def   │
+│ • {query} exp   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Search All      │
+│ Variations      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Deduplicate     │
+│ & Rank          │
+└─────────────────┘
 ```
 
 ### Pattern 3: Context Window Management
 
-```python
-# Limit context to avoid token limits
-MAX_CONTEXT_TOKENS = 2000
-
-context_chunks = []
-total_tokens = 0
-
-for result in sorted_results:
-    chunk_tokens = estimate_tokens(result['chunk'])
-    if total_tokens + chunk_tokens <= MAX_CONTEXT_TOKENS:
-        context_chunks.append(result['chunk'])
-        total_tokens += chunk_tokens
-    else:
-        break  # Stop adding context
+```
+Retrieved Results
+    │
+    ▼
+┌─────────────────┐
+│ Sort by         │
+│ Similarity      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Add Chunks      │
+│ Until Token     │
+│ Limit Reached   │
+└─────────────────┘
 ```
 
 ---

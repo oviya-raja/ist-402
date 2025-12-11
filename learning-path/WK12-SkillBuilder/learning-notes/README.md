@@ -66,28 +66,24 @@ These learning notes are derived from hands-on implementation of the **Skill Bui
 
 ---
 
-## 📊 Key Patterns & Code Snippets
+## 📊 Key Patterns & Flow Diagrams
 
 ### RAG Pipeline Pattern
+
 ```
 Query → Embed → Search → Filter → Augment → Generate → Cite
 ```
 
-### Vector Search Pattern
-```python
-# Embed → Store → Search → Rank
-embeddings = create_embeddings(chunks)
-index.add(embeddings)
-results = index.search(query_embedding, k=5)
+### Vector Search Pattern Flow
+
+```
+Text Chunks → Embeddings → FAISS Index → Search → Results
 ```
 
-### Prompt Template Pattern
-```python
-template.format(
-    concept_name=...,
-    context=...,
-    retrieved_info=...
-)
+### Prompt Template Pattern Flow
+
+```
+Template + Parameters → Format → Enhance → Send to LLM
 ```
 
 ---
@@ -125,25 +121,24 @@ template.format(
 ## 🔗 Quick Reference
 
 ### Embedding Model
-```python
-model = "text-embedding-3-small"  # 1536 dimensions
-```
+- Model: `text-embedding-3-small`
+- Dimensions: 1536
+- Cost: $0.02/1M tokens
 
 ### Generation Model
-```python
-model = "gpt-4o-mini"  # Default for cost-effectiveness
-```
+- Model: `gpt-4o-mini`
+- Default for cost-effectiveness
+- Temperature: 0.0-1.0 range
 
 ### Similarity Threshold
-```python
-threshold = 0.3  # Filter irrelevant results
-```
+- Threshold: 0.3 (30%)
+- Filters irrelevant results
+- Balances precision and recall
 
 ### Chunk Size
-```python
-chunk_size = 1000
-overlap = 200
-```
+- Chunk Size: 1000 characters
+- Overlap: 200 characters
+- Preserves context between chunks
 
 ---
 

@@ -66,11 +66,12 @@ The Skill Builder application demonstrates a production-ready GenAI system that 
 ## 3. Module Responsibilities
 
 ### `data_processor.py`
-- CSV/Text file ingestion
+- CSV/Text/Markdown file ingestion
 - Data validation and preprocessing
 - Vector store management (FAISS)
 - Embedding generation (OpenAI)
 - Semantic search operations
+- LangChain integration for document processing
 
 ### `prompt_engineer.py`
 - Prompt template management
@@ -146,6 +147,7 @@ User Query
 | **Embeddings** | OpenAI text-embedding-3-small | Text vectorization |
 | **Generation** | OpenAI GPT-4o-mini | Content generation |
 | **Data Processing** | Pandas, NumPy | Data manipulation |
+| **Document Processing** | LangChain | Text splitting, markdown loading |
 | **Configuration** | PyYAML, python-dotenv | Config management |
 
 ---
@@ -161,6 +163,7 @@ User Query
 5. **Error Handling**: Comprehensive logging and graceful degradation
 6. **State Management**: Session-based component lifecycle
 7. **Modular Design**: Clean separation of concerns
+8. **LangChain Integration**: Document processing and text chunking
 
 ### Production Considerations Shown
 
@@ -170,6 +173,7 @@ User Query
 - Token usage tracking
 - Cost monitoring
 - Log rotation
+- Citation tracking
 
 ---
 

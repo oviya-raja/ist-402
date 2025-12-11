@@ -8,7 +8,7 @@
 
 ## 1. API Integration Architecture
 
-### From the Project: Multi-API Strategy
+### Multi-API Strategy
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -35,14 +35,6 @@
 
 ## 2. Custom Exception Class
 
-### From the Project: `api_integration.py`
-
-```python
-class APIError(Exception):
-    """Custom exception for API errors."""
-    pass
-```
-
 ### Why Custom Exceptions?
 
 | Benefit | Description |
@@ -52,50 +44,38 @@ class APIError(Exception):
 | **Context** | Include API-specific error information |
 | **Clarity** | Clear error hierarchy |
 
-### Usage Pattern
+### Error Handling Flow
 
-```python
-try:
-    result = api.fetch_data()
-except APIError as e:
-    # Handle API-specific errors
-    logger.error(f"API failed: {e}")
-    return fallback_response()
-except Exception as e:
-    # Handle unexpected errors
-    logger.critical(f"Unexpected error: {e}")
-    raise
+```
+API Call
+    │
+    ▼
+┌─────────────────┐
+│ Try Operation   │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+ Success   Failure
+    │         │
+    ▼         ▼
+┌────────┐ ┌──────────────┐
+│ Return │ │ Raise        │
+│ Result │ │ APIError     │
+└────────┘ └──────┬───────┘
+                  │
+                  ▼
+         ┌─────────────────┐
+         │ Catch & Handle  │
+         │ • Log error     │
+         │ • Show message  │
+         │ • Fallback      │
+         └─────────────────┘
 ```
 
 ---
 
 ## 3. API Client Initialization
-
-### From the Project: `api_integration.py`
-
-```python
-class OpenAIWebSearchAPI:
-    """Integration with OpenAI Responses API using web_search_preview tool."""
-    
-    def __init__(self, api_key: Optional[str] = None):
-        self.logger = logger
-        self.api_key = api_key or os.getenv('OPENAI_API_KEY')
-        
-        # Check package availability
-        if not OPENAI_AVAILABLE:
-            self.logger.error("OpenAI package not available. Install with: pip install openai")
-            self.client = None
-        elif not self.api_key:
-            self.logger.error("OpenAI API key not configured...")
-            self.client = None
-        else:
-            try:
-                self.client = OpenAI(api_key=self.api_key)
-                self.logger.info("OpenAI Web Search API initialized successfully")
-            except Exception as e:
-                self.logger.log_error(e, "Error initializing OpenAI client")
-                self.client = None
-```
 
 ### Initialization Checklist
 
@@ -125,28 +105,26 @@ class OpenAIWebSearchAPI:
 
 ## 4. Availability Checking Pattern
 
-### From the Project: `api_integration.py`
+### Availability Check Flow
 
-```python
-def is_available(self) -> bool:
-    """
-    Check if OpenAI Web Search API is available.
-    
-    Returns:
-        True if API key is configured and package is available
-    """
-    return self.client is not None
 ```
-
-### Usage in UI
-
-```python
-# From app.py: Show API status to user
-if st.session_state.api_manager.is_openai_web_search_available():
-    st.success("✅ OpenAI Web Search: Connected")
-else:
-    st.error("❌ OpenAI Web Search: Not configured")
-    st.caption("⚠️ Required for news and AI conferences functionality")
+Check API Availability
+    │
+    ▼
+┌─────────────────┐
+│ Client Exists?  │
+│ API Key Set?    │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+   Yes       No
+    │         │
+    ▼         ▼
+┌────────┐ ┌──────────────┐
+│Available│ │ Not Available│
+│         │ │ Show warning │
+└─────────┘ └──────────────┘
 ```
 
 ### Why This Pattern?
@@ -159,71 +137,6 @@ else:
 ---
 
 ## 5. API Call with Error Handling
-
-### From the Project: `api_integration.py`
-
-```python
-def get_top_headlines(self, 
-                     country: str = "us",
-                     category: Optional[str] = None,
-                     page_size: int = 5) -> Dict[str, Any]:
-    """Get top news headlines."""
-    
-    # Pre-condition check
-    if not self.api_key:
-        error_msg = "NewsAPI key not configured..."
-        self.logger.error(error_msg)
-        raise APIError(error_msg)
-    
-    try:
-        # Prepare request
-        url = f"{self.base_url}/top-headlines"
-        params = {
-            'country': country,
-            'pageSize': page_size,
-            'apiKey': self.api_key
-        }
-        
-        if category:
-            params['category'] = category
-        
-        # Log API call start
-        self.logger.log_api_call("NewsAPI", "requesting", f"country={country}")
-        
-        # Make request with timeout
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()  # Raise for HTTP errors
-        
-        data = response.json()
-        
-        # Log success
-        self.logger.log_api_call("NewsAPI", "success", 
-                                 f"retrieved {len(data.get('articles', []))} articles")
-        
-        # Transform response
-        return {
-            'status': data.get('status'),
-            'total_results': data.get('totalResults', 0),
-            'articles': [
-                {
-                    'title': article.get('title', ''),
-                    'description': article.get('description', ''),
-                    'source': article.get('source', {}).get('name', ''),
-                    'published_at': article.get('publishedAt', ''),
-                    'url': article.get('url', '')
-                }
-                for article in data.get('articles', [])[:page_size]
-            ]
-        }
-        
-    except requests.exceptions.RequestException as e:
-        self.logger.log_error(e, "News API error")
-        self.logger.log_api_call("NewsAPI", "failed", str(e))
-        raise APIError(f"NewsAPI request failed: {str(e)}")
-    except Exception as e:
-        self.logger.log_error(e, "Unexpected error getting news")
-        raise APIError(f"Unexpected error in NewsAPI: {str(e)}")
-```
 
 ### Error Handling Layers
 
@@ -257,24 +170,6 @@ def get_top_headlines(self,
 
 ## 6. API Call Logging
 
-### From the Project: `logger.py`
-
-```python
-def log_api_call(self, api_name: str, status: str, details: Optional[str] = None):
-    """
-    Log API calls for monitoring and debugging.
-    
-    Args:
-        api_name: Name of the API being called
-        status: Success or failure status
-        details: Additional details about the call
-    """
-    log_msg = f"API Call - {api_name}: {status}"
-    if details:
-        log_msg += f" - {details}"
-    self.logger.info(log_msg)
-```
-
 ### Logging Strategy
 
 | When | What to Log |
@@ -284,84 +179,38 @@ def log_api_call(self, api_name: str, status: str, details: Optional[str] = None
 | **After Failure** | Error type, error message |
 | **Always** | Timestamp (automatic) |
 
-### Example Log Output
+### Logging Flow
 
 ```
-2024-01-15 10:23:45 - API Call - NewsAPI: requesting - country=us, category=technology
-2024-01-15 10:23:46 - API Call - NewsAPI: success - retrieved 5 articles
-2024-01-15 10:25:12 - API Call - OpenAI Web Search: requesting - AI conferences, limit=10
-2024-01-15 10:25:18 - API Call - OpenAI Web Search: success - retrieved web search results
+API Call Start
+    │
+    ▼
+┌─────────────────┐
+│ Log: Requesting │
+│ API: {name}     │
+│ Params: {...}   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Execute Call    │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+ Success   Failure
+    │         │
+    ▼         ▼
+┌────────┐ ┌──────────────┐
+│ Log:   │ │ Log:        │
+│ Success│ │ Failed      │
+│ Count  │ │ Error       │
+└────────┘ └──────────────┘
 ```
 
 ---
 
 ## 7. Response Parsing with Fallbacks
-
-### From the Project: `api_integration.py`
-
-```python
-def _parse_conferences_from_text(self, text: str, limit: int) -> List[Dict[str, Any]]:
-    """Parse conference information from OpenAI web search response text."""
-    conferences = []
-    
-    # Split by multiple possible delimiters
-    sections = re.split(r'\n\s*\n|\d+\.\s+|\-\s+|\•\s+', text)
-    
-    for section in sections:
-        section = section.strip()
-        if len(section) < 30:  # Skip very short sections
-            continue
-        
-        conf = {
-            'title': '',
-            'description': '',
-            'source': 'OpenAI Web Search',
-            'url': '',
-            'extracted_date': '',
-            'extracted_location': '',
-            'type': 'conference'
-        }
-        
-        # Extract URL with regex
-        url_pattern = r'https?://[^\s\)]+'
-        urls = re.findall(url_pattern, section)
-        if urls:
-            conf['url'] = urls[0]
-        
-        # Extract dates with multiple format patterns
-        date_patterns = [
-            (r'\d{4}-\d{2}-\d{2}', '%Y-%m-%d'),
-            (r'([A-Z][a-z]+ \d{1,2}, \d{4})', None),
-            (r'(\d{1,2} [A-Z][a-z]+ \d{4})', None),
-        ]
-        
-        for pattern, _ in date_patterns:
-            dates = re.findall(pattern, section)
-            if dates:
-                conf['extracted_date'] = dates[0]
-                break
-        
-        # ... more extraction logic ...
-        
-        if conf['title'] and len(conf['title']) > 5:
-            conferences.append(conf)
-        
-        if len(conferences) >= limit:
-            break
-    
-    # Fallback: Simple paragraph splitting if parsing didn't work
-    if len(conferences) < 2:
-        paragraphs = [p.strip() for p in text.split('\n\n') if len(p.strip()) > 50]
-        for para in paragraphs[:limit]:
-            conferences.append({
-                'title': para.split('\n')[0][:200],
-                'description': para[:500],
-                'source': 'OpenAI Web Search',
-                # ... default values ...
-            })
-    
-    return conferences[:limit]
-```
 
 ### Parsing Strategy
 
@@ -396,62 +245,6 @@ def _parse_conferences_from_text(self, text: str, limit: int) -> List[Dict[str, 
 
 ## 8. Manager Pattern
 
-### From the Project: `api_integration.py`
-
-```python
-class APIIntegrationManager:
-    """
-    Manages all external API integrations.
-    Provides unified interface for accessing external data sources.
-    """
-    
-    def __init__(self):
-        self.logger = logger
-        self.news_api = NewsAPI()
-        self.openai_web_search = OpenAIWebSearchAPI()
-    
-    def get_contextual_data(self, 
-                           news_topic: Optional[str] = None) -> Dict[str, Any]:
-        """Get contextual data from APIs."""
-        try:
-            context = {
-                'timestamp': datetime.now().isoformat(),
-                'news': None
-            }
-            
-            # Get news using OpenAI Web Search
-            if news_topic:
-                news_data = self.openai_web_search.get_top_headlines(
-                    keywords=[news_topic],
-                    page_size=5
-                )
-            else:
-                news_data = self.openai_web_search.get_top_headlines(page_size=5)
-            
-            context['news'] = news_data
-            return context
-            
-        except Exception as e:
-            self.logger.log_error(e, "Error getting contextual data")
-            return {
-                'timestamp': datetime.now().isoformat(),
-                'error': str(e)
-            }
-    
-    def format_context_for_prompt(self, context: Dict[str, Any]) -> str:
-        """Format contextual data for inclusion in prompts."""
-        formatted = "EXTERNAL CONTEXT:\n\n"
-        
-        if context.get('news'):
-            news = context['news']
-            formatted += f"Recent News ({news.get('total_results', 0)} articles):\n"
-            for article in news.get('articles', [])[:3]:
-                formatted += f"- {article.get('title', 'N/A')}\n"
-                formatted += f"  {article.get('description', 'N/A')}\n"
-        
-        return formatted
-```
-
 ### Manager Pattern Benefits
 
 | Benefit | Description |
@@ -461,26 +254,31 @@ class APIIntegrationManager:
 | **Coordination** | Combine data from multiple sources |
 | **Configuration** | Centralized API setup |
 
+### Manager Flow
+
+```
+User Request
+    │
+    ▼
+┌─────────────────┐
+│ API Manager     │
+│ (Unified)       │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+   News    Web Search
+    │         │
+    ▼         ▼
+┌─────────────────┐
+│ Combine Results │
+│ Format Context  │
+└─────────────────┘
+```
+
 ---
 
 ## 9. Environment Variable Management
-
-### From the Project: `app.py`
-
-```python
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-app_dir = Path(__file__).parent.absolute()
-env_path = app_dir / ".env"
-
-# Try loading .env file with override
-if env_path.exists():
-    load_dotenv(dotenv_path=env_path, override=True)
-else:
-    # Fallback: try current directory
-    load_dotenv(override=True)
-```
 
 ### Environment Variable Best Practices
 
@@ -514,22 +312,6 @@ else:
 
 ## 10. Error Display in UI
 
-### From the Project: `app.py`
-
-```python
-if st.button("🔍 Fetch AI Conferences", type="primary"):
-    try:
-        with st.spinner("Searching for AI conferences..."):
-            conferences_data = st.session_state.api_manager.get_ai_conferences(
-                category=category,
-                limit=limit
-            )
-    except Exception as e:
-        st.error(f"❌ Failed to fetch conferences: {str(e)}")
-        st.info("💡 Please configure OPENAI_API_KEY in your .env file")
-        st.stop()  # Stop execution gracefully
-```
-
 ### User-Friendly Error Handling
 
 | Principle | Implementation |
@@ -539,16 +321,40 @@ if st.button("🔍 Fetch AI Conferences", type="primary"):
 | **Non-Technical** | Avoid stack traces in UI |
 | **Graceful Stop** | `st.stop()` prevents partial rendering |
 
+### Error Display Flow
+
+```
+Error Occurs
+    │
+    ▼
+┌─────────────────┐
+│ Catch Exception │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Log Error       │
+│ (Technical)     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Show User       │
+│ Friendly Message│
+│ • What happened │
+│ • How to fix    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Stop Execution  │
+│ (Prevent crash) │
+└─────────────────┘
+```
+
 ---
 
 ## 11. Timeout Handling
-
-### Request Timeout Pattern
-
-```python
-# From the project
-response = requests.get(url, params=params, timeout=10)
-```
 
 ### Why Timeouts Matter
 

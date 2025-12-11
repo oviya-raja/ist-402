@@ -30,28 +30,23 @@ Semantic Search:    "machine learning" ≈ "ML algorithms" (high similarity)
 
 ## 2. OpenAI Embeddings Implementation
 
-### From the Project: `data_processor.py`
+### Process Flow
 
-```python
-def create_embeddings(self, texts: List[str], model: str = "text-embedding-3-small") -> List[List[float]]:
-    """
-    Create embeddings for a list of texts using OpenAI.
-    
-    Args:
-        texts: List of text strings to embed
-        model: OpenAI embedding model to use
-        
-    Returns:
-        List of embedding vectors
-    """
-    # OpenAI embeddings API call
-    response = self.embeddings_model.embeddings.create(
-        model=model,
-        input=texts
-    )
-    
-    embeddings = [item.embedding for item in response.data]
-    return embeddings
+```
+Text Input
+    │
+    ▼
+┌─────────────────┐
+│  OpenAI API     │
+│  Embedding Call │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Vector Output  │
+│  [0.1, 0.3, ...]│
+│  (1536 dims)    │
+└─────────────────┘
 ```
 
 ### Model Comparison
@@ -90,32 +85,13 @@ def create_embeddings(self, texts: List[str], model: str = "text-embedding-3-sma
 
 ## 4. Building the Vector Store
 
-### From the Project: `data_processor.py`
+### Process Steps
 
-```python
-def build_vector_store(self, chunks: List[str], metadata: Optional[List[Dict]] = None, 
-                       model: str = "text-embedding-3-small"):
-    """
-    Build a vector store from text chunks using OpenAI embeddings and FAISS.
-    """
-    # Step 1: Create embeddings for all chunks
-    embeddings = self.create_embeddings(chunks, model)
-    
-    # Step 2: Convert to numpy array (FAISS requirement)
-    embeddings_array = np.array(embeddings).astype('float32')
-    dimension = embeddings_array.shape[1]
-    
-    # Step 3: Create FAISS index (using L2 distance)
-    index = faiss.IndexFlatL2(dimension)
-    
-    # Step 4: Add vectors to index
-    index.add(embeddings_array)
-    
-    # Step 5: Store index, chunks, and metadata
-    self.vector_store = index
-    self.text_chunks = chunks
-    self.metadata = metadata if metadata else [{"chunk_id": i} for i in range(len(chunks))]
-```
+1. **Create Embeddings**: Convert text chunks to vectors using OpenAI
+2. **Convert to NumPy Array**: FAISS requires float32 numpy arrays
+3. **Create FAISS Index**: Initialize index with vector dimension
+4. **Add Vectors**: Populate index with embeddings
+5. **Store Metadata**: Keep track of chunks and metadata
 
 ### Visual: Vector Store Creation
 
@@ -136,35 +112,12 @@ Text Chunks                    Embeddings                  FAISS Index
 
 ## 5. Semantic Search Implementation
 
-### From the Project: `data_processor.py`
+### Search Process Steps
 
-```python
-def search_vectors(self, query: str, k: int = 5, 
-                   model: str = "text-embedding-3-small") -> List[Dict[str, Any]]:
-    """
-    Search the vector store for similar chunks.
-    """
-    # Step 1: Create embedding for query
-    query_embedding = self.create_embeddings([query], model)[0]
-    query_vector = np.array([query_embedding]).astype('float32')
-    
-    # Step 2: Search FAISS index
-    k = min(k, self.vector_store.ntotal)  # Don't exceed available vectors
-    distances, indices = self.vector_store.search(query_vector, k)
-    
-    # Step 3: Format results with similarity scores
-    results = []
-    for i, (distance, idx) in enumerate(zip(distances[0], indices[0])):
-        results.append({
-            'chunk': self.text_chunks[idx],
-            'score': float(distance),
-            'similarity': float(1 / (1 + distance)),  # Convert distance to similarity
-            'metadata': self.metadata[idx],
-            'rank': i + 1
-        })
-    
-    return results
-```
+1. **Embed Query**: Convert user query to embedding vector
+2. **Search FAISS Index**: Find k most similar vectors using L2 distance
+3. **Format Results**: Combine chunks, distances, and metadata
+4. **Convert Distance to Similarity**: Make scores intuitive (higher = more similar)
 
 ### Visual: Search Process
 
@@ -199,15 +152,11 @@ Query: "What is RAG?"
 
 ### L2 Distance vs Similarity
 
-```python
-# L2 Distance: Lower = More Similar
-# Range: [0, ∞)
+**L2 Distance**: Lower = More Similar (Range: [0, ∞))
 
-# Conversion to Similarity Score
-similarity = 1 / (1 + distance)
-# Range: (0, 1]
-# Higher = More Similar
-```
+**Similarity Score**: Higher = More Similar (Range: (0, 1])
+
+**Conversion Formula**: `similarity = 1 / (1 + distance)`
 
 ### Example Conversions
 
@@ -229,27 +178,12 @@ similarity = 1 / (1 + distance)
 - **Precision**: Smaller chunks = more precise retrieval
 - **Context**: Need enough context for meaning
 
-### From the Project: `data_processor.py`
+### Chunking Process (Using LangChain)
 
-```python
-def chunk_text(self, text: str, chunk_size: int = 1000, 
-               overlap: int = 200) -> List[str]:
-    """
-    Split text into chunks with overlap for context preservation.
-    """
-    if len(text) <= chunk_size:
-        return [text]
-    
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunk = text[start:end]
-        chunks.append(chunk)
-        start = end - overlap  # Overlap preserves context
-    
-    return chunks
-```
+1. **Load Document**: Use LangChain document loaders (TextLoader, UnstructuredMarkdownLoader)
+2. **Split Text**: Use RecursiveCharacterTextSplitter
+3. **Preserve Context**: Overlap between chunks maintains continuity
+4. **Store Chunks**: Keep chunks with metadata for retrieval
 
 ### Visual: Chunking with Overlap
 
@@ -277,6 +211,20 @@ Chunk 3:
                             └─────────────────────────┘
 ```
 
+### LangChain RecursiveCharacterTextSplitter
+
+**Separators** (in order of preference):
+1. `\n\n` - Paragraph breaks
+2. `\n` - Line breaks
+3. ` ` - Word boundaries
+4. `""` - Character level (last resort)
+
+**Benefits**:
+- Preserves document structure
+- Maintains context boundaries
+- Handles markdown formatting
+- Intelligent splitting
+
 ---
 
 ## 8. Metadata Tracking
@@ -287,55 +235,80 @@ Chunk 3:
 - **Filtering**: Search within specific sources
 - **Ranking**: Use metadata for result ranking
 
-### From the Project: `app.py`
+### Metadata Structure
 
-```python
-# Creating metadata for user notes
-metadata = [
-    {
-        "chunk_id": i, 
-        "file": uploaded_file.name, 
-        "source": "user_notes"
-    } 
-    for i in range(len(chunks))
-]
+```
+Metadata Example:
+{
+    "chunk_id": 5,
+    "file": "my_notes.md",
+    "source": "user_notes",
+    "week": "W02"
+}
+```
 
-# Later, in search results:
-for result in search_results:
-    citation = {
-        'source': result['metadata'].get('file', 'Unknown'),
-        'chunk_id': result['metadata'].get('chunk_id'),
-        'similarity': result['similarity'],
-        'excerpt': result['chunk'][:200]
-    }
+### Citation Flow
+
+```
+Search Result
+    │
+    ▼
+┌─────────────────┐
+│  Extract Chunk  │
+│  + Metadata     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Build Citation │
+│  • Source file  │
+│  • Chunk ID     │
+│  • Similarity   │
+│  • Excerpt      │
+└────────┬────────┘
+         │
+         ▼
+    Display to User
 ```
 
 ---
 
 ## 9. Persistence: Save/Load Vector Store
 
-### From the Project: `data_processor.py`
+### Save Process
 
-```python
-def save_vector_store(self, file_path: str):
-    """Save vector store to disk using pickle."""
-    save_data = {
-        'vector_store': self.vector_store,
-        'text_chunks': self.text_chunks,
-        'metadata': self.metadata
-    }
-    
-    with open(file_path, 'wb') as f:
-        pickle.dump(save_data, f)
+1. **Collect Data**: Vector store, text chunks, metadata
+2. **Serialize**: Use pickle to save to disk
+3. **Store Path**: Save with descriptive filename
 
-def load_vector_store(self, file_path: str):
-    """Load vector store from disk."""
-    with open(file_path, 'rb') as f:
-        save_data = pickle.load(f)
-    
-    self.vector_store = save_data['vector_store']
-    self.text_chunks = save_data['text_chunks']
-    self.metadata = save_data.get('metadata', [])
+### Load Process
+
+1. **Read File**: Load pickle file from disk
+2. **Deserialize**: Restore vector store, chunks, metadata
+3. **Restore State**: Rebuild processor state
+
+### Visual: Persistence Flow
+
+```
+Active Vector Store
+    │
+    ▼
+┌─────────────────┐
+│  Save to Disk   │
+│  (pickle)       │
+└────────┬────────┘
+         │
+         ▼
+    .pkl File
+         │
+         ▼
+┌─────────────────┐
+│  Load from Disk │
+│  (pickle)       │
+└────────┬────────┘
+         │
+         ▼
+    Restored Vector Store
 ```
 
 ---
@@ -349,6 +322,7 @@ def load_vector_store(self, file_path: str):
 3. **Use overlap** in chunking for context
 4. **Convert distances** to intuitive similarity scores
 5. **Handle edge cases** (empty results, API failures)
+6. **Use LangChain** for intelligent text splitting
 
 ### ❌ Don'ts
 
@@ -356,6 +330,7 @@ def load_vector_store(self, file_path: str):
 2. Don't use large chunks (reduces precision)
 3. Don't ignore token limits
 4. Don't store vectors without corresponding text
+5. Don't skip metadata tracking
 
 ---
 
@@ -368,6 +343,7 @@ def load_vector_store(self, file_path: str):
 | **Chunking** | Overlap preserves context between chunks |
 | **L2 Distance** | Lower distance = higher similarity |
 | **Metadata** | Essential for citations and filtering |
+| **LangChain** | Intelligent text splitting preserves structure |
 
 ---
 

@@ -21,22 +21,16 @@ Better Prompt:   "Explain RAG (Retrieval-Augmented Generation) for a
 
 ---
 
-## 2. Prompt Types (From the Project)
+## 2. Prompt Types Organization
 
-### Enum-Based Organization
+### Enum-Based Design
 
-```python
-class PromptType(Enum):
-    """Enumeration of prompt types."""
-    CONTENT_GENERATION = "content_generation"
-    DATA_ANALYSIS = "data_analysis"
-    RESEARCH_SUMMARY = "research_summary"
-    CONTEXTUAL_RESPONSE = "contextual_response"
-    CREATIVE_WRITING = "creative_writing"
-    IST_CONCEPT_EXPLANATION = "ist_concept_explanation"
-    STUDY_PLAN_GENERATION = "study_plan_generation"
-    CONCEPT_QUIZ = "concept_quiz"
-```
+The project uses an enumeration to organize different prompt types:
+
+- `IST_CONCEPT_EXPLANATION` - Detailed concept explanations
+- `STUDY_PLAN_GENERATION` - Personalized study plans
+- `CONCEPT_QUIZ` - Structured quiz generation
+- `RESEARCH_SUMMARY` - Research synthesis
 
 ### Benefits of Enum-Based Design
 
@@ -50,41 +44,6 @@ class PromptType(Enum):
 ---
 
 ## 3. Prompt Template Structure
-
-### IST Concept Explanation Template
-
-```python
-PromptType.IST_CONCEPT_EXPLANATION.value: """You are an expert IST402 instructor helping students understand course concepts.
-
-CONCEPT INFORMATION:
-- Concept Name: {concept_name}
-- Week: {week}
-- Description: {description}
-- Learning Objectives: {learning_objectives}
-- Prerequisites: {prerequisites}
-- Difficulty Level: {difficulty}
-- Estimated Time: {time_estimate} minutes
-- Keywords: {keywords}
-
-TASK:
-Provide a clear, comprehensive explanation of {concept_name} that:
-1. Explains the concept in simple, understandable terms
-2. Covers all learning objectives listed
-3. Includes relevant examples and use cases
-4. Connects to prerequisite concepts (if any)
-5. Relates to other IST402 concepts
-6. Uses appropriate technical terminology
-7. Provides practical insights for students
-
-Format your explanation with:
-- Clear introduction to the concept
-- Detailed explanation covering learning objectives
-- Examples and use cases
-- Connections to related concepts
-- Key takeaways
-
-Please generate a detailed explanation suitable for IST402 students."""
-```
 
 ### Anatomy of a Good Template
 
@@ -107,52 +66,39 @@ Please generate a detailed explanation suitable for IST402 students."""
 └──────────────────────────────────────────┘
 ```
 
+### IST Concept Explanation Template Structure
+
+**Role**: Expert IST402 instructor
+
+**Context Provided**:
+- Concept Name
+- Week
+- Description
+- Learning Objectives
+- Prerequisites
+- Difficulty Level
+- Estimated Time
+- Keywords
+
+**Task Requirements**:
+1. Explain in simple, understandable terms
+2. Cover all learning objectives
+3. Include relevant examples
+4. Connect to prerequisites
+5. Relate to other IST402 concepts
+6. Use appropriate technical terminology
+7. Provide practical insights
+
+**Output Format**:
+- Clear introduction
+- Detailed explanation
+- Examples and use cases
+- Connections to related concepts
+- Key takeaways
+
 ---
 
 ## 4. Dynamic Prompt Building
-
-### From the Project: `prompt_engineer.py`
-
-```python
-def build_prompt(self, 
-                prompt_type: PromptType,
-                context: Optional[str] = None,
-                data: Optional[str] = None,
-                **kwargs) -> str:
-    """
-    Build a custom prompt based on type and parameters.
-    """
-    # Get template
-    template = self.prompt_templates.get(prompt_type.value)
-    if not template:
-        raise ValueError(f"Unknown prompt type: {prompt_type}")
-    
-    # Default parameters with fallbacks
-    params = {
-        'context': context or "No specific context provided",
-        'data': data or "No data provided",
-        'tone': kwargs.get('tone', 'professional'),
-        'audience': kwargs.get('audience', 'general audience'),
-        'length': kwargs.get('length', '500'),
-        # ... more defaults
-    }
-    
-    # Override with provided kwargs
-    params.update(kwargs)
-    
-    # Format template with parameters
-    prompt = template.format(**params)
-    
-    # Add few-shot examples if available
-    if prompt_type.value in self.few_shot_examples:
-        examples = self.few_shot_examples[prompt_type.value]
-        if examples:
-            prompt += "\n\nEXAMPLES:\n"
-            for i, example in enumerate(examples[:2], 1):
-                prompt += f"\nExample {i}:\nInput: {example.get('input', '')}\nOutput: {example.get('output', '')}\n"
-    
-    return prompt
-```
 
 ### Parameter Flow
 
@@ -167,6 +113,14 @@ User Input                  Default Values           Final Prompt
                            └────────────┘
 ```
 
+### Building Process Steps
+
+1. **Get Template**: Select template based on prompt type
+2. **Set Defaults**: Use sensible default values
+3. **Override with User Input**: Replace defaults with provided values
+4. **Format Template**: Fill in all placeholders
+5. **Add Enhancements**: Include few-shot examples if available
+
 ---
 
 ## 5. Few-Shot Learning
@@ -174,31 +128,6 @@ User Input                  Default Values           Final Prompt
 ### What is Few-Shot Learning?
 
 Providing examples in the prompt to guide the model's output format and style.
-
-### From the Project: Example Structure
-
-```python
-def _initialize_examples(self) -> Dict[str, List[Dict]]:
-    """Initialize few-shot learning examples."""
-    return {
-        PromptType.CONTENT_GENERATION.value: [
-            {
-                "input": "Product: Smartphone, Features: 5G, AI camera",
-                "output": "The latest smartphone revolutionizes mobile technology 
-                          with cutting-edge 5G connectivity and an advanced 
-                          AI-powered camera system..."
-            }
-        ],
-        PromptType.IST_CONCEPT_EXPLANATION.value: [
-            {
-                "input": "Concept: Tokenization, Week: W00",
-                "output": "Tokenization is the process of breaking down text 
-                          into smaller units called tokens..."
-            }
-        ],
-        # ... more examples
-    }
-```
 
 ### Few-Shot Pattern
 
@@ -231,27 +160,9 @@ Generate the output:
 
 ## 6. Chain-of-Thought (CoT) Prompting
 
-### From the Project: `prompt_engineer.py`
+### What is Chain-of-Thought?
 
-```python
-def add_chain_of_thought(self, prompt: str) -> str:
-    """
-    Add chain-of-thought reasoning to prompt.
-    """
-    cot_instruction = """
-
-REASONING PROCESS:
-Please think through this step by step:
-1. First, analyze the provided information
-2. Identify key points and relationships
-3. Consider the context and requirements
-4. Generate your response based on this analysis
-5. Review and refine your output
-
-Let's work through this systematically."""
-    
-    return prompt + cot_instruction
-```
+Asking the model to show its reasoning process step-by-step.
 
 ### Why CoT Works
 
@@ -269,6 +180,14 @@ A: Let me break this down:
            = 408  ✓ (reasoning visible, verifiable)
 ```
 
+### CoT Reasoning Process
+
+1. First, analyze the provided information
+2. Identify key points and relationships
+3. Consider the context and requirements
+4. Generate your response based on this analysis
+5. Review and refine your output
+
 ### When to Use CoT
 
 | Use Case | CoT Helpful? |
@@ -283,38 +202,16 @@ A: Let me break this down:
 
 ## 7. Role-Based Prompting
 
-### From the Project: `prompt_engineer.py`
-
-```python
-def add_role_definition(self, prompt: str, role: str, expertise: List[str]) -> str:
-    """
-    Add role-based context to prompt.
-    """
-    role_definition = f"""
-
-ROLE DEFINITION:
-You are {role} with expertise in:
-{chr(10).join(f'- {exp}' for exp in expertise)}
-
-Apply this expertise to provide the best possible response."""
-    
-    return prompt + role_definition
-```
-
 ### Role Definition Pattern
 
-```python
-# Example usage:
-prompt = prompt_engineer.add_role_definition(
-    base_prompt,
-    role="a senior data scientist",
-    expertise=[
-        "Machine Learning algorithms",
-        "Statistical analysis",
-        "Python and R programming",
-        "Data visualization"
-    ]
-)
+```
+ROLE DEFINITION:
+You are {role} with expertise in:
+- {expertise area 1}
+- {expertise area 2}
+- {expertise area 3}
+
+Apply this expertise to provide the best possible response.
 ```
 
 ### Effective Roles
@@ -331,84 +228,30 @@ prompt = prompt_engineer.add_role_definition(
 
 ## 8. Structured Output: JSON Generation
 
-### Quiz Generation Template (From Project)
-
-```python
-PromptType.CONCEPT_QUIZ.value: """...
-
-CRITICAL: You MUST return ONLY valid JSON. No markdown, no code blocks, no additional text.
-The JSON format must be EXACTLY as shown below:
-
-{{
-  "questions": [
-    {{
-      "number": 1,
-      "type": "multiple_choice",
-      "question": "What is the primary purpose of tokenization...",
-      "options": {{
-        "A": "To translate text into different languages",
-        "B": "To split text into smaller units called tokens",
-        "C": "To enhance visual formatting",
-        "D": "To store text efficiently"
-      }},
-      "correct_answer": "B",
-      "explanation": "Tokenization is the process of dividing text..."
-    }}
-  ]
-}}
-
-IMPORTANT RULES:
-1. Return ONLY the JSON object, nothing else
-2. All multiple choice questions must have exactly 4 options labeled A, B, C, D
-3. Option text should be clear, distinct, and educational
-..."""
-```
-
 ### Key Techniques for JSON Output
 
 1. **Explicit Format Requirement**: "MUST return ONLY valid JSON"
 2. **Template Example**: Show exact expected structure
-3. **Escape Braces**: Use `{{` and `}}` in f-strings
-4. **Validation Rules**: Numbered list of constraints
-5. **No Markdown**: Explicitly forbid code blocks
+3. **Validation Rules**: Numbered list of constraints
+4. **No Markdown**: Explicitly forbid code blocks
+
+### JSON Output Requirements
+
+- Return ONLY the JSON object, nothing else
+- All multiple choice questions must have exactly 4 options labeled A, B, C, D
+- Option text should be clear, distinct, and educational
+- Include correct answer and explanation for each question
 
 ### Parsing Strategy
 
-```python
-def parse_quiz_json(content):
-    """Parse quiz JSON from AI response."""
-    # Try to extract JSON from response
-    json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
-    if json_match:
-        content = json_match.group(1)
-    else:
-        # Try to find JSON object directly
-        json_match = re.search(r'\{.*"questions".*\}', content, re.DOTALL)
-        if json_match:
-            content = json_match.group(0)
-    
-    return json.loads(content)
-```
+1. **Extract JSON**: Try to find JSON in markdown code blocks
+2. **Fallback**: Search for JSON object directly in text
+3. **Parse**: Use JSON parser to validate and extract data
+4. **Handle Errors**: Gracefully handle parsing failures
 
 ---
 
 ## 9. Prompt Statistics & Monitoring
-
-### From the Project: `prompt_engineer.py`
-
-```python
-def get_prompt_stats(self, prompt: str) -> Dict[str, Any]:
-    """
-    Get statistics about a prompt.
-    """
-    return {
-        'length': len(prompt),
-        'word_count': len(prompt.split()),
-        'has_context': 'context' in prompt.lower(),
-        'has_instructions': 'instruction' in prompt.lower() or 'requirement' in prompt.lower(),
-        'has_examples': 'example' in prompt.lower()
-    }
-```
 
 ### Why Track Prompt Stats?
 
@@ -424,36 +267,33 @@ def get_prompt_stats(self, prompt: str) -> Dict[str, Any]:
 
 ## 10. Task Customization
 
-### From the Project: `prompt_engineer.py`
-
-```python
-def customize_for_task(self, 
-                      base_prompt: str,
-                      task_specific_instructions: str,
-                      constraints: Optional[List[str]] = None) -> str:
-    """
-    Customize prompt for specific task requirements.
-    """
-    customized = base_prompt + f"\n\nTASK-SPECIFIC INSTRUCTIONS:\n{task_specific_instructions}"
-    
-    if constraints:
-        customized += "\n\nCONSTRAINTS:\n"
-        for constraint in constraints:
-            customized += f"- {constraint}\n"
-    
-    return customized
-```
-
 ### Constraint Examples
 
-```python
-constraints = [
-    "Response must be under 500 words",
-    "Use only technical terminology appropriate for beginners",
-    "Include at least 2 practical examples",
-    "Avoid jargon without explanation",
-    "Format output as markdown"
-]
+- Response must be under 500 words
+- Use only technical terminology appropriate for beginners
+- Include at least 2 practical examples
+- Avoid jargon without explanation
+- Format output as markdown
+
+### Customization Flow
+
+```
+Base Prompt
+    │
+    ▼
+┌─────────────────┐
+│ Add Task-Specific│
+│ Instructions     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Add Constraints │
+│ (if any)         │
+└────────┬────────┘
+         │
+         ▼
+    Final Prompt
 ```
 
 ---
