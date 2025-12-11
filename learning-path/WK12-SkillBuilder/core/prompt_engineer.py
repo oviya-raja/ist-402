@@ -21,6 +21,7 @@ class PromptType(Enum):
     CREATIVE_WRITING = "creative_writing"
     IST_CONCEPT_EXPLANATION = "ist_concept_explanation"
     STUDY_PLAN_GENERATION = "study_plan_generation"
+    CONCEPT_QUIZ = "concept_quiz"
 
 
 class PromptEngineer:
@@ -191,7 +192,84 @@ Format the output as a structured study plan with:
 - Review and practice suggestions
 - Learning tips
 
-Please generate a comprehensive, personalized study plan."""
+Please generate a comprehensive, personalized study plan.""",
+            
+            PromptType.CONCEPT_QUIZ.value: """You are an expert IST402 instructor creating interactive quiz questions to test student understanding.
+
+CONCEPT INFORMATION:
+- Concept Name: {concept_name}
+- Week: {week}
+- Description: {description}
+- Learning Objectives: {learning_objectives}
+- Prerequisites: {prerequisites}
+- Difficulty Level: {difficulty}
+- Keywords: {keywords}
+
+TASK:
+Create a comprehensive, interactive quiz about {concept_name} that:
+1. Tests deep understanding of the core concept, not just memorization
+2. Covers all learning objectives listed
+3. Includes a mix of question types (multiple choice, true/false, short answer)
+4. Has questions appropriate for {difficulty} difficulty level
+5. Tests practical application and conceptual understanding
+6. Includes clear, detailed explanations for all answers
+
+QUIZ REQUIREMENTS:
+- Number of questions: {num_questions}
+- Question types: Mix of multiple choice (at least 50%), true/false, and short answer
+- Difficulty: Match the concept difficulty ({difficulty})
+- Multiple choice questions must have exactly 4 options (A, B, C, D)
+- All questions must have clear, educational explanations
+
+CRITICAL: You MUST return ONLY valid JSON. No markdown, no code blocks, no additional text.
+The JSON format must be EXACTLY as shown below:
+
+{{
+  "questions": [
+    {{
+      "number": 1,
+      "type": "multiple_choice",
+      "question": "What is the primary purpose of tokenization in natural language processing?",
+      "options": {{
+        "A": "To translate text into different languages",
+        "B": "To split text into smaller units called tokens for analysis",
+        "C": "To enhance visual formatting of text documents",
+        "D": "To store text efficiently in databases"
+      }},
+      "correct_answer": "B",
+      "explanation": "Tokenization is the process of dividing text into smaller units, known as tokens, which can be words, subwords, or characters. This is foundational for natural language processing tasks, allowing for better analysis and understanding of the text."
+    }},
+    {{
+      "number": 2,
+      "type": "true_false",
+      "question": "Byte Pair Encoding (BPE) is a method of tokenization that focuses exclusively on character-level tokenization.",
+      "options": {{
+        "True": true,
+        "False": false
+      }},
+      "correct_answer": "False",
+      "explanation": "Byte Pair Encoding (BPE) is a subword tokenization method that combines characters into larger units based on frequency. It is not limited to character-level tokenization; instead, it creates subword tokens that can better capture the nuances of language."
+    }},
+    {{
+      "number": 3,
+      "type": "short_answer",
+      "question": "What does BPE stand for in the context of tokenization?",
+      "correct_answer": "Byte Pair Encoding",
+      "explanation": "BPE stands for Byte Pair Encoding, a subword tokenization technique that merges the most frequent pairs of bytes or characters to create a vocabulary of subword units."
+    }}
+  ]
+}}
+
+IMPORTANT RULES:
+1. Return ONLY the JSON object, nothing else
+2. All multiple choice questions must have exactly 4 options labeled A, B, C, D
+3. Option text should be clear, distinct, and educational
+4. Correct answers must match exactly (case-sensitive for short answers)
+5. Explanations should be detailed and help students learn
+6. Generate exactly {num_questions} questions
+7. Mix question types appropriately
+
+Now generate the quiz for {concept_name}."""
         }
     
     def _initialize_examples(self) -> Dict[str, List[Dict]]:

@@ -19,11 +19,11 @@ data_processing:
   ist_concepts_path: "data/ist_concepts.csv"
 
 api_integrations:
-  eventregistry:
+  openai_web_search:
     enabled: true
-    timeout: 30
+    model: "gpt-4o"
+    timeout: 60
     page_size: 5
-    allow_archive: false  # Only use last 30 days of data
   
   conferences:
     enabled: true

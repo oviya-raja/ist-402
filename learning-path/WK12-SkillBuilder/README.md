@@ -42,7 +42,7 @@
 - 📊 **Data Analysis:** Analyze uploaded CSV/text files and generate insights
 - 🔍 **Research Assistant:** Synthesize information from multiple sources with external context
 - 📁 **Data Processing:** Upload, preprocess, and prepare data for GenAI consumption
-- 🎯 **AI Conferences:** Discover AI-related conferences and events using EventRegistry
+- 🎯 **AI Conferences:** Discover AI-related conferences and events using OpenAI web search
 
 **Platform:** Web Application (Streamlit)  
 **Deployment:** Local/Cloud-ready
@@ -65,7 +65,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 ✅ **Generates contextual and useful outputs**  
 ✅ **Automates tasks through external API integration**  
 ✅ **Includes custom prompt design**  
-✅ **Includes at least one integration (EventRegistry)**  
+✅ **Includes at least one integration (OpenAI Web Search)**  
 ✅ **Implements error handling and logging**  
 ✅ **Comprehensive README with architecture and setup**
 
@@ -108,7 +108,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 ┌─────────────────────────────────────────────────────────────┐
 │                    External Services                         │
 │  • OpenAI API (GPT-4, GPT-4o-mini, GPT-3.5-turbo)          │
-│  • EventRegistry (News Articles & AI Conferences)          │
+│  • OpenAI Web Search (News Articles & AI Conferences)      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -146,7 +146,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 #### 4. **API Integration Module** (`core/api_integration.py`)
 - **Purpose:** External API integration for contextual data
 - **Capabilities:**
-  - EventRegistry API integration for news and events
+  - OpenAI Web Search API integration for news and events
   - AI Conferences detection using event-based search (NEW)
   - Context formatting for prompts
   - Error handling with clear error messages (no mock data)
@@ -209,7 +209,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 - Text chunking for large documents
 
 ### 5. AI Conferences (NEW)
-- Fetch AI-related conferences from EventRegistry
+- Fetch AI-related conferences from OpenAI web search
 - Event-based search (not just articles) for better accuracy
 - Filter by category (technology, science, business, general)
 - View conference details (date, location, description)
@@ -243,7 +243,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 
 ### API Integration
 - **Requests:** HTTP library for API calls
-- **EventRegistry:** News articles and event/conference detection
+- **OpenAI Web Search:** News articles and event/conference detection using web_search_preview tool
 
 ### Utilities
 - **Python-dotenv:** Environment variable management
@@ -263,7 +263,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 
 2. **API Keys (Optional but recommended)**
    - OpenAI API Key: [Get from OpenAI Platform](https://platform.openai.com/api-keys)
-   - EventRegistry API Key: [Get from EventRegistry](https://eventregistry.org/) (Optional)
+   - OpenAI API Key: Already required for content generation (used for web search too)
 
 ### Installation Steps
 
@@ -293,7 +293,7 @@ This project fulfills all required objectives for the GenAI-driven application a
    Edit `.env` and add your API keys:
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
-   EVENTREGISTRY_API_KEY=your_eventregistry_api_key_here  # Optional
+   # OpenAI API key is used for both content generation and web search
    ```
 
 5. **Create necessary directories:**
@@ -320,11 +320,11 @@ This project fulfills all required objectives for the GenAI-driven application a
 
 The application can run in demo mode without API keys:
 - Content generation will fail with clear error if OPENAI_API_KEY is not configured
-- News features will fail with clear error if EVENTREGISTRY_API_KEY is not configured
-- AI Conferences will fail with clear error if EVENTREGISTRY_API_KEY is not configured
+- News features will fail with clear error if OPENAI_API_KEY is not configured
+- AI Conferences will fail with clear error if OPENAI_API_KEY is not configured
 - All features remain functional for demonstration
 
-**Note:** EventRegistry requires free API key registration at [eventregistry.org](https://eventregistry.org/)
+**Note:** OpenAI API key is used for both content generation and web search functionality
 
 ---
 
@@ -428,7 +428,7 @@ The application can run in demo mode without API keys:
 4. Browse conference list with details
 5. Click links to visit conference websites
 
-**Automation:** Automatically fetches AI-related conferences from EventRegistry using event-based search for better accuracy.
+**Automation:** Automatically fetches AI-related conferences using OpenAI web search with web_search_preview tool for real-time results.
 
 ### Use Case 4: Data-Driven Insights
 **Scenario:** A student needs to analyze course data.
@@ -469,13 +469,13 @@ The application can run in demo mode without API keys:
 - Rate limit management
 - Clear error messages (no mock data)
 
-### 2. EventRegistry Integration
+### 2. OpenAI Web Search Integration
 
 **Purpose:** Recent news articles and AI conferences/events
 
 **Integration Details:**
-- **API:** EventRegistry API
-- **Package:** `eventregistry` Python package
+- **API:** OpenAI Responses API with web_search_preview tool
+- **Package:** `openai` Python package (already included)
 - **Authentication:** API key via environment variable
 - **Features:**
   - Article search with category filtering
@@ -488,7 +488,7 @@ The application can run in demo mode without API keys:
     - Conference type detection
     - Better accuracy than article filtering
 
-**Implementation:** `core/api_integration.py` - `EventRegistryAPI` class
+**Implementation:** `core/api_integration.py` - `OpenAIWebSearchAPI` class
 
 **Error Handling:**
 - API key validation
@@ -737,7 +737,7 @@ with get_openai_callback() as cb:
 
 ## 🌐 API Integrations
 
-### News API (EventRegistry)
+### News API (OpenAI Web Search)
 
 **Use Cases:**
 - Current events integration
@@ -753,7 +753,7 @@ with get_openai_callback() as cb:
 
 **Integration:** Automatic context injection into research and content generation
 
-### AI Conferences (EventRegistry - NEW)
+### AI Conferences (OpenAI Web Search - NEW)
 
 **Use Cases:**
 - Discover AI-related conferences
@@ -845,7 +845,7 @@ WK12-SkillBuilder/
 
 **Scenario 2: Limited Functionality**
 - Only OpenAI API key configured
-- News requires EVENTREGISTRY_API_KEY (no mock data)
+- News requires OPENAI_API_KEY (no mock data)
 - Verify graceful degradation
 
 **Scenario 3: Demo Mode**
@@ -871,7 +871,7 @@ WK12-SkillBuilder/
    - Cost considerations for high-volume usage
 
 4. **External API Limits:**
-   - EventRegistry free tier has usage limits (check EventRegistry documentation)
+   - OpenAI API has usage limits based on your subscription tier
    - Free tier allows access to last 30 days of content only
 
 5. **Data Format Support:**
@@ -879,7 +879,7 @@ WK12-SkillBuilder/
    - Other formats require preprocessing
 
 6. **Conference Detection:**
-   - Uses EventRegistry event-based search (more accurate than article filtering)
+   - Uses OpenAI web search with web_search_preview tool (real-time web search results)
    - Structured event data provides better date/location information
    - Concept-based filtering improves relevance
 
@@ -995,7 +995,7 @@ This project is developed for educational purposes as part of IST402 course requ
 - **OpenAI** for GPT models and API
 - **LangChain** for LLM orchestration framework
 - **Streamlit** for web application framework
-- **EventRegistry** for news and event data sources
+- **OpenAI Web Search** for news and event data sources
 - **IST402 Course** for providing the learning context
 
 ---

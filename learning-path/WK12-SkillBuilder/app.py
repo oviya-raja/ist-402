@@ -14,6 +14,8 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 import sys
+import json
+import re
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -157,12 +159,12 @@ def main():
         else:
             st.info("ℹ️ Generator not initialized")
         
-        # EventRegistry status (required for news API)
-        if st.session_state.api_manager.is_eventregistry_available():
-            st.success("✅ EventRegistry: Connected")
+        # OpenAI Web Search status (required for news and conferences API)
+        if st.session_state.api_manager.is_openai_web_search_available():
+            st.success("✅ OpenAI Web Search: Connected")
         else:
-            st.error("❌ EventRegistry: Not configured - Set EVENTREGISTRY_API_KEY in .env")
-            st.caption("⚠️ Required for news API functionality")
+            st.error("❌ OpenAI Web Search: Not configured - Set OPENAI_API_KEY in .env")
+            st.caption("⚠️ Required for news and AI conferences functionality")
         
         if ist_concepts_df is not None:
             st.success(f"✅ IST Concepts: {len(ist_concepts_df)} loaded")
@@ -171,61 +173,65 @@ def main():
     
     # Main tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📝 Content Generation",
-        "📊 Data Analysis",
+        "📚 Topic Explanation",
+        "📅 Study Plan Generator",
         "🔍 Research Assistant",
         "📁 Data Processing",
         "🎯 AI Conferences"
     ])
     
-    # Tab 1: Content Generation (Enhanced with IST Concept Explanation)
+    # Tab 1: Topic Explanation (with Quiz Me feature)
     with tab1:
-        st.header("Content Generation")
-        st.markdown("Generate content or get IST concept explanations using AI.")
+        st.header("📚 Topic Explanation & Quiz")
+        st.markdown("Learn IST concepts through detailed explanations or test your knowledge with quizzes.")
         
         # Mode selector
         mode = st.radio(
             "Select Mode",
-            ["General Content", "IST Concept Explanation"],
+            ["Topic Explanation", "Quiz Me"],
             horizontal=True
         )
         
-        if mode == "IST Concept Explanation":
-            # IST Concept Explanation Mode
-            st.subheader("IST Concept Explanation")
-            
-            col1, col2 = st.columns([2, 1])
-            
-            with col1:
-                if ist_concepts_df is not None:
-                    concept_list = ["Select a concept..."] + ist_concepts_df['concept_name'].tolist()
-                    selected_concept = st.selectbox(
-                        "Select Concept",
-                        concept_list
+        # Shared concept selection
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            if ist_concepts_df is not None:
+                concept_list = ["Select a concept..."] + ist_concepts_df['concept_name'].tolist()
+                selected_concept = st.selectbox(
+                    "Select Concept",
+                    concept_list
+                )
+                
+                if selected_concept != "Select a concept...":
+                    concept_info = st.session_state.data_processor.get_concept_info(
+                        ist_concepts_df, selected_concept
                     )
                     
-                    if selected_concept != "Select a concept...":
-                        concept_info = st.session_state.data_processor.get_concept_info(
-                            ist_concepts_df, selected_concept
-                        )
-                        
-                        if concept_info:
-                            st.info(f"""
-                            **Week:** {concept_info.get('week', 'N/A')}  
-                            **Difficulty:** {concept_info.get('difficulty', 'N/A')}  
-                            **Time Estimate:** {concept_info.get('time_estimate', 'N/A')} minutes  
-                            **Prerequisites:** {concept_info.get('prerequisites', 'None')}
-                            """)
-                else:
-                    concept_name = st.text_input("Concept Name", placeholder="e.g., RAG, Tokenization")
-                    selected_concept = concept_name
-            
-            with col2:
-                st.subheader("Options")
+                    if concept_info:
+                        st.info(f"""
+                        **Week:** {concept_info.get('week', 'N/A')}  
+                        **Difficulty:** {concept_info.get('difficulty', 'N/A')}  
+                        **Time Estimate:** {concept_info.get('time_estimate', 'N/A')} minutes  
+                        **Prerequisites:** {concept_info.get('prerequisites', 'None')}
+                        """)
+            else:
+                concept_name = st.text_input("Concept Name", placeholder="e.g., RAG, Tokenization")
+                selected_concept = concept_name
+        
+        with col2:
+            st.subheader("Options")
+            if mode == "Topic Explanation":
                 include_prerequisites = st.checkbox("Include Prerequisites", value=True)
                 include_examples = st.checkbox("Include Examples", value=True)
+            else:  # Quiz Me mode
+                num_questions = st.slider("Number of Questions", 3, 10, 5)
+        
+        if mode == "Topic Explanation":
+            # Topic Explanation Mode
+            st.subheader("📖 Topic Explanation")
             
-            if st.button("Generate Concept Explanation", type="primary"):
+            if st.button("Generate Explanation", type="primary"):
                 if not selected_concept or selected_concept == "Select a concept...":
                     st.warning("Please select or enter a concept name")
                 else:
@@ -289,296 +295,353 @@ def main():
                     
                     except Exception as e:
                         st.error(f"Error generating explanation: {str(e)}")
-                        logger.log_error(e, "Error in IST concept explanation")
+                        logger.log_error(e, "Error in topic explanation")
         
-        else:
-            # General Content Generation Mode
-            st.subheader("General Content Generation")
+        else:  # Quiz Me mode
+            st.subheader("🎯 Quiz Me")
             
-            col1, col2 = st.columns([2, 1])
+            # Initialize quiz state
+            if 'quiz_questions' not in st.session_state:
+                st.session_state.quiz_questions = None
+            if 'quiz_answers' not in st.session_state:
+                st.session_state.quiz_answers = {}
+            if 'quiz_submitted' not in st.session_state:
+                st.session_state.quiz_submitted = False
             
-            with col1:
-                content_type = st.selectbox(
-                    "Content Type",
-                    ["Article", "Blog Post", "Summary", "Creative Writing", "Report"]
-                )
+            def parse_quiz_json(content):
+                """Parse quiz JSON from AI response."""
+                # Try to extract JSON from the response
+                # Look for JSON code blocks first
+                json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
+                if json_match:
+                    content = json_match.group(1)
+                else:
+                    # Try to find JSON object directly
+                    json_match = re.search(r'\{.*"questions".*\}', content, re.DOTALL)
+                    if json_match:
+                        content = json_match.group(0)
                 
-                topic = st.text_input("Topic", placeholder="Enter your topic...")
-                
-                tone = st.selectbox(
-                    "Tone",
-                    ["Professional", "Casual", "Academic", "Creative", "Technical"]
-                )
-                
-                length = st.selectbox(
-                    "Length",
-                    ["Short (200-300 words)", "Medium (500-700 words)", "Long (1000+ words)"]
-                )
+                try:
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, try to extract manually
+                    logger.warning("Failed to parse JSON, attempting manual extraction")
+                    return None
             
-            with col2:
-                st.subheader("External Context")
-                use_news = st.checkbox("Include News", help="Add recent news context")
-                news_category = st.selectbox(
-                    "News Category",
-                    ["general", "technology", "business", "science"],
-                    disabled=not use_news
-                )
-            
-            if st.button("Generate Content", type="primary"):
-                if not topic:
-                    st.warning("Please enter a topic")
+            if st.button("Generate Quiz", type="primary"):
+                if not selected_concept or selected_concept == "Select a concept...":
+                    st.warning("Please select or enter a concept name")
                 else:
                     try:
                         if not st.session_state.generator:
                             initialize_generator()
                         
-                        # Get external context if requested
-                        external_context = {}
-                        if use_news:
-                            try:
-                                external_context = st.session_state.api_manager.get_contextual_data(
-                                    news_topic=news_category
-                                )
-                            except Exception as e:
-                                st.error(f"❌ Failed to fetch news: {str(e)}")
-                                st.info("💡 Please configure EVENTREGISTRY_API_KEY in your .env file")
-                                external_context = {}
+                        # Reset quiz state
+                        st.session_state.quiz_submitted = False
+                        st.session_state.quiz_answers = {}
                         
-                        # Build prompt
-                        prompt_type = PromptType.CONTENT_GENERATION
-                        length_words = {
-                            "Short (200-300 words)": "250",
-                            "Medium (500-700 words)": "600",
-                            "Long (1000+ words)": "1200"
-                        }[length]
-                        
-                        # Generate content
-                        with st.spinner("Generating content..."):
-                            result = st.session_state.generator.generate_with_prompt_type(
-                                prompt_type=prompt_type,
-                                context=f"Topic: {topic}",
-                                data="",
-                                domain="general",
-                                tone=tone.lower(),
-                                audience="general audience",
-                                length=length_words,
-                                **{"prompt": topic}
-                            )
-                            
-                            # Add external context if available
-                            if external_context:
-                                result = st.session_state.generator.generate_with_external_context(
-                                    prompt=result['content'],
-                                    external_context=external_context
-                                )
-                        
-                        # Display results
-                        st.subheader("Generated Content")
-                        st.write(result['content'])
-                        
-                        # Show metadata
-                        with st.expander("Generation Metadata"):
-                            col1, col2, col3 = st.columns(3)
-                            with col1:
-                                st.metric("Model", result.get('model', 'N/A'))
-                            with col2:
-                                if result.get('token_usage', {}).get('total_tokens'):
-                                    st.metric("Tokens", result['token_usage']['total_tokens'])
-                            with col3:
-                                if result.get('token_usage', {}).get('total_cost'):
-                                    st.metric("Cost", f"${result['token_usage']['total_cost']:.4f}")
-                    
-                    except Exception as e:
-                        st.error(f"Error generating content: {str(e)}")
-                        logger.log_error(e, "Error in content generation")
-    
-    # Tab 2: Data Analysis (Enhanced with Study Plan Generator)
-    with tab2:
-        st.header("Data Analysis")
-        st.markdown("Analyze data or generate personalized study plans.")
-        
-        # Mode selector
-        mode = st.radio(
-            "Select Mode",
-            ["Data Analysis", "Study Plan Generator"],
-            horizontal=True
-        )
-        
-        if mode == "Study Plan Generator":
-            # Study Plan Generator Mode
-            st.subheader("Study Plan Generator")
-            
-            col1, col2 = st.columns([1, 1])
-            
-            with col1:
-                week_selection = st.selectbox(
-                    "Select Week(s)",
-                    ["Single Week", "Week Range"],
-                    help="Choose to generate plan for one week or a range"
-                )
-                
-                if week_selection == "Single Week":
-                    weeks = st.selectbox(
-                        "Week",
-                        ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"]
-                    )
-                else:
-                    col_start, col_end = st.columns(2)
-                    with col_start:
-                        week_start = st.selectbox("Start Week", ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"])
-                    with col_end:
-                        week_end = st.selectbox("End Week", ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"])
-                    weeks = f"{week_start} to {week_end}"
-            
-            with col2:
-                pace = st.selectbox(
-                    "Learning Pace",
-                    ["Slow", "Moderate", "Fast"],
-                    index=1,
-                    help="Your preferred learning pace"
-                )
-                
-                difficulty = st.selectbox(
-                    "Difficulty Preference",
-                    ["Beginner", "Intermediate", "Advanced", "All Levels"],
-                    help="Focus on concepts of this difficulty level"
-                )
-            
-            topic_filter = st.text_input(
-                "Topic Filter (Optional)",
-                placeholder="e.g., RAG, Fine-tuning (leave empty for all topics)"
-            )
-            
-            if st.button("Generate Study Plan", type="primary"):
-                try:
-                    if not st.session_state.generator:
-                        initialize_generator()
-                    
-                    if ist_concepts_df is None:
-                        st.error("IST concepts not loaded. Please ensure data/ist_concepts.csv exists.")
-                    else:
-                        # Filter concepts by week
-                        if week_selection == "Single Week":
-                            filtered_concepts = st.session_state.data_processor.get_concepts_by_week(
-                                ist_concepts_df, weeks
+                        # Get concept information
+                        if ist_concepts_df is not None and isinstance(selected_concept, str):
+                            concept_info = st.session_state.data_processor.get_concept_info(
+                                ist_concepts_df, selected_concept
                             )
                         else:
-                            # Get range of weeks
-                            start_idx = int(week_start.replace('W', ''))
-                            end_idx = int(week_end.replace('W', ''))
-                            filtered_concepts = ist_concepts_df[
-                                ist_concepts_df['week'].str.replace('W', '').astype(int).between(start_idx, end_idx)
-                            ]
+                            concept_info = None
                         
-                        # Filter by topic if specified
-                        if topic_filter:
-                            filtered_concepts = filtered_concepts[
-                                filtered_concepts['concept_name'].str.contains(topic_filter, case=False, na=False) |
-                                filtered_concepts['keywords'].str.contains(topic_filter, case=False, na=False)
-                            ]
+                        if concept_info:
+                            # Use concept info from database
+                            prompt_kwargs = {
+                                'concept_name': concept_info.get('concept_name', selected_concept),
+                                'week': concept_info.get('week', ''),
+                                'description': concept_info.get('description', ''),
+                                'learning_objectives': concept_info.get('learning_objectives', ''),
+                                'prerequisites': concept_info.get('prerequisites', 'None'),
+                                'difficulty': concept_info.get('difficulty', 'intermediate'),
+                                'keywords': concept_info.get('keywords', ''),
+                                'num_questions': num_questions
+                            }
+                        else:
+                            # Use basic info
+                            prompt_kwargs = {
+                                'concept_name': selected_concept,
+                                'week': '',
+                                'description': f"Quiz on the concept: {selected_concept}",
+                                'learning_objectives': 'Test understanding of the concept',
+                                'prerequisites': 'None',
+                                'difficulty': 'intermediate',
+                                'keywords': '',
+                                'num_questions': num_questions
+                            }
                         
-                        # Prepare concepts data for prompt
-                        concepts_data = filtered_concepts.to_string(index=False) if not filtered_concepts.empty else "No concepts found"
-                        
-                        with st.spinner("Generating personalized study plan..."):
+                        with st.spinner(f"Generating {num_questions} quiz questions..."):
                             result = st.session_state.generator.generate_with_prompt_type(
-                                prompt_type=PromptType.STUDY_PLAN_GENERATION,
-                                weeks=weeks,
-                                topics=topic_filter or "All topics",
-                                pace=pace.lower(),
-                                difficulty=difficulty.lower(),
-                                concepts_data=concepts_data
+                                prompt_type=PromptType.CONCEPT_QUIZ,
+                                **prompt_kwargs
                             )
                         
-                        st.subheader("Your Personalized Study Plan")
-                        st.markdown(result['content'])
+                        # Parse quiz JSON
+                        quiz_data = parse_quiz_json(result['content'])
                         
-                        # Show metadata
-                        with st.expander("Generation Metadata"):
-                            col1, col2, col3 = st.columns(3)
-                            with col1:
-                                st.metric("Model", result.get('model', 'N/A'))
-                            with col2:
-                                if result.get('token_usage', {}).get('total_tokens'):
-                                    st.metric("Tokens", result['token_usage']['total_tokens'])
-                            with col3:
-                                if result.get('token_usage', {}).get('total_cost'):
-                                    st.metric("Cost", f"${result['token_usage']['total_cost']:.4f}")
-                
-                except Exception as e:
-                    st.error(f"Error generating study plan: {str(e)}")
-                    logger.log_error(e, "Error in study plan generation")
-        
-        else:
-            # Data Analysis Mode
-            st.subheader("Data Analysis")
+                        if quiz_data and 'questions' in quiz_data:
+                            st.session_state.quiz_questions = quiz_data['questions']
+                            st.success(f"✅ Quiz generated with {len(quiz_data['questions'])} questions!")
+                        else:
+                            st.error("Failed to parse quiz. Please try again.")
+                            logger.error(f"Failed to parse quiz JSON: {result['content'][:200]}")
+                    
+                    except Exception as e:
+                        st.error(f"Error generating quiz: {str(e)}")
+                        logger.log_error(e, "Error in quiz generation")
             
-            uploaded_file = st.file_uploader(
-                "Upload Data File",
-                type=['csv', 'txt'],
-                help="Upload CSV or text file for analysis"
+            # Display interactive quiz
+            if st.session_state.quiz_questions:
+                st.divider()
+                st.subheader(f"Quiz: {selected_concept}")
+                
+                # Display questions for user to answer
+                for idx, question in enumerate(st.session_state.quiz_questions):
+                    q_num = question.get('number', idx + 1)
+                    q_type = question.get('type', 'multiple_choice')
+                    q_text = question.get('question', '')
+                    
+                    st.markdown(f"**Question {q_num}:** {q_text}")
+                    
+                    # Get user answer based on question type
+                    if q_type == 'multiple_choice':
+                        options = question.get('options', {})
+                        if options:
+                            answer_key = f"q_{q_num}"
+                            if answer_key not in st.session_state.quiz_answers:
+                                st.session_state.quiz_answers[answer_key] = None
+                            
+                            # Format options to show both letter and text: "A) Option text"
+                            formatted_options = []
+                            option_mapping = {}
+                            for key, value in options.items():
+                                formatted_text = f"{key}) {value}"
+                                formatted_options.append(formatted_text)
+                                option_mapping[formatted_text] = key
+                            
+                            # Get current selection index
+                            current_answer = st.session_state.quiz_answers.get(answer_key)
+                            selected_index = None
+                            if current_answer and current_answer in options:
+                                for idx, formatted_text in enumerate(formatted_options):
+                                    if option_mapping[formatted_text] == current_answer:
+                                        selected_index = idx
+                                        break
+                            
+                            selected = st.radio(
+                                "Select your answer:",
+                                options=formatted_options,
+                                key=f"answer_{q_num}",
+                                index=selected_index
+                            )
+                            # Store just the letter (A, B, C, D) as the answer
+                            if selected:
+                                st.session_state.quiz_answers[answer_key] = option_mapping[selected]
+                    
+                    elif q_type == 'true_false':
+                        answer_key = f"q_{q_num}"
+                        if answer_key not in st.session_state.quiz_answers:
+                            st.session_state.quiz_answers[answer_key] = None
+                        
+                        selected = st.radio(
+                            "Select your answer:",
+                            options=["True", "False"],
+                            key=f"answer_{q_num}",
+                            index=None if st.session_state.quiz_answers.get(answer_key) is None else ["True", "False"].index(st.session_state.quiz_answers.get(answer_key)) if st.session_state.quiz_answers.get(answer_key) in ["True", "False"] else None
+                        )
+                        st.session_state.quiz_answers[answer_key] = selected
+                    
+                    elif q_type == 'short_answer':
+                        answer_key = f"q_{q_num}"
+                        if answer_key not in st.session_state.quiz_answers:
+                            st.session_state.quiz_answers[answer_key] = ""
+                        
+                        user_answer = st.text_input(
+                            "Your answer:",
+                            key=f"answer_{q_num}",
+                            value=st.session_state.quiz_answers.get(answer_key, "")
+                        )
+                        st.session_state.quiz_answers[answer_key] = user_answer
+                    
+                    st.divider()
+                
+                # Submit button
+                if st.button("Submit Answers", type="primary"):
+                    st.session_state.quiz_submitted = True
+                    st.rerun()
+                
+                # Show results after submission
+                if st.session_state.quiz_submitted:
+                    st.divider()
+                    st.subheader("📊 Quiz Results")
+                    
+                    correct_count = 0
+                    total_questions = len(st.session_state.quiz_questions)
+                    
+                    for idx, question in enumerate(st.session_state.quiz_questions):
+                        q_num = question.get('number', idx + 1)
+                        q_type = question.get('type', 'multiple_choice')
+                        correct_answer = question.get('correct_answer', '')
+                        explanation = question.get('explanation', '')
+                        answer_key = f"q_{q_num}"
+                        user_answer = st.session_state.quiz_answers.get(answer_key, '')
+                        
+                        # Check if answer is correct
+                        is_correct = False
+                        if q_type == 'short_answer':
+                            # For short answer, do case-insensitive comparison
+                            is_correct = user_answer.strip().lower() == correct_answer.lower()
+                        else:
+                            is_correct = str(user_answer).strip() == str(correct_answer).strip()
+                        
+                        if is_correct:
+                            correct_count += 1
+                        
+                        # Display result
+                        st.markdown(f"**Question {q_num}:** {question.get('question', '')}")
+                        
+                        col1, col2 = st.columns([1, 3])
+                        with col1:
+                            if is_correct:
+                                st.success(f"✅ Correct!")
+                            else:
+                                st.error(f"❌ Incorrect")
+                        
+                        with col2:
+                            # Format answer display for multiple choice
+                            if q_type == 'multiple_choice':
+                                options = question.get('options', {})
+                                user_display = f"{user_answer}) {options.get(user_answer, '')}" if user_answer and user_answer in options else (user_answer if user_answer else '(No answer provided)')
+                                correct_display = f"{correct_answer}) {options.get(correct_answer, '')}" if correct_answer in options else correct_answer
+                            else:
+                                user_display = user_answer if user_answer else '(No answer provided)'
+                                correct_display = correct_answer
+                            
+                            st.markdown(f"**Your Answer:** {user_display}")
+                            st.markdown(f"**Correct Answer:** {correct_display}")
+                        
+                        st.info(f"**Explanation:** {explanation}")
+                        st.divider()
+                    
+                    # Show score
+                    score_percentage = (correct_count / total_questions * 100) if total_questions > 0 else 0
+                    st.metric("Score", f"{correct_count}/{total_questions} ({score_percentage:.1f}%)")
+                    
+                    if score_percentage == 100:
+                        st.success("🎉 Perfect score! Excellent work!")
+                    elif score_percentage >= 70:
+                        st.success("👍 Good job! You're on the right track.")
+                    else:
+                        st.warning("💪 Keep practicing! Review the explanations above.")
+    
+    # Tab 2: Study Plan Generator
+    with tab2:
+        st.header("📅 Study Plan Generator")
+        st.markdown("Generate personalized study plans by week or topic to help you master IST402 concepts.")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            week_selection = st.selectbox(
+                "Select Week(s)",
+                ["Single Week", "Week Range"],
+                help="Choose to generate plan for one week or a range"
             )
             
-            if uploaded_file:
-                try:
-                    # Process file
-                    file_path = f"data/temp_{uploaded_file.name}"
-                    Path("data").mkdir(exist_ok=True)
-                    
-                    with open(file_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
-                    
-                    # Load and process data
-                    if uploaded_file.name.endswith('.csv'):
-                        df = st.session_state.data_processor.load_csv(file_path)
-                        processed_data = st.session_state.data_processor.preprocess_dataframe(df)
-                        
-                        st.subheader("Data Preview")
-                        st.dataframe(df.head(10))
-                        
-                        if st.button("Analyze Data", type="primary"):
-                            if not st.session_state.generator:
-                                initialize_generator()
-                            
-                            # Prepare data summary
-                            data_summary = f"""
-                            Dataset Shape: {df.shape}
-                            Columns: {', '.join(df.columns.tolist())}
-                            Sample Data:
-                            {df.head(5).to_string()}
-                            """
-                            
-                            with st.spinner("Analyzing data..."):
-                                result = st.session_state.generator.generate_with_prompt_type(
-                                    prompt_type=PromptType.DATA_ANALYSIS,
-                                    data=data_summary
-                                )
-                            
-                            st.subheader("Analysis Results")
-                            st.write(result['content'])
-                    
-                    elif uploaded_file.name.endswith('.txt'):
-                        text_content = st.session_state.data_processor.load_text_file(file_path)
-                        
-                        st.subheader("Text Preview")
-                        st.text_area("Content", text_content[:500] + "...", height=200, disabled=True)
-                        
-                        if st.button("Analyze Text", type="primary"):
-                            if not st.session_state.generator:
-                                initialize_generator()
-                            
-                            with st.spinner("Analyzing text..."):
-                                result = st.session_state.generator.generate_with_prompt_type(
-                                    prompt_type=PromptType.DATA_ANALYSIS,
-                                    data=text_content[:5000]  # Limit for demo
-                                )
-                            
-                            st.subheader("Analysis Results")
-                            st.write(result['content'])
+            if week_selection == "Single Week":
+                weeks = st.selectbox(
+                    "Week",
+                    ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"]
+                )
+            else:
+                col_start, col_end = st.columns(2)
+                with col_start:
+                    week_start = st.selectbox("Start Week", ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"])
+                with col_end:
+                    week_end = st.selectbox("End Week", ["W00", "W01", "W02", "W03", "W04", "W05", "W06", "W07", "W08", "W09", "W10", "W11"])
+                weeks = f"{week_start} to {week_end}"
+        
+        with col2:
+            pace = st.selectbox(
+                "Learning Pace",
+                ["Slow", "Moderate", "Fast"],
+                index=1,
+                help="Your preferred learning pace"
+            )
+            
+            difficulty = st.selectbox(
+                "Difficulty Preference",
+                ["Beginner", "Intermediate", "Advanced", "All Levels"],
+                help="Focus on concepts of this difficulty level"
+            )
+        
+        topic_filter = st.text_input(
+            "Topic Filter (Optional)",
+            placeholder="e.g., RAG, Fine-tuning (leave empty for all topics)"
+        )
+        
+        if st.button("Generate Study Plan", type="primary"):
+            try:
+                if not st.session_state.generator:
+                    initialize_generator()
                 
-                except Exception as e:
-                    st.error(f"Error processing file: {str(e)}")
-                    logger.log_error(e, "Error processing uploaded file")
+                if ist_concepts_df is None:
+                    st.error("IST concepts not loaded. Please ensure data/ist_concepts.csv exists.")
+                else:
+                    # Filter concepts by week
+                    if week_selection == "Single Week":
+                        filtered_concepts = st.session_state.data_processor.get_concepts_by_week(
+                            ist_concepts_df, weeks
+                        )
+                    else:
+                        # Get range of weeks
+                        start_idx = int(week_start.replace('W', ''))
+                        end_idx = int(week_end.replace('W', ''))
+                        filtered_concepts = ist_concepts_df[
+                            ist_concepts_df['week'].str.replace('W', '').astype(int).between(start_idx, end_idx)
+                        ]
+                    
+                    # Filter by topic if specified
+                    if topic_filter:
+                        filtered_concepts = filtered_concepts[
+                            filtered_concepts['concept_name'].str.contains(topic_filter, case=False, na=False) |
+                            filtered_concepts['keywords'].str.contains(topic_filter, case=False, na=False)
+                        ]
+                    
+                    # Prepare concepts data for prompt
+                    concepts_data = filtered_concepts.to_string(index=False) if not filtered_concepts.empty else "No concepts found"
+                    
+                    with st.spinner("Generating personalized study plan..."):
+                        result = st.session_state.generator.generate_with_prompt_type(
+                            prompt_type=PromptType.STUDY_PLAN_GENERATION,
+                            weeks=weeks,
+                            topics=topic_filter or "All topics",
+                            pace=pace.lower(),
+                            difficulty=difficulty.lower(),
+                            concepts_data=concepts_data
+                        )
+                    
+                    st.subheader("Your Personalized Study Plan")
+                    st.markdown(result['content'])
+                    
+                    # Show metadata
+                    with st.expander("Generation Metadata"):
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Model", result.get('model', 'N/A'))
+                        with col2:
+                            if result.get('token_usage', {}).get('total_tokens'):
+                                st.metric("Tokens", result['token_usage']['total_tokens'])
+                        with col3:
+                            if result.get('token_usage', {}).get('total_cost'):
+                                st.metric("Cost", f"${result['token_usage']['total_cost']:.4f}")
+            
+            except Exception as e:
+                st.error(f"Error generating study plan: {str(e)}")
+                logger.log_error(e, "Error in study plan generation")
     
     # Tab 3: Research Assistant (Retained)
     with tab3:
@@ -617,7 +680,7 @@ def main():
                             )
                         except Exception as e:
                             st.error(f"❌ Failed to fetch news: {str(e)}")
-                            st.info("💡 Please configure EVENTREGISTRY_API_KEY in your .env file")
+                            st.info("💡 Please configure OPENAI_API_KEY in your .env file")
                             external_context = {}
                     
                     # Generate research summary
@@ -730,14 +793,14 @@ def main():
         
         if st.button("🔍 Fetch AI Conferences", type="primary"):
             try:
-                with st.spinner("Fetching AI conferences from EventRegistry..."):
+                with st.spinner("Searching for AI conferences using OpenAI web search..."):
                     conferences_data = st.session_state.api_manager.get_ai_conferences(
                         category=category,
                         limit=limit
                     )
             except Exception as e:
                 st.error(f"❌ Failed to fetch conferences: {str(e)}")
-                st.info("💡 Please configure EVENTREGISTRY_API_KEY in your .env file and ensure the eventregistry package is installed")
+                st.info("💡 Please configure OPENAI_API_KEY in your .env file")
                 st.stop()
             
             if conferences_data.get('conferences'):

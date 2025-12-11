@@ -14,8 +14,7 @@ openai>=1.0.0
 # HTTP requests for API integration
 requests>=2.31.0
 
-# Event Registry for news and events
-eventregistry>=9.0.0
+# OpenAI is already included above for web search functionality
 
 # Data processing
 python-dotenv>=1.0.0
