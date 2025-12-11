@@ -78,6 +78,10 @@ if 'ist_concepts' not in st.session_state:
     st.session_state.ist_concepts = None
 if 'ist_concepts_vector_store_ready' not in st.session_state:
     st.session_state.ist_concepts_vector_store_ready = False
+if 'user_notes_vector_store_ready' not in st.session_state:
+    st.session_state.user_notes_vector_store_ready = False
+if 'user_notes_processor' not in st.session_state:
+    st.session_state.user_notes_processor = DataProcessor()  # Separate processor for user notes
 if 'execution_log' not in st.session_state:
     st.session_state.execution_log = {}  # Store execution logs per tab
 
@@ -382,16 +386,17 @@ def main():
             # Concept Explainer Mode
             st.subheader("📖 Concept Explainer")
             
-            # Flow accordion
+            # Flow accordion - RAG Pipeline Steps
             expected_flow = [
-                "1. User selects/enters concept name",
-                "2. System initializes content generator (if needed)",
-                "3. System performs semantic search on IST concepts vector store",
-                "4. System identifies related concepts from vector search results",
-                "5. System loads concept information from database (CSV)",
-                "6. System combines concept info with related concepts context",
-                "7. System generates explanation using AI (OpenAI) with enhanced context",
-                "8. System displays explanation with generation metadata"
+                "User selects/enters concept name",
+                "System initializes content generator (if needed)",
+                "🔍 RETRIEVAL: System performs semantic search on IST concepts vector store",
+                "🔍 RETRIEVAL: System searches user's learning notes vector store (if available)",
+                "🔍 RETRIEVAL: System identifies related concepts from vector search results",
+                "🔍 RETRIEVAL: System loads concept information from database (CSV)",
+                "🔗 AUGMENTATION: System combines concept info with related concepts and user notes context",
+                "🤖 GENERATION: System generates explanation using AI (OpenAI) with enhanced context",
+                "📊 System displays explanation with citations and generation metadata"
             ]
             show_flow_accordion("Concept Explainer", expected_flow)
             st.divider()
@@ -415,14 +420,14 @@ def main():
                             else:
                                 log_execution("Concept Explainer", "Step 2: Content generator already initialized", "✅")
                             
-                            # Step 3: Perform semantic search on IST concepts vector store
+                            # Step 3: RETRIEVAL - Perform semantic search on IST concepts vector store
                             related_concepts_context = ""
                             related_concepts_list = []
                             
                             if st.session_state.get('ist_concepts_vector_store_ready', False):
                                 if st.session_state.data_processor.vector_store:
-                                    status.update(label="🔍 Step 3/8: Performing semantic search on IST concepts vector store...", state="running")
-                                    log_execution("Concept Explainer", "Step 3: Performing semantic search on IST concepts vector store", "⏳")
+                                    status.update(label="🔍 Step 3/9: RETRIEVAL - Performing semantic search on IST concepts vector store...", state="running")
+                                    log_execution("Concept Explainer", "Step 3: RETRIEVAL - Performing semantic search on IST concepts vector store", "⏳")
                                     try:
                                         # Search for similar concepts
                                         search_results = st.session_state.data_processor.search_vectors(
@@ -443,52 +448,103 @@ def main():
                                                 unique_concepts = list(dict.fromkeys(related_concepts))[:3]  # Top 3 unique
                                                 related_concepts_list = unique_concepts
                                                 related_concepts_context = f"\n\nRelated concepts found via vector search: {', '.join(unique_concepts)}"
-                                                log_execution("Concept Explainer", "Step 3: Semantic search completed", "✅", f"Found {len(unique_concepts)} related concepts: {', '.join(unique_concepts)}")
+                                                log_execution("Concept Explainer", "Step 3: RETRIEVAL - Semantic search completed", "✅", f"Found {len(unique_concepts)} related concepts: {', '.join(unique_concepts)}")
                                             else:
-                                                log_execution("Concept Explainer", "Step 3: Semantic search completed", "✅", "Current concept is most relevant, no additional related concepts")
+                                                log_execution("Concept Explainer", "Step 3: RETRIEVAL - Semantic search completed", "✅", "Current concept is most relevant, no additional related concepts")
                                         else:
-                                            log_execution("Concept Explainer", "Step 3: Semantic search completed", "⚠️", "No search results returned")
+                                            log_execution("Concept Explainer", "Step 3: RETRIEVAL - Semantic search completed", "⚠️", "No search results returned")
                                     except Exception as e:
-                                        log_execution("Concept Explainer", f"Step 3: Vector search error: {str(e)}", "❌")
+                                        log_execution("Concept Explainer", f"Step 3: RETRIEVAL - Vector search error: {str(e)}", "❌")
                                         logger.log_error(e, "Error in vector search for concept explainer")
                                 else:
-                                    log_execution("Concept Explainer", "Step 3: Vector search skipped", "⚠️", "Vector store object not found")
+                                    log_execution("Concept Explainer", "Step 3: RETRIEVAL - Vector search skipped", "⚠️", "Vector store object not found")
                             else:
-                                log_execution("Concept Explainer", "Step 3: Vector search skipped", "⚠️", f"Vector store not ready (ist_concepts_vector_store_ready={st.session_state.get('ist_concepts_vector_store_ready', False)})")
+                                log_execution("Concept Explainer", "Step 3: RETRIEVAL - Vector search skipped", "⚠️", f"Vector store not ready (ist_concepts_vector_store_ready={st.session_state.get('ist_concepts_vector_store_ready', False)})")
                             
-                            # Step 4: Identify related concepts from vector search results
+                            # Step 4: RETRIEVAL - Search user's learning notes vector store
+                            user_notes_context = ""
+                            user_notes_citations = []
+                            
+                            if st.session_state.get('user_notes_vector_store_ready', False):
+                                if st.session_state.user_notes_processor.vector_store:
+                                    status.update(label="📝 Step 4/9: RETRIEVAL - Searching user's learning notes vector store...", state="running")
+                                    log_execution("Concept Explainer", "Step 4: RETRIEVAL - Searching user's learning notes vector store", "⏳")
+                                    try:
+                                        # Search user notes for relevant information
+                                        user_notes_results = st.session_state.user_notes_processor.search_vectors(
+                                            query=f"{selected_concept} explanation notes learning",
+                                            k=3,  # Get top 3 most relevant chunks
+                                            model="text-embedding-3-small"
+                                        )
+                                        if user_notes_results:
+                                            user_notes_chunks = []
+                                            for idx, result in enumerate(user_notes_results, 1):
+                                                chunk_text = result.get('chunk', '')
+                                                similarity = result.get('similarity', 0)
+                                                metadata = result.get('metadata', {})
+                                                file_name = metadata.get('file', 'Your Notes')
+                                                chunk_id = metadata.get('chunk_id', idx)
+                                                
+                                                # Only include if similarity is reasonable
+                                                if similarity > 0.3:  # Threshold for relevance
+                                                    user_notes_chunks.append(chunk_text[:500])  # Limit chunk size
+                                                    user_notes_citations.append({
+                                                        'source': file_name,
+                                                        'chunk_id': chunk_id,
+                                                        'similarity': similarity,
+                                                        'excerpt': chunk_text[:200] + "..." if len(chunk_text) > 200 else chunk_text
+                                                    })
+                                            
+                                            if user_notes_chunks:
+                                                user_notes_context = f"\n\nRelevant information from your learning notes:\n" + "\n\n".join([f"[Note {i+1}]: {chunk}" for i, chunk in enumerate(user_notes_chunks)])
+                                                log_execution("Concept Explainer", "Step 4: RETRIEVAL - User notes search completed", "✅", f"Found {len(user_notes_chunks)} relevant chunks from your notes")
+                                            else:
+                                                log_execution("Concept Explainer", "Step 4: RETRIEVAL - User notes search completed", "✅", "No highly relevant chunks found in your notes")
+                                        else:
+                                            log_execution("Concept Explainer", "Step 4: RETRIEVAL - User notes search completed", "⚠️", "No results from user notes")
+                                    except Exception as e:
+                                        log_execution("Concept Explainer", f"Step 4: RETRIEVAL - User notes search error: {str(e)}", "❌")
+                                        logger.log_error(e, "Error searching user notes")
+                                else:
+                                    log_execution("Concept Explainer", "Step 4: RETRIEVAL - User notes search skipped", "⚠️", "User notes vector store not found")
+                            else:
+                                log_execution("Concept Explainer", "Step 4: RETRIEVAL - User notes search skipped", "ℹ️", "No learning notes uploaded yet")
+                            
+                            # Step 5: RETRIEVAL - Identify related concepts from vector search results
                             if related_concepts_list:
-                                status.update(label="🔗 Step 4/8: Identifying related concepts from vector search...", state="running")
-                                log_execution("Concept Explainer", "Step 4: Related concepts identified", "✅", f"Related concepts: {', '.join(related_concepts_list)}")
+                                status.update(label="🔍 Step 5/9: RETRIEVAL - Identifying related concepts from vector search...", state="running")
+                                log_execution("Concept Explainer", "Step 5: RETRIEVAL - Related concepts identified", "✅", f"Related concepts: {', '.join(related_concepts_list)}")
                             else:
-                                log_execution("Concept Explainer", "Step 4: No additional related concepts to identify", "✅")
+                                log_execution("Concept Explainer", "Step 5: RETRIEVAL - No additional related concepts to identify", "✅")
                             
-                            # Step 5: Load concept information from database
-                            status.update(label="📚 Step 5/8: Loading concept information from database...", state="running")
-                            log_execution("Concept Explainer", "Step 5: Loading concept information from database", "⏳")
+                            # Step 6: RETRIEVAL - Load concept information from database
+                            status.update(label="🔍 Step 6/9: RETRIEVAL - Loading concept information from database...", state="running")
+                            log_execution("Concept Explainer", "Step 6: RETRIEVAL - Loading concept information from database", "⏳")
                             if ist_concepts_df is not None and isinstance(selected_concept, str):
                                 concept_info = st.session_state.data_processor.get_concept_info(
                                     ist_concepts_df, selected_concept
                                 )
                                 if concept_info:
-                                    log_execution("Concept Explainer", "Step 5: Concept info loaded from database", "✅", f"Week: {concept_info.get('week', 'N/A')}, Difficulty: {concept_info.get('difficulty', 'N/A')}")
+                                    log_execution("Concept Explainer", "Step 6: RETRIEVAL - Concept info loaded from database", "✅", f"Week: {concept_info.get('week', 'N/A')}, Difficulty: {concept_info.get('difficulty', 'N/A')}")
                                 else:
-                                    log_execution("Concept Explainer", "Step 5: Concept not found in database, using basic info", "⚠️")
+                                    log_execution("Concept Explainer", "Step 6: RETRIEVAL - Concept not found in database, using basic info", "⚠️")
                                     concept_info = None
                             else:
                                 concept_info = None
-                                log_execution("Concept Explainer", "Step 5: No database available, using basic info", "⚠️")
+                                log_execution("Concept Explainer", "Step 6: RETRIEVAL - No database available, using basic info", "⚠️")
                             
-                            # Step 6: Combine concept info with related concepts context
-                            status.update(label="🔗 Step 6/8: Combining concept info with related concepts context...", state="running")
-                            log_execution("Concept Explainer", "Step 6: Combining concept info with vector search context", "⏳")
+                            # Step 7: AUGMENTATION - Combine concept info with related concepts and user notes context
+                            status.update(label="🔗 Step 7/9: AUGMENTATION - Combining concept info with related concepts and user notes context...", state="running")
+                            log_execution("Concept Explainer", "Step 7: AUGMENTATION - Combining concept info with vector search and user notes context", "⏳")
                             
-                            # Prepare prompt parameters with vector search context
+                            # Prepare prompt parameters with vector search context and user notes
                             if concept_info:
-                                # Use concept info from database, add vector search context
+                                # Use concept info from database, add vector search context and user notes
                                 description = concept_info.get('description', '')
                                 if related_concepts_context:
                                     description += related_concepts_context
+                                if user_notes_context:
+                                    description += user_notes_context
                                 
                                 prompt_kwargs = {
                                     'concept_name': concept_info.get('concept_name', selected_concept),
@@ -501,10 +557,12 @@ def main():
                                     'keywords': concept_info.get('keywords', '')
                                 }
                             else:
-                                # Use basic info with vector search context
+                                # Use basic info with vector search context and user notes
                                 description = f"Explain the concept: {selected_concept}"
                                 if related_concepts_context:
                                     description += related_concepts_context
+                                if user_notes_context:
+                                    description += user_notes_context
                                 
                                 prompt_kwargs = {
                                     'concept_name': selected_concept,
@@ -516,28 +574,51 @@ def main():
                                     'time_estimate': '60',
                                     'keywords': ''
                                 }
-                            log_execution("Concept Explainer", "Step 6: Context combined successfully", "✅", f"Enhanced with {len(related_concepts_list)} related concepts" if related_concepts_list else "Using base concept info")
                             
-                            # Step 7: Generate explanation using AI (OpenAI) with enhanced context
-                            status.update(label="🤖 Step 7/8: Generating explanation using AI (OpenAI) with enhanced context...", state="running")
-                            log_execution("Concept Explainer", "Step 7: Generating explanation using AI (OpenAI) with enhanced context", "⏳")
+                            context_sources = []
+                            if related_concepts_list:
+                                context_sources.append(f"{len(related_concepts_list)} related concepts")
+                            if user_notes_citations:
+                                context_sources.append(f"{len(user_notes_citations)} chunks from your notes")
+                            
+                            log_execution("Concept Explainer", "Step 7: AUGMENTATION - Context combined successfully", "✅", f"Enhanced with: {', '.join(context_sources)}" if context_sources else "Using base concept info")
+                            
+                            # Step 8: GENERATION - Generate explanation using AI (OpenAI) with enhanced context
+                            status.update(label="🤖 Step 8/9: GENERATION - Generating explanation using AI (OpenAI) with enhanced context...", state="running")
+                            log_execution("Concept Explainer", "Step 8: GENERATION - Generating explanation using AI (OpenAI) with enhanced context", "⏳")
                             result = st.session_state.generator.generate_with_prompt_type(
                                 prompt_type=PromptType.IST_CONCEPT_EXPLANATION,
                                 **prompt_kwargs
                             )
                             tokens = result.get('token_usage', {}).get('total_tokens', 'N/A')
                             model = result.get('model', 'N/A')
-                            log_execution("Concept Explainer", "Step 7: AI explanation generated successfully", "✅", f"Model: {model}, Tokens: {tokens}")
+                            log_execution("Concept Explainer", "Step 8: GENERATION - AI explanation generated successfully", "✅", f"Model: {model}, Tokens: {tokens}")
                             
-                            # Step 8: Display explanation with metadata
-                            status.update(label="📊 Step 8/8: Displaying explanation with metadata...", state="running")
-                            log_execution("Concept Explainer", "Step 8: Displaying explanation with metadata", "⏳")
-                            log_execution("Concept Explainer", "Step 8: Explanation displayed successfully", "✅", f"Content length: {len(result.get('content', ''))} chars")
+                            # Step 9: Display explanation with citations and metadata
+                            status.update(label="📊 Step 9/9: Displaying explanation with citations and metadata...", state="running")
+                            log_execution("Concept Explainer", "Step 9: Displaying explanation with citations and metadata", "⏳")
+                            log_execution("Concept Explainer", "Step 9: Explanation displayed successfully", "✅", f"Content length: {len(result.get('content', ''))} chars")
                             status.update(label="✅ Generation complete", state="complete")
                         
                         # Display results outside status container for permanent view
                         st.subheader("Concept Explanation")
                         st.markdown(result['content'])
+                        
+                        # Display Citations/References
+                        if user_notes_citations:
+                            st.divider()
+                            st.subheader("📚 References from Your Learning Notes")
+                            st.info("The explanation above incorporates information from your uploaded learning notes. Below are the specific references:")
+                            
+                            for idx, citation in enumerate(user_notes_citations, 1):
+                                with st.expander(f"📝 Reference {idx}: {citation['source']} (Chunk {citation['chunk_id']}, Similarity: {citation['similarity']:.1%})"):
+                                    st.markdown(f"**Source:** {citation['source']}")
+                                    st.markdown(f"**Chunk ID:** {citation['chunk_id']}")
+                                    st.markdown(f"**Relevance Score:** {citation['similarity']:.1%}")
+                                    st.markdown("**Excerpt:**")
+                                    st.text(citation['excerpt'])
+                        elif st.session_state.get('user_notes_vector_store_ready', False):
+                            st.info("💡 **Tip:** Upload your learning notes in the 'Data Processing' tab to see citations from your notes in explanations!")
                         
                         # Show metadata
                         with st.expander("Generation Metadata"):
@@ -923,49 +1004,48 @@ def main():
                 st.error(f"Error generating study plan: {str(e)}")
                 logger.log_error(e, "Error in study plan generation")
     
-    # Tab 3: Data Processing (with Vector Search)
+    # Tab 3: Data Processing (Learning Notes Upload)
     with tab3:
-        st.header("📁 Data Processing & Vector Search")
-        st.markdown("Upload and preprocess data files, then create embeddings and perform semantic search using FAISS vector database.")
+        st.header("📁 Upload Learning Notes")
+        st.markdown("**Upload your learning notes (TXT or CSV) to create a personal knowledge base. These notes will be used to enhance concept explanations and quiz generation with citations.**")
         
         # Flow accordion
         expected_flow = [
-            "User uploads file (CSV or TXT)",
-            "System processes and chunks the file",
+            "User uploads learning notes (TXT or CSV)",
+            "System processes and chunks the notes",
             "System creates embeddings using OpenAI",
-            "System builds FAISS vector store",
-            "Vector store ready for semantic search",
-            "User can search uploaded documents"
+            "System builds FAISS vector store for user notes",
+            "Vector store ready - will be used in Concept Explainer & Quiz Me",
+            "Notes are searched when generating explanations/quizzes"
         ]
         show_flow_accordion("Data Processing", expected_flow)
         st.divider()
         
-        # Initialize session state for vector store
-        if 'vector_store_ready' not in st.session_state:
-            st.session_state.vector_store_ready = False
-        if 'uploaded_chunks' not in st.session_state:
-            st.session_state.uploaded_chunks = []
-        if 'current_uploaded_file' not in st.session_state:
-            st.session_state.current_uploaded_file = None
+        # Initialize session state for user notes vector store
+        if 'user_notes_chunks' not in st.session_state:
+            st.session_state.user_notes_chunks = []
+        if 'user_notes_file' not in st.session_state:
+            st.session_state.user_notes_file = None
         
-        # Vector Store Status Card
-        if st.session_state.vector_store_ready and st.session_state.data_processor.vector_store:
-            st.success("✅ **Vector Store Active**")
+        # User Notes Vector Store Status Card
+        if st.session_state.user_notes_vector_store_ready and st.session_state.user_notes_processor.vector_store:
+            st.success("✅ **Your Learning Notes Vector Store is Active**")
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("File", st.session_state.current_uploaded_file or "Unknown")
+                st.metric("File", st.session_state.user_notes_file or "Unknown")
             with col2:
-                st.metric("Vectors", st.session_state.data_processor.vector_store.ntotal if st.session_state.data_processor.vector_store else 0)
+                st.metric("Vectors", st.session_state.user_notes_processor.vector_store.ntotal if st.session_state.user_notes_processor.vector_store else 0)
             with col3:
-                st.metric("Chunks", len(st.session_state.uploaded_chunks))
+                st.metric("Chunks", len(st.session_state.user_notes_chunks))
             with col4:
                 st.metric("Status", "Ready")
             
             st.info("""
-            **📌 This Vector Store is Used For:**
-            - 🔍 Semantic search in this tab (search uploaded documents)
-            - 💾 Can be saved and loaded for reuse
-            - 🔗 Can be integrated with other features (future enhancement)
+            **📌 Your Learning Notes Will Be Used In:**
+            - 📚 **Concept Explainer**: Your notes will enhance explanations with citations
+            - 🎯 **Quiz Me**: Questions may reference your uploaded notes
+            - 🔍 **Semantic Search**: Search your notes in this tab
+            - 📝 **Citations**: Explanations will show references to your notes
             """)
             st.divider()
         
@@ -977,8 +1057,8 @@ def main():
         
         if uploaded_file:
             try:
-                log_execution("Data Processing", f"File uploaded: {uploaded_file.name}", "✅")
-                st.session_state.current_uploaded_file = uploaded_file.name
+                log_execution("Data Processing", f"Learning notes uploaded: {uploaded_file.name}", "✅")
+                st.session_state.user_notes_file = uploaded_file.name
                 file_path = f"data/temp_{uploaded_file.name}"
                 Path("data").mkdir(exist_ok=True)
                 
@@ -987,7 +1067,7 @@ def main():
                 log_execution("Data Processing", "File saved to disk", "✅")
                 
                 if uploaded_file.name.endswith('.csv'):
-                    df = st.session_state.data_processor.load_csv(file_path)
+                    df = st.session_state.user_notes_processor.load_csv(file_path)
                     
                     st.subheader("Data Overview")
                     col1, col2, col3, col4 = st.columns(4)
@@ -1012,20 +1092,21 @@ def main():
                         st.json(processed[:3])  # Show first 3 records
                     
                     # For CSV, convert to text for vector search
-                    st.info("💡 Tip: For vector search, convert CSV columns to text or upload a text file.")
+                    st.info("💡 Tip: Convert CSV to text chunks for vector search, or upload a text file directly.")
                     if st.button("Convert to Text for Vector Search"):
                         # Combine all text columns
                         text_columns = df.select_dtypes(include=['object']).columns
                         if len(text_columns) > 0:
                             combined_text = "\n\n".join([f"{col}: {df[col].astype(str).str.cat(sep=' ')}" for col in text_columns])
-                            st.session_state.uploaded_chunks = st.session_state.data_processor.chunk_text(combined_text, 1000)
-                            st.success(f"Created {len(st.session_state.uploaded_chunks)} text chunks from CSV")
+                            st.session_state.user_notes_chunks = st.session_state.user_notes_processor.chunk_text(combined_text, 1000)
+                            st.success(f"Created {len(st.session_state.user_notes_chunks)} text chunks from CSV")
+                            log_execution("Data Processing", f"Created {len(st.session_state.user_notes_chunks)} chunks from CSV", "✅")
                         else:
                             st.warning("No text columns found in CSV for vector search.")
                 
                 elif uploaded_file.name.endswith('.txt'):
-                    log_execution("Data Processing", "Loading text file", "⏳")
-                    text = st.session_state.data_processor.load_text_file(file_path)
+                    log_execution("Data Processing", "Loading learning notes text file", "⏳")
+                    text = st.session_state.user_notes_processor.load_text_file(file_path)
                     log_execution("Data Processing", f"Text loaded: {len(text)} characters", "✅")
                     
                     st.subheader("Text Statistics")
@@ -1042,57 +1123,59 @@ def main():
                     chunk_size = st.slider("Chunk Size", 500, 2000, 1000, 100)
                     if st.button("Chunk Text"):
                         log_execution("Data Processing", f"Chunking text with size {chunk_size}", "⏳")
-                        chunks = st.session_state.data_processor.chunk_text(text, chunk_size)
-                        st.session_state.uploaded_chunks = chunks
+                        chunks = st.session_state.user_notes_processor.chunk_text(text, chunk_size)
+                        st.session_state.user_notes_chunks = chunks
                         log_execution("Data Processing", f"Created {len(chunks)} chunks", "✅")
                         st.success(f"Created {len(chunks)} chunks")
                         for i, chunk in enumerate(chunks[:3], 1):
                             with st.expander(f"Chunk {i} (Preview)"):
                                 st.text(chunk[:500])
                     
-                    # Vector Store Creation
-                    if st.session_state.uploaded_chunks:
+                    # Vector Store Creation for User Notes
+                    if st.session_state.user_notes_chunks:
                         st.divider()
-                        st.subheader("🔍 Vector Search Setup")
+                        st.subheader("🔍 Build Vector Store for Your Learning Notes")
+                        st.info("💡 This vector store will be used in Concept Explainer and Quiz Me to enhance explanations with citations from your notes.")
                         
                         col1, col2 = st.columns([2, 1])
                         with col1:
                             embedding_model = st.selectbox(
                                 "Embedding Model",
                                 ["text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"],
-                                help="OpenAI embedding model to use"
+                                help="OpenAI embedding model to use",
+                                key="user_notes_embedding_model"
                             )
                         with col2:
-                            st.metric("Chunks Ready", len(st.session_state.uploaded_chunks))
+                            st.metric("Chunks Ready", len(st.session_state.user_notes_chunks))
                         
-                        if st.button("🔨 Build Vector Store", type="primary"):
+                        if st.button("🔨 Build Vector Store for Learning Notes", type="primary"):
                             try:
-                                if not st.session_state.data_processor.embeddings_model:
+                                if not st.session_state.user_notes_processor.embeddings_model:
                                     st.error("❌ OpenAI API key not configured. Please set OPENAI_API_KEY in .env file.")
                                     log_execution("Data Processing", "OpenAI API key not configured", "❌")
                                 else:
-                                    log_execution("Data Processing", f"Creating embeddings for {len(st.session_state.uploaded_chunks)} chunks using {embedding_model}", "⏳")
-                                    with st.spinner(f"Creating embeddings for {len(st.session_state.uploaded_chunks)} chunks..."):
-                                        # Create metadata for chunks
-                                        metadata = [{"chunk_id": i, "file": uploaded_file.name} for i in range(len(st.session_state.uploaded_chunks))]
+                                    log_execution("Data Processing", f"Creating embeddings for {len(st.session_state.user_notes_chunks)} chunks using {embedding_model}", "⏳")
+                                    with st.spinner(f"Creating embeddings for {len(st.session_state.user_notes_chunks)} chunks..."):
+                                        # Create metadata for chunks with file info
+                                        metadata = [{"chunk_id": i, "file": uploaded_file.name, "source": "user_notes"} for i in range(len(st.session_state.user_notes_chunks))]
                                         
-                                        st.session_state.data_processor.build_vector_store(
-                                            chunks=st.session_state.uploaded_chunks,
+                                        st.session_state.user_notes_processor.build_vector_store(
+                                            chunks=st.session_state.user_notes_chunks,
                                             metadata=metadata,
                                             model=embedding_model
                                         )
-                                        st.session_state.vector_store_ready = True
-                                        num_vectors = st.session_state.data_processor.vector_store.ntotal if st.session_state.data_processor.vector_store else 0
-                                        log_execution("Data Processing", f"Vector store built successfully", "✅", f"{num_vectors} vectors created")
-                                        st.success(f"✅ Vector store created with {num_vectors} vectors!")
+                                        st.session_state.user_notes_vector_store_ready = True
+                                        num_vectors = st.session_state.user_notes_processor.vector_store.ntotal if st.session_state.user_notes_processor.vector_store else 0
+                                        log_execution("Data Processing", f"User notes vector store built successfully", "✅", f"{num_vectors} vectors created")
+                                        st.success(f"✅ Learning notes vector store created with {num_vectors} vectors!")
                                         st.balloons()  # Celebration!
                             except Exception as e:
                                 st.error(f"Error building vector store: {str(e)}")
                                 log_execution("Data Processing", f"Error building vector store: {str(e)}", "❌")
-                                logger.log_error(e, "Error building vector store")
+                                logger.log_error(e, "Error building user notes vector store")
                         
                         # Vector Search
-                        if st.session_state.vector_store_ready:
+                        if st.session_state.user_notes_vector_store_ready:
                             st.divider()
                             st.subheader("🔎 Semantic Search")
                             
@@ -1106,11 +1189,11 @@ def main():
                             with col2:
                                 num_results = st.number_input("Results", min_value=1, max_value=20, value=5, step=1)
                             
-                            if st.button("🔍 Search", type="primary") and search_query:
+                            if st.button("🔍 Search Your Notes", type="primary") and search_query:
                                 try:
-                                    log_execution("Data Processing", f"Searching for: '{search_query}'", "⏳")
-                                    with st.spinner("Searching vector store..."):
-                                        results = st.session_state.data_processor.search_vectors(
+                                    log_execution("Data Processing", f"Searching user notes for: '{search_query}'", "⏳")
+                                    with st.spinner("Searching your learning notes..."):
+                                        results = st.session_state.user_notes_processor.search_vectors(
                                             query=search_query,
                                             k=num_results,
                                             model=embedding_model
@@ -1138,34 +1221,39 @@ def main():
                             
                             # Save/Load Vector Store
                             st.divider()
-                            st.subheader("💾 Vector Store Management")
+                            st.subheader("💾 Learning Notes Vector Store Management")
                             col1, col2 = st.columns(2)
                             
                             with col1:
-                                if st.button("💾 Save Vector Store"):
-                                    try:
-                                        save_path = f"data/vector_store_{uploaded_file.name.replace('.txt', '')}.pkl"
-                                        st.session_state.data_processor.save_vector_store(save_path)
-                                        st.success(f"Vector store saved to {save_path}")
-                                    except Exception as e:
-                                        st.error(f"Error saving: {str(e)}")
+                                if st.session_state.user_notes_vector_store_ready:
+                                    if st.button("💾 Save Learning Notes Vector Store"):
+                                        try:
+                                            save_path = f"data/user_notes_vector_store_{uploaded_file.name.replace('.txt', '').replace('.csv', '')}.pkl"
+                                            st.session_state.user_notes_processor.save_vector_store(save_path)
+                                            st.success(f"Learning notes vector store saved to {save_path}")
+                                            log_execution("Data Processing", f"Vector store saved: {save_path}", "✅")
+                                        except Exception as e:
+                                            st.error(f"Error saving: {str(e)}")
+                                            log_execution("Data Processing", f"Error saving vector store: {str(e)}", "❌")
                             
                             with col2:
                                 load_file = st.file_uploader(
-                                    "Load Vector Store",
+                                    "Load Learning Notes Vector Store",
                                     type=['pkl'],
-                                    key="load_vector_store"
+                                    key="load_user_notes_vector_store"
                                 )
-                                if load_file and st.button("📂 Load Vector Store"):
+                                if load_file and st.button("📂 Load Learning Notes Vector Store"):
                                     try:
                                         load_path = f"data/temp_{load_file.name}"
                                         with open(load_path, "wb") as f:
                                             f.write(load_file.getbuffer())
-                                        st.session_state.data_processor.load_vector_store(load_path)
-                                        st.session_state.vector_store_ready = True
-                                        st.success("Vector store loaded successfully!")
+                                        st.session_state.user_notes_processor.load_vector_store(load_path)
+                                        st.session_state.user_notes_vector_store_ready = True
+                                        st.success("Learning notes vector store loaded successfully!")
+                                        log_execution("Data Processing", f"Vector store loaded: {load_file.name}", "✅")
                                     except Exception as e:
                                         st.error(f"Error loading: {str(e)}")
+                                        log_execution("Data Processing", f"Error loading vector store: {str(e)}", "❌")
             
             except Exception as e:
                 st.error(f"Error processing file: {str(e)}")
