@@ -71,9 +71,9 @@ EventRegistry is a powerful news and event aggregation service that provides:
 ## Testing
 
 1. **Without API key:**
-   - Application will use mock data
-   - All features work for demonstration
-   - You'll see "Mock data" notes
+   - Application will show clear error messages
+   - API keys are required for all features
+   - No mock data is used
 
 2. **With API key:**
    - Real news articles from EventRegistry

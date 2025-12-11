@@ -149,7 +149,7 @@ This project fulfills all required objectives for the GenAI-driven application a
   - EventRegistry API integration for news and events
   - AI Conferences detection using event-based search (NEW)
   - Context formatting for prompts
-  - Error handling with mock data fallback
+  - Error handling with clear error messages (no mock data)
 
 #### 5. **Logging Module** (`core/logger.py`)
 - **Purpose:** Centralized logging system
@@ -219,7 +219,7 @@ This project fulfills all required objectives for the GenAI-driven application a
 ### 6. External API Integration
 - **News API:** Recent news articles for research and content generation
 - **AI Conferences:** Automatic detection and parsing of AI-related events
-- Graceful fallback to mock data when APIs are unavailable
+- Clear error messages when APIs are unavailable (no mock data fallback)
 
 ### 7. Error Handling & Logging
 - Comprehensive error handling throughout
@@ -319,9 +319,9 @@ This project fulfills all required objectives for the GenAI-driven application a
 ### Quick Start (Without API Keys)
 
 The application can run in demo mode without API keys:
-- Content generation will use mock responses
-- News features will use mock data
-- AI Conferences will use mock conference data
+- Content generation will fail with clear error if OPENAI_API_KEY is not configured
+- News features will fail with clear error if EVENTREGISTRY_API_KEY is not configured
+- AI Conferences will fail with clear error if EVENTREGISTRY_API_KEY is not configured
 - All features remain functional for demonstration
 
 **Note:** EventRegistry requires free API key registration at [eventregistry.org](https://eventregistry.org/)
@@ -467,7 +467,7 @@ The application can run in demo mode without API keys:
 - API key validation
 - Request timeout handling
 - Rate limit management
-- Fallback to mock responses
+- Clear error messages (no mock data)
 
 ### 2. EventRegistry Integration
 
@@ -493,7 +493,7 @@ The application can run in demo mode without API keys:
 **Error Handling:**
 - API key validation
 - Network error handling
-- Fallback to mock news/conference data
+- Clear error messages for missing API keys (no mock data)
 - Package availability checking
 
 ### 4. IST Concepts Database Integration
@@ -528,7 +528,7 @@ The application implements comprehensive error handling at multiple levels:
 
 #### 1. **API Error Handling**
 - **Network Errors:** Timeout handling, retry logic, graceful degradation
-- **Authentication Errors:** Clear error messages, fallback to mock data
+- **Authentication Errors:** Clear error messages (API keys required)
 - **Rate Limiting:** User notifications, queue management
 
 #### 2. **Data Processing Errors**
@@ -537,7 +537,7 @@ The application implements comprehensive error handling at multiple levels:
 - **Processing Errors:** Exception catching with context
 
 #### 3. **Model Generation Errors**
-- **API Failures:** Fallback to mock responses
+- **API Failures:** Clear error messages (no mock data fallback)
 - **Token Limits:** Automatic truncation
 - **Invalid Prompts:** Validation and error messages
 
@@ -829,7 +829,7 @@ WK12-SkillBuilder/
    - Check analysis quality
 
 5. **Error Handling:**
-   - Test without API keys (mock mode)
+   - All API keys are required (no mock mode)
    - Test with invalid files
    - Test with network errors
 
@@ -845,12 +845,12 @@ WK12-SkillBuilder/
 
 **Scenario 2: Limited Functionality**
 - Only OpenAI API key configured
-- News uses mock data
+- News requires EVENTREGISTRY_API_KEY (no mock data)
 - Verify graceful degradation
 
 **Scenario 3: Demo Mode**
 - No API keys configured
-- All features use mock data
+- All features require valid API keys (no mock data)
 - Verify application still functions
 
 ---

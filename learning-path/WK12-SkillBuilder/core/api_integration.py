@@ -14,7 +14,10 @@ logger = get_logger()
 
 # Try to import EventRegistry
 try:
-    from eventregistry import EventRegistry, QueryArticlesIter, QueryEvents, RequestEventsInfo, QueryItems
+    from eventregistry import (
+        EventRegistry, QueryArticlesIter, QueryEvents, RequestEventsInfo, 
+        QueryItems, ReturnInfo, EventInfoFlags
+    )
     EVENTREGISTRY_AVAILABLE = True
 except ImportError:
     EVENTREGISTRY_AVAILABLE = False
@@ -254,72 +257,227 @@ class EventRegistryAPI:
             raise APIError(error_msg)
         
         try:
-            # Default keywords for AI/ML conferences
+            # Default keywords for AI/ML conferences - include specific conference names
             if keywords is None:
-                keywords = ["artificial intelligence", "machine learning", "AI", "ML", "deep learning", 
-                           "neural networks", "data science", "AI conference", "ML conference"]
+                keywords = [
+                    "AI Summit", "The AI Summit", "AI Summit New York", "artificial intelligence summit",
+                    "artificial intelligence", "machine learning", "AI conference", "ML conference",
+                    "deep learning", "neural networks", "data science", "AI event", "machine learning event"
+                ]
             
-            # Get concept URIs for AI/ML concepts
-            ai_concept_uris = []
-            for keyword in keywords[:3]:  # Limit to avoid too many URIs
+            # Try to get concept URI for better results, but don't fail if it doesn't work
+            ai_concept_uri = None
+            try:
+                # Try to get concept URI for "Artificial Intelligence"
+                ai_concept_uri = self.er.getConceptUri("Artificial Intelligence")
+                self.logger.info("Successfully obtained concept URI for 'Artificial Intelligence'")
+            except Exception as e:
+                self.logger.warning(f"Could not get concept URI for 'Artificial Intelligence': {str(e)}")
+                # If that fails, try "Machine Learning"
                 try:
-                    uri = self.er.getConceptUri(keyword)
-                    if uri:
-                        ai_concept_uris.append(uri)
-                except:
+                    ai_concept_uri = self.er.getConceptUri("Machine Learning")
+                    self.logger.info("Successfully obtained concept URI for 'Machine Learning'")
+                except Exception as e2:
+                    self.logger.warning(f"Could not get concept URI for 'Machine Learning': {str(e2)}")
+            
+            # Build event query - use QueryItems.OR() as recommended by EventRegistry
+            query_params = {}
+            
+            # Always add keywords - use QueryItems.OR() as recommended by the API
+            if keywords:
+                # Use QueryItems.OR() to explicitly specify OR operator between keywords
+                # This is what EventRegistry recommends to avoid warnings
+                query_params['keywords'] = QueryItems.OR(keywords[:10])  # Use up to 10 keywords
+                self.logger.info(f"Using {len(keywords[:10])} keywords with OR operator: {', '.join(keywords[:5])}...")
+            
+            # Add concept URI if available (enhances search but not required)
+            if ai_concept_uri:
+                query_params['conceptUri'] = ai_concept_uri
+                self.logger.info("Added concept URI to query")
+            
+            # NO DATE FILTERING - Get all events to see what's available
+            self.logger.info("NO DATE FILTERING - Getting all available events")
+            
+            # Create QueryEvents with parameters (matching working example from docs)
+            query = None
+            result = None
+            
+            # Try different query approaches if one fails
+            query_attempts = [
+                ("Full query with keywords and conceptUri", query_params),
+                ("Query with keywords only", {k: v for k, v in query_params.items() if k != 'conceptUri'}),
+                ("Query with conceptUri only", {k: v for k, v in query_params.items() if k == 'conceptUri'}),
+                ("Simple query with first keyword only", {'keywords': [keywords[0]] if keywords else []}),
+            ]
+            
+            for attempt_name, params in query_attempts:
+                if not params or (not params.get('keywords') and not params.get('conceptUri')):
+                    continue
+                    
+                try:
+                    self.logger.info(f"Attempting: {attempt_name}")
+                    self.logger.info(f"Query params: {list(params.keys())}")
+                    
+                    query = QueryEvents(**params)
+                    self.logger.info(f"QueryEvents created successfully")
+                    
+                    # Request event information
+                    query.setRequestedResult(
+                        RequestEventsInfo(
+                            sortBy="date",
+                            count=limit
+                        )
+                    )
+                    
+                    self.logger.log_api_call("EventRegistry", "requesting", f"AI conferences, limit={limit}")
+                    
+                    # Execute query
+                    result = self.er.execQuery(query)
+                    
+                    # Check if we got results (not an error)
+                    if isinstance(result, dict) and 'error' not in result:
+                        self.logger.info(f"✓ Success with {attempt_name}")
+                        break
+                    elif isinstance(result, dict) and 'error' in result:
+                        self.logger.warning(f"✗ {attempt_name} returned error: {result.get('error')}")
+                        continue
+                    else:
+                        self.logger.info(f"✓ Success with {attempt_name}")
+                        break
+                        
+                except Exception as e:
+                    self.logger.warning(f"✗ {attempt_name} failed: {str(e)}")
                     continue
             
-            # Build event query
-            query = QueryEvents()
+            if result is None:
+                raise APIError("All query attempts failed")
             
-            # Add keywords
-            if keywords:
-                query.setKeywords(QueryItems.OR(keywords))
+            # Log the raw result structure for debugging
+            print("\n" + "=" * 100)
+            print("RAW EVENTREGISTRY API RESPONSE")
+            print("=" * 100)
+            print(f"Result type: {type(result)}")
+            if isinstance(result, dict):
+                print(f"Result keys: {list(result.keys())}")
+                # Print the full result to see what's in it
+                import json
+                print(f"\nFull result (formatted):")
+                print(json.dumps(result, indent=2, default=str))
+                
+                # Check for error
+                if 'error' in result:
+                    print(f"\n❌ ERROR FROM API: {result.get('error')}")
+                    self.logger.error(f"EventRegistry API error: {result.get('error')}")
+            else:
+                print(f"Result: {result}")
+            print("=" * 100 + "\n")
             
-            # Add concept URIs if available
-            if ai_concept_uris:
-                query.setConceptUri(QueryItems.OR(ai_concept_uris))
-            
-            # Request event information
-            query.setRequestedResult(
-                RequestEventsInfo(
-                    sortBy="date",
-                    count=limit
-                )
-            )
-            
-            self.logger.log_api_call("EventRegistry", "requesting", f"AI conferences, limit={limit}")
-            
-            # Execute query
-            result = self.er.execQuery(query)
+            self.logger.info(f"EventRegistry query result type: {type(result)}")
+            if isinstance(result, dict):
+                self.logger.info(f"EventRegistry result keys: {list(result.keys())}")
+                if 'error' in result:
+                    self.logger.error(f"EventRegistry API returned error: {result.get('error')}")
             
             conferences = []
-            # EventRegistry returns events in different structures
-            # Try to extract events from the result
+            # EventRegistry returns events in structure: {"events": {"results": [...]}}
             events_list = []
-            if result:
-                if isinstance(result, dict):
-                    if 'events' in result:
-                        events_data = result['events']
-                        if isinstance(events_data, dict) and 'results' in events_data:
-                            events_list = events_data['results']
-                        elif isinstance(events_data, list):
-                            events_list = events_data
-                    elif 'results' in result:
-                        events_list = result['results']
-                elif isinstance(result, list):
-                    events_list = result
+            if result and isinstance(result, dict):
+                events_data = result.get('events', {})
+                if isinstance(events_data, dict):
+                    events_list = events_data.get('results', [])
+                    self.logger.info(f"Extracted {len(events_list)} events from events.results")
+                elif isinstance(events_data, list):
+                    events_list = events_data
+                    self.logger.info(f"Extracted {len(events_list)} events from events list")
+                else:
+                    self.logger.warning(f"Unexpected events data structure: {type(events_data)}")
+            elif result:
+                self.logger.warning(f"Unexpected result structure: {type(result)}, keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
+            
+            self.logger.info(f"Total events found: {len(events_list)}")
+            
+            # PRINT ALL RESULTS TO CONSOLE - NO FILTERING
+            print("\n" + "=" * 100)
+            print("ALL EVENTREGISTRY RESULTS (NO FILTERING)")
+            print("=" * 100)
+            print(f"Total events returned from API: {len(events_list)}")
+            print("=" * 100 + "\n")
+            
+            # Print all events to console
+            for idx, event in enumerate(events_list, 1):
+                if not isinstance(event, dict):
+                    continue
+                
+                # Extract event date
+                event_date_str = event.get('eventDate', '') or event.get('dateStart', '') or event.get('date', '')
+                
+                # Extract title
+                title_dict = event.get('title', {})
+                if isinstance(title_dict, dict):
+                    event_title = title_dict.get('eng', '') or title_dict.get('en', '') or list(title_dict.values())[0] if title_dict else 'Untitled'
+                else:
+                    event_title = str(title_dict) if title_dict else 'Untitled'
+                
+                # Extract summary
+                summary_dict = event.get('summary', {})
+                if isinstance(summary_dict, dict):
+                    event_summary = summary_dict.get('eng', '') or summary_dict.get('en', '') or list(summary_dict.values())[0] if summary_dict else ''
+                else:
+                    event_summary = str(summary_dict) if summary_dict else ''
+                
+                # Extract URI
+                uri = event.get('uri', '') or event.get('url', '')
+                
+                # Print to console
+                print(f"\n{'─' * 100}")
+                print(f"EVENT #{idx}")
+                print(f"{'─' * 100}")
+                print(f"Title: {event_title}")
+                print(f"Date: {event_date_str}")
+                print(f"URI: {uri}")
+                print(f"Summary: {event_summary[:200]}..." if len(event_summary) > 200 else f"Summary: {event_summary}")
+                print(f"All Keys: {list(event.keys())}")
+                
+                # Also log to logger
+                self.logger.info(f"\nEvent #{idx}: {event_title}")
+                self.logger.info(f"  Date: {event_date_str}")
+                self.logger.info(f"  URI: {uri}")
+                self.logger.info(f"  Keys: {list(event.keys())}")
+            
+            print("\n" + "=" * 100)
+            print("END OF ALL RESULTS")
+            print("=" * 100 + "\n")
+            
+            # NO FILTERING - Use all events as-is
+            # Just limit to requested count
+            events_list = events_list[:limit]
             
             for event in events_list:
-                # EventRegistry event structure
-                event_info = event.get('info', {}) if isinstance(event, dict) else {}
-                if not event_info and isinstance(event, dict):
-                    event_info = event
+                if not isinstance(event, dict):
+                    continue
                 
-                title = event_info.get('title', '') or event.get('title', 'Untitled Event')
-                summary = event_info.get('summary', '') or event_info.get('description', '')
-                date_start = event_info.get('dateStart', '') or event_info.get('date', '')
-                uri = event_info.get('uri', '') or event.get('uri', '')
+                # EventRegistry event structure: title and summary are dicts with language keys
+                # e.g., {'title': {'eng': 'Event Title'}, 'summary': {'eng': 'Summary text'}}
+                title_dict = event.get('title', {})
+                if isinstance(title_dict, dict):
+                    title = title_dict.get('eng', '') or title_dict.get('en', '') or list(title_dict.values())[0] if title_dict else 'Untitled Event'
+                else:
+                    title = str(title_dict) if title_dict else 'Untitled Event'
+                
+                summary_dict = event.get('summary', {})
+                if isinstance(summary_dict, dict):
+                    summary = summary_dict.get('eng', '') or summary_dict.get('en', '') or list(summary_dict.values())[0] if summary_dict else ''
+                else:
+                    summary = str(summary_dict) if summary_dict else ''
+                
+                # Event date field
+                date_start = event.get('eventDate', '') or event.get('dateStart', '') or event.get('date', '')
+                
+                # Event URI
+                uri = event.get('uri', '') or event.get('url', '')
+                
+                # Use event dict directly for helper methods
+                event_info = event
                 
                 conferences.append({
                     'title': title,
@@ -373,8 +531,18 @@ class EventRegistryAPI:
         Returns:
             Event type string
         """
-        title = event_info.get('title', '').lower()
-        summary = event_info.get('summary', '').lower()
+        # Handle title - can be dict or string
+        title = event_info.get('title', '')
+        if isinstance(title, dict):
+            title = title.get('eng', '') or title.get('en', '') or list(title.values())[0] if title else ''
+        title = str(title).lower() if title else ''
+        
+        # Handle summary - can be dict or string
+        summary = event_info.get('summary', '')
+        if isinstance(summary, dict):
+            summary = summary.get('eng', '') or summary.get('en', '') or list(summary.values())[0] if summary else ''
+        summary = str(summary).lower() if summary else ''
+        
         text = f"{title} {summary}"
         
         if 'summit' in text:

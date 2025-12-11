@@ -62,7 +62,7 @@ class ContentGenerator:
         self.api_key = os.getenv('OPENAI_API_KEY')
         
         if not self.api_key:
-            self.logger.info("OPENAI_API_KEY not configured. Content generation will use mock responses.")
+            self.logger.error("OPENAI_API_KEY not configured. Content generation will fail.")
             self.llm = None
         else:
             try:
@@ -99,7 +99,9 @@ class ContentGenerator:
         """
         try:
             if not self.llm:
-                return self._get_mock_response(prompt)
+                error_msg = "OpenAI API not configured. Please set OPENAI_API_KEY environment variable."
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
             
             # Build messages
             messages = []
@@ -257,24 +259,6 @@ class ContentGenerator:
             results.append(result)
         return results
     
-    def _get_mock_response(self, prompt: str) -> Dict[str, Any]:
-        """
-        Return mock response when API key is not available.
-        Useful for testing and demonstration.
-        """
-        return {
-            'content': f"[Mock Response] This is a simulated response to: {prompt[:100]}...\n\n"
-                      "To enable real content generation, please set the OPENAI_API_KEY environment variable.",
-            'model': 'mock-model',
-            'token_usage': {
-                'total_tokens': 0,
-                'prompt_tokens': 0,
-                'completion_tokens': 0,
-                'total_cost': 0.0
-            },
-            'success': False,
-            'note': 'Mock response - API key not configured'
-        }
     
     def is_available(self) -> bool:
         """
