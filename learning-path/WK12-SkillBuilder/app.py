@@ -10,6 +10,11 @@ A GenAI-driven application that helps IST402 students with:
 - AI conferences information
 """
 
+# Fix OpenMP library conflict on macOS (required for FAISS)
+# This prevents the "libomp.dylib already initialized" error
+import os
+os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
+
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -77,15 +82,16 @@ if 'execution_log' not in st.session_state:
     st.session_state.execution_log = {}  # Store execution logs per tab
 
 
-def log_execution(tab_name: str, step: str, status: str = "⏳", details: str = ""):
+def log_execution(tab_name: str, step: str, status: str = "⏳", details: str = "", update_display: bool = True):
     """
-    Log execution step for flow tracking.
+    Log execution step for flow tracking with live updates.
     
     Args:
         tab_name: Name of the tab
         step: Description of the step
         status: Status icon (✅, ⏳, ❌)
         details: Additional details
+        update_display: Whether to update the display immediately
     """
     from datetime import datetime
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -101,6 +107,14 @@ def log_execution(tab_name: str, step: str, status: str = "⏳", details: str = 
     # Keep only last 20 entries
     if len(st.session_state.execution_log[tab_name]) > 20:
         st.session_state.execution_log[tab_name] = st.session_state.execution_log[tab_name][-20:]
+    
+    # Live update the display if requested
+    if update_display and f"{tab_name}_log_display" in st.session_state:
+        log_placeholder = st.session_state[f"{tab_name}_log_display"]
+        with log_placeholder.container():
+            # Show all log entries, most recent first
+            for log_entry in reversed(st.session_state.execution_log[tab_name][-15:]):
+                st.markdown(f"`{log_entry}`")
 
 
 def show_flow_accordion(tab_name: str, expected_flow: list):
@@ -111,7 +125,7 @@ def show_flow_accordion(tab_name: str, expected_flow: list):
         tab_name: Name of the tab
         expected_flow: List of expected steps
     """
-    with st.expander("📋 Process Flow", expanded=False):
+    with st.expander("📋 Process Flow", expanded=True):
         col1, col2 = st.columns(2)
         
         with col1:
@@ -121,11 +135,22 @@ def show_flow_accordion(tab_name: str, expected_flow: list):
         
         with col2:
             st.subheader("Actual Flow (Execution Log)")
+            # Create a placeholder for live updates
+            log_placeholder = st.empty()
+            
+            # Initialize log display key if not exists
+            if f"{tab_name}_log_display" not in st.session_state:
+                st.session_state[f"{tab_name}_log_display"] = log_placeholder
+            
+            # Update log display
             if tab_name in st.session_state.execution_log and st.session_state.execution_log[tab_name]:
-                for log_entry in st.session_state.execution_log[tab_name][-10:]:  # Show last 10
-                    st.text(log_entry)
+                with log_placeholder.container():
+                    # Show all log entries, most recent first
+                    for log_entry in reversed(st.session_state.execution_log[tab_name][-15:]):  # Show last 15
+                        st.markdown(f"`{log_entry}`")
             else:
-                st.info("No execution log yet. Actions will be logged here.")
+                with log_placeholder.container():
+                    st.info("No execution log yet. Actions will be logged here.")
 
 
 def initialize_generator():
@@ -315,10 +340,16 @@ def main():
                 concept_list = ["Select a concept..."] + ist_concepts_df['concept_name'].tolist()
                 selected_concept = st.selectbox(
                     "Select Concept",
-                    concept_list
+                    concept_list,
+                    key="concept_selector"
                 )
                 
                 if selected_concept != "Select a concept...":
+                    # Log concept selection
+                    if 'last_logged_concept' not in st.session_state or st.session_state.last_logged_concept != selected_concept:
+                        log_execution("Concept Explainer", f"Concept selected: {selected_concept}", "✅")
+                        st.session_state.last_logged_concept = selected_concept
+                    
                     concept_info = st.session_state.data_processor.get_concept_info(
                         ist_concepts_df, selected_concept
                     )
@@ -331,8 +362,13 @@ def main():
                         **Prerequisites:** {concept_info.get('prerequisites', 'None')}
                         """)
             else:
-                concept_name = st.text_input("Concept Name", placeholder="e.g., RAG, Tokenization")
+                concept_name = st.text_input("Concept Name", placeholder="e.g., RAG, Tokenization", key="concept_input")
                 selected_concept = concept_name
+                if selected_concept:
+                    # Log concept entry
+                    if 'last_logged_concept' not in st.session_state or st.session_state.last_logged_concept != selected_concept:
+                        log_execution("Concept Explainer", f"Concept entered: {selected_concept}", "✅")
+                        st.session_state.last_logged_concept = selected_concept
         
         with col2:
             st.subheader("Options")
@@ -348,10 +384,14 @@ def main():
             
             # Flow accordion
             expected_flow = [
-                "User selects/enters concept name",
-                "System loads concept information from database",
-                "System generates explanation using AI (OpenAI)",
-                "System displays explanation with metadata"
+                "1. User selects/enters concept name",
+                "2. System initializes content generator (if needed)",
+                "3. System performs semantic search on IST concepts vector store",
+                "4. System identifies related concepts from vector search results",
+                "5. System loads concept information from database (CSV)",
+                "6. System combines concept info with related concepts context",
+                "7. System generates explanation using AI (OpenAI) with enhanced context",
+                "8. System displays explanation with generation metadata"
             ]
             show_flow_accordion("Concept Explainer", expected_flow)
             st.divider()
@@ -359,59 +399,143 @@ def main():
             if st.button("Generate Explanation", type="primary"):
                 if not selected_concept or selected_concept == "Select a concept...":
                     st.warning("Please select or enter a concept name")
+                    log_execution("Concept Explainer", "No concept selected - action cancelled", "❌")
                 else:
                     try:
-                        log_execution("Concept Explainer", f"Concept selected: {selected_concept}")
-                        
-                        if not st.session_state.generator:
-                            initialize_generator()
-                            log_execution("Concept Explainer", "Generator initialized", "✅")
-                        
-                        # Get concept information
-                        if ist_concepts_df is not None and isinstance(selected_concept, str):
-                            concept_info = st.session_state.data_processor.get_concept_info(
-                                ist_concepts_df, selected_concept
-                            )
+                        # Create a status container for live updates
+                        with st.status("🔄 Generating explanation...", expanded=True) as status:
+                            # Step 1: User action logged
+                            log_execution("Concept Explainer", "Generate Explanation button clicked", "⏳")
+                            
+                            # Step 2: Initialize generator (if needed)
+                            if not st.session_state.generator:
+                                status.update(label="🔄 Step 2/8: Initializing content generator...", state="running")
+                                initialize_generator()
+                                log_execution("Concept Explainer", "Step 2: Content generator initialized", "✅")
+                            else:
+                                log_execution("Concept Explainer", "Step 2: Content generator already initialized", "✅")
+                            
+                            # Step 3: Perform semantic search on IST concepts vector store
+                            related_concepts_context = ""
+                            related_concepts_list = []
+                            
+                            if st.session_state.get('ist_concepts_vector_store_ready', False):
+                                if st.session_state.data_processor.vector_store:
+                                    status.update(label="🔍 Step 3/8: Performing semantic search on IST concepts vector store...", state="running")
+                                    log_execution("Concept Explainer", "Step 3: Performing semantic search on IST concepts vector store", "⏳")
+                                    try:
+                                        # Search for similar concepts
+                                        search_results = st.session_state.data_processor.search_vectors(
+                                            query=f"{selected_concept} concept explanation learning objectives",
+                                            k=5,  # Get top 5 for better context
+                                            model="text-embedding-3-small"
+                                        )
+                                        if search_results:
+                                            related_concepts = []
+                                            for result in search_results:
+                                                concept_name = result.get('metadata', {}).get('concept_name', '')
+                                                # Exclude the current concept and add related ones
+                                                if concept_name and concept_name.lower() != selected_concept.lower():
+                                                    related_concepts.append(concept_name)
+                                            
+                                            if related_concepts:
+                                                # Remove duplicates while preserving order
+                                                unique_concepts = list(dict.fromkeys(related_concepts))[:3]  # Top 3 unique
+                                                related_concepts_list = unique_concepts
+                                                related_concepts_context = f"\n\nRelated concepts found via vector search: {', '.join(unique_concepts)}"
+                                                log_execution("Concept Explainer", "Step 3: Semantic search completed", "✅", f"Found {len(unique_concepts)} related concepts: {', '.join(unique_concepts)}")
+                                            else:
+                                                log_execution("Concept Explainer", "Step 3: Semantic search completed", "✅", "Current concept is most relevant, no additional related concepts")
+                                        else:
+                                            log_execution("Concept Explainer", "Step 3: Semantic search completed", "⚠️", "No search results returned")
+                                    except Exception as e:
+                                        log_execution("Concept Explainer", f"Step 3: Vector search error: {str(e)}", "❌")
+                                        logger.log_error(e, "Error in vector search for concept explainer")
+                                else:
+                                    log_execution("Concept Explainer", "Step 3: Vector search skipped", "⚠️", "Vector store object not found")
+                            else:
+                                log_execution("Concept Explainer", "Step 3: Vector search skipped", "⚠️", f"Vector store not ready (ist_concepts_vector_store_ready={st.session_state.get('ist_concepts_vector_store_ready', False)})")
+                            
+                            # Step 4: Identify related concepts from vector search results
+                            if related_concepts_list:
+                                status.update(label="🔗 Step 4/8: Identifying related concepts from vector search...", state="running")
+                                log_execution("Concept Explainer", "Step 4: Related concepts identified", "✅", f"Related concepts: {', '.join(related_concepts_list)}")
+                            else:
+                                log_execution("Concept Explainer", "Step 4: No additional related concepts to identify", "✅")
+                            
+                            # Step 5: Load concept information from database
+                            status.update(label="📚 Step 5/8: Loading concept information from database...", state="running")
+                            log_execution("Concept Explainer", "Step 5: Loading concept information from database", "⏳")
+                            if ist_concepts_df is not None and isinstance(selected_concept, str):
+                                concept_info = st.session_state.data_processor.get_concept_info(
+                                    ist_concepts_df, selected_concept
+                                )
+                                if concept_info:
+                                    log_execution("Concept Explainer", "Step 5: Concept info loaded from database", "✅", f"Week: {concept_info.get('week', 'N/A')}, Difficulty: {concept_info.get('difficulty', 'N/A')}")
+                                else:
+                                    log_execution("Concept Explainer", "Step 5: Concept not found in database, using basic info", "⚠️")
+                                    concept_info = None
+                            else:
+                                concept_info = None
+                                log_execution("Concept Explainer", "Step 5: No database available, using basic info", "⚠️")
+                            
+                            # Step 6: Combine concept info with related concepts context
+                            status.update(label="🔗 Step 6/8: Combining concept info with related concepts context...", state="running")
+                            log_execution("Concept Explainer", "Step 6: Combining concept info with vector search context", "⏳")
+                            
+                            # Prepare prompt parameters with vector search context
                             if concept_info:
-                                log_execution("Concept Explainer", f"Concept info loaded: {concept_info.get('week', 'N/A')}", "✅")
-                        else:
-                            concept_info = None
-                        
-                        if concept_info:
-                            # Use concept info from database
-                            prompt_kwargs = {
-                                'concept_name': concept_info.get('concept_name', selected_concept),
-                                'week': concept_info.get('week', ''),
-                                'description': concept_info.get('description', ''),
-                                'learning_objectives': concept_info.get('learning_objectives', ''),
-                                'prerequisites': concept_info.get('prerequisites', 'None'),
-                                'difficulty': concept_info.get('difficulty', 'intermediate'),
-                                'time_estimate': concept_info.get('time_estimate', '60'),
-                                'keywords': concept_info.get('keywords', '')
-                            }
-                        else:
-                            # Use basic info
-                            prompt_kwargs = {
-                                'concept_name': selected_concept,
-                                'week': '',
-                                'description': f"Explain the concept: {selected_concept}",
-                                'learning_objectives': 'Understand the concept thoroughly',
-                                'prerequisites': 'None',
-                                'difficulty': 'intermediate',
-                                'time_estimate': '60',
-                                'keywords': ''
-                            }
-                        
-                        log_execution("Concept Explainer", "Calling OpenAI API to generate explanation", "⏳")
-                        with st.spinner("Generating concept explanation..."):
+                                # Use concept info from database, add vector search context
+                                description = concept_info.get('description', '')
+                                if related_concepts_context:
+                                    description += related_concepts_context
+                                
+                                prompt_kwargs = {
+                                    'concept_name': concept_info.get('concept_name', selected_concept),
+                                    'week': concept_info.get('week', ''),
+                                    'description': description,
+                                    'learning_objectives': concept_info.get('learning_objectives', ''),
+                                    'prerequisites': concept_info.get('prerequisites', 'None'),
+                                    'difficulty': concept_info.get('difficulty', 'intermediate'),
+                                    'time_estimate': concept_info.get('time_estimate', '60'),
+                                    'keywords': concept_info.get('keywords', '')
+                                }
+                            else:
+                                # Use basic info with vector search context
+                                description = f"Explain the concept: {selected_concept}"
+                                if related_concepts_context:
+                                    description += related_concepts_context
+                                
+                                prompt_kwargs = {
+                                    'concept_name': selected_concept,
+                                    'week': '',
+                                    'description': description,
+                                    'learning_objectives': 'Understand the concept thoroughly',
+                                    'prerequisites': 'None',
+                                    'difficulty': 'intermediate',
+                                    'time_estimate': '60',
+                                    'keywords': ''
+                                }
+                            log_execution("Concept Explainer", "Step 6: Context combined successfully", "✅", f"Enhanced with {len(related_concepts_list)} related concepts" if related_concepts_list else "Using base concept info")
+                            
+                            # Step 7: Generate explanation using AI (OpenAI) with enhanced context
+                            status.update(label="🤖 Step 7/8: Generating explanation using AI (OpenAI) with enhanced context...", state="running")
+                            log_execution("Concept Explainer", "Step 7: Generating explanation using AI (OpenAI) with enhanced context", "⏳")
                             result = st.session_state.generator.generate_with_prompt_type(
                                 prompt_type=PromptType.IST_CONCEPT_EXPLANATION,
                                 **prompt_kwargs
                             )
                             tokens = result.get('token_usage', {}).get('total_tokens', 'N/A')
                             model = result.get('model', 'N/A')
-                            log_execution("Concept Explainer", f"Explanation generated", "✅", f"Model: {model}, Tokens: {tokens}")
+                            log_execution("Concept Explainer", "Step 7: AI explanation generated successfully", "✅", f"Model: {model}, Tokens: {tokens}")
+                            
+                            # Step 8: Display explanation with metadata
+                            status.update(label="📊 Step 8/8: Displaying explanation with metadata...", state="running")
+                            log_execution("Concept Explainer", "Step 8: Displaying explanation with metadata", "⏳")
+                            log_execution("Concept Explainer", "Step 8: Explanation displayed successfully", "✅", f"Content length: {len(result.get('content', ''))} chars")
+                            status.update(label="✅ Generation complete", state="complete")
                         
+                        # Display results outside status container for permanent view
                         st.subheader("Concept Explanation")
                         st.markdown(result['content'])
                         
@@ -429,7 +553,7 @@ def main():
                     
                     except Exception as e:
                         st.error(f"Error generating explanation: {str(e)}")
-                        log_execution("Concept Explainer", f"Error: {str(e)}", "❌")
+                        log_execution("Concept Explainer", f"Error occurred: {str(e)}", "❌")
                         logger.log_error(e, "Error in concept explainer")
         
         else:  # Quiz Me mode
