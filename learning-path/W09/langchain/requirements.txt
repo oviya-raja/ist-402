@@ -1,0 +1,16 @@
+# LangChain Core Packages
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-core>=0.1.0
+langchain-community>=0.1.0
+langchain-experimental>=0.1.0
+
+# Additional dependencies
+python-dotenv>=1.0.0
+openai>=1.0.0
+pandas>=1.5.0
+tiktoken>=0.5.0
+
+# Optional but recommended
+numpy>=1.24.0
+
