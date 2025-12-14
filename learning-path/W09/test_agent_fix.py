@@ -259,6 +259,10 @@ print(str(response))
             # Don't continue if critical step failed
             if step_name in ['Paper Processing', 'Agent Creation']:
                 print(f"\n❌ Critical step failed. Stopping execution.")
+                print(f"   Error details: {error}")
+                if hasattr(error, '__traceback__'):
+                    import traceback
+                    traceback.print_exception(type(error), error, error.__traceback__)
                 break
     
     print("\n" + "=" * 70)
@@ -309,11 +313,19 @@ print(str(response))
             print("   ✓ Agent retrieved summaries for both papers")
             print("   ✓ No error messages")
             
-            # Show preview
-            if 'Self-RAG framework' in query_output:
-                start = query_output.find('Self-RAG framework')
+            # Show preview (case-insensitive)
+            import re
+            selfrag_match = re.search(r'(?i)(self-rag|selfrag).{0,50}(framework|enhances|quality)', query_output)
+            if selfrag_match:
+                start = max(0, selfrag_match.start() - 20)
                 preview = query_output[start:start+150]
                 print(f"\n   Self-RAG preview: {preview}...")
+            
+            longlora_match = re.search(r'(?i)longlora.{0,50}(method|extends|approach)', query_output)
+            if longlora_match:
+                start = max(0, longlora_match.start() - 20)
+                preview = query_output[start:start+150]
+                print(f"   LongLoRA preview: {preview}...")
             
             return True
         else:
