@@ -1,12 +1,15 @@
 # LangChain Learning Notebooks
 
 This directory contains LangChain tutorial notebooks covering:
-- L1: Models, Prompts, and Output Parsers
-- L2: Memory
-- L3: Chains
-- L4: Question & Answering
-- L5: Evaluation
-- L6: Agents
+
+| Notebook | Description | Open in Colab |
+|----------|-------------|---------------|
+| L1 | Models, Prompts, and Output Parsers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L1-Model_prompt_parser.ipynb) |
+| L2 | Memory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L2-Memory.ipynb) |
+| L3 | Chains | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L3-Chains.ipynb) |
+| L4 | Question & Answering | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L4-QnA.ipynb) |
+| L5 | Evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L5-Evaluation.ipynb) |
+| L6 | Agents | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/oviya-raja/ist-402/blob/main/learning-path/W09/langchain/L6-Agents.ipynb) |
 
 ## Installation
 
