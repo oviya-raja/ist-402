@@ -1,0 +1,30 @@
+# W8 L1 Group Task - Dependencies
+# Python package requirements for all three notebooks
+
+# Core dependencies
+streamlit>=1.28.0
+torch>=2.0.0
+transformers>=4.41.0
+accelerate>=0.24.0
+safetensors>=0.4.0
+
+# PDF Q&A dependencies
+langchain-community>=0.0.20
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.2
+pypdf>=3.17.0
+
+# Speech-to-Image dependencies
+diffusers>=0.30.0
+soundfile>=0.12.1
+
+# Image Caption dependencies
+pillow>=10.0.0
+
+# Tunneling (for Colab access)
+pyngrok>=5.0.0
+
+# Optional but recommended
+numpy>=1.24.0
+pandas>=2.0.0
+
