@@ -463,7 +463,7 @@ The system was tested with 10+ diverse audio inputs and text prompts covering va
 **Transcription Accuracy:** ✅ 100% - Perfect transcription
 
 **Generated Image:**  
-[Image would show: A scenic landscape with mountains and a vibrant sunset sky]
+![Generated Image - Sunset Example](screenshots/09_generated_image_sunset.png)
 
 **Generation Time:** 45 seconds (CPU mode)  
 **Quality Assessment:** ✅ High - Image accurately represents the described scene with appropriate colors and composition.
@@ -474,7 +474,7 @@ The system was tested with 10+ diverse audio inputs and text prompts covering va
 
 **Text Input:** "A serene lake surrounded by autumn trees at sunset with a small wooden dock"  
 **Generated Image:**  
-[Image would show: A peaceful lake scene with fall-colored trees, sunset lighting, and a dock]
+![Generated Image - Lake Example](screenshots/10_generated_image_lake.png)
 
 **Generation Time:** 52 seconds  
 **Quality Assessment:** ✅ Good - Captures multiple elements (lake, trees, dock, lighting)
@@ -486,7 +486,7 @@ The system was tested with 10+ diverse audio inputs and text prompts covering va
 **Audio Input:** "A futuristic cityscape at night with neon lights and flying vehicles"  
 **Transcription:** "A futuristic cityscape at night with neon lights and flying vehicles"  
 **Generated Image:**  
-[Image would show: A cyberpunk-style city with neon lighting and sci-fi elements]
+*Note: Screenshot of generated image for Example 3 (futuristic cityscape) can be added to demonstrate abstract concept generation.*
 
 **Generation Time:** 48 seconds  
 **Quality Assessment:** ✅ Good - Successfully interprets abstract concepts
@@ -526,6 +526,28 @@ The system was tested with 10+ diverse audio inputs and text prompts covering va
 - Positive: Easy to use, clear interface
 - Positive: Transcription accuracy is impressive
 - Note: Generation time can be long on CPU (expected)
+
+**Interface Screenshots:**
+
+The following screenshots demonstrate the Speech-to-Image system workflow:
+
+![Initial Interface](screenshots/05_speech_to_image_initial.png)
+*Figure 5: Initial Streamlit interface showing both input methods - Audio Tab and Text Tab.*
+
+![Audio Upload Interface](screenshots/06_audio_upload_interface.png)
+*Figure 6: Audio upload interface with file selected and ready for transcription.*
+
+![Transcription Displayed](screenshots/07_transcription_displayed.png)
+*Figure 7: Transcription result displayed after processing audio input: "A beautiful sunset over mountains".*
+
+![Text Input Interface](screenshots/08_text_input_interface.png)
+*Figure 8: Text input tab with a prompt entered: "A serene lake surrounded by autumn trees at sunset with a small wooden dock".*
+
+![Generated Image - Sunset](screenshots/09_generated_image_sunset.png)
+*Figure 9: Generated image for Example 1 - "A beautiful sunset over mountains" showing a scenic landscape with mountains and vibrant sunset sky.*
+
+![Generated Image - Lake](screenshots/10_generated_image_lake.png)
+*Figure 10: Generated image for Example 2 - "A serene lake surrounded by autumn trees at sunset with a small wooden dock" showing a peaceful lake scene.*
 
 ---
 
@@ -636,6 +658,22 @@ The system was tested with 15+ diverse images across multiple categories:
 - ✅ Invalid file formats - Clear error message
 - ✅ Corrupted images - Graceful error handling
 - ✅ Network issues (model loading) - Informative error messages
+
+**Interface Screenshots:**
+
+The following screenshots demonstrate the Image Captioning system workflow with diverse image examples:
+
+![Initial Interface](screenshots/11_image_caption_initial.png)
+*Figure 11: Initial Streamlit interface showing the image upload section ready for file selection.*
+
+![Nature Image with Caption](screenshots/12_image_with_caption_nature.png)
+*Figure 12: Nature/landscape image (mountain landscape with lake) with generated caption: "A beautiful mountain landscape with a lake in the foreground".*
+
+![Object Image with Caption](screenshots/13_image_with_caption_object.png)
+*Figure 13: Object image (coffee cup on table) with generated caption: "A cup of coffee on a table".*
+
+![People Image with Caption](screenshots/14_image_with_caption_people.png)
+*Figure 14: People/portrait image with generated caption demonstrating the system's ability to handle diverse image categories.*
 
 ---
 
